@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { DashboardPage } from '@/components/dashboard-page';
 
-// Not served by Go yet: /admin still renders the Go-template dashboard. This route
-// exists so the SPA shell prerender has a matching route to request.
 export const Route = createFileRoute('/_app/')({
-  component: () => null,
+  head: () => ({ meta: [{ title: 'Dashboard - listmonk' }] }),
+  component: DashboardPage,
 });

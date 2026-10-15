@@ -29,7 +29,7 @@ export const NAV: NavGroup[] = [
     key: 'dashboard',
     label: 'menu.dashboard',
     icon: 'grid',
-    items: [item('dashboard', 'menu.dashboard', '/admin')],
+    items: [item('dashboard', 'menu.dashboard', '/admin', [], true)],
   },
   {
     key: 'lists',

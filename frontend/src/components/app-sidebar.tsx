@@ -61,16 +61,13 @@ export function AppSidebar() {
   return (
     <Sidebar variant="inset" collapsible="offcanvas">
       <SidebarHeader>
-        <a
-          href={hardHref(window._LM_ROOT, '/admin')}
-          className="flex h-10 items-center px-2 dark:brightness-0 dark:invert"
-        >
+        <Link to="/" className="flex h-10 items-center px-2 dark:brightness-0 dark:invert">
           <img
             src={hardHref(window._LM_ROOT, '/admin/static/logo.svg')}
             alt="listmonk"
             className="h-6"
           />
-        </a>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -81,10 +78,17 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={group.key}>
                     <SidebarMenuButton asChild tooltip={t(group.label)} isActive={isActive(only)}>
-                      <a href={hardHref(window._LM_ROOT, only.path)}>
-                        <NavIcon name={group.icon} />
-                        <span>{t(group.label)}</span>
-                      </a>
+                      {only.ported ? (
+                        <Link to={routerPath(only) as LinkProps['to']}>
+                          <NavIcon name={group.icon} />
+                          <span>{t(group.label)}</span>
+                        </Link>
+                      ) : (
+                        <a href={hardHref(window._LM_ROOT, only.path)}>
+                          <NavIcon name={group.icon} />
+                          <span>{t(group.label)}</span>
+                        </a>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

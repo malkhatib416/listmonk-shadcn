@@ -85,7 +85,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		// New admin frontend (frontend/). Ported views are served from the SPA shell:
 		// register them with a.ServeAdminApp below, keeping their pm(...) permission.
 
-		g.GET(uriAdmin, a.ViewDashboard)
+		g.GET(uriAdmin, a.ServeAdminApp)
 		g.GET(path.Join(uriAdmin, "/lists"), a.ServeAdminApp)
 		g.GET(path.Join(uriAdmin, "/lists/analytics"), a.ServeAdminApp)
 		g.GET(path.Join(uriAdmin, "/lists/new"), pm(a.ServeAdminApp, "lists:manage_all"))
@@ -158,6 +158,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		g.GET("/api/dashboard/charts", a.GetDashboardCharts)
 		g.GET("/api/dashboard/counts", a.GetDashboardCounts)
 		g.GET("/api/dashboard/campaigns", a.GetDashboardCampaigns)
+		g.GET("/api/dashboard/system", a.GetDashboardSystem)
 
 		g.GET("/api/settings", pm(a.GetSettings, "settings:get"))
 		g.PUT("/api/settings", pm(a.UpdateSettings, "settings:manage"))

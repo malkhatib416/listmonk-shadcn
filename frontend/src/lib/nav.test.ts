@@ -60,7 +60,10 @@ describe('activeNavItem', () => {
 
   test('no match for an unknown path', () => {
     expect(activeNavItem('/nope')).toBeUndefined();
-    expect(activeNavItem('/')).toBeUndefined();
     expect(activeNavItem('/usersx')).toBeUndefined();
+  });
+
+  test('the dashboard owns the root path only', () => {
+    expect(activeNavItem('/')?.key).toBe('dashboard');
   });
 });
