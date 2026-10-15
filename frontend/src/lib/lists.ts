@@ -6,6 +6,7 @@ import type { PageResults } from './paging';
 export interface ListRef {
   id: number;
   name: string;
+  optin: 'single' | 'double';
 }
 
 // Every list (id + name only), for pickers.

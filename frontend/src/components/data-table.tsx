@@ -44,6 +44,8 @@ interface Props<T> {
   loading?: boolean;
   empty?: ReactNode;
   rowTestId?: string;
+  // Extra attributes for each row, e.g. data-status.
+  rowAttrs?: (row: T) => Record<string, string>;
   // Accessible names for the select-all and per-row checkboxes.
   selectAllLabel?: string;
   selectRowLabel?: (row: T) => string;
@@ -59,6 +61,7 @@ export function DataTable<T>({
   loading,
   empty,
   rowTestId,
+  rowAttrs,
   selectAllLabel = 'Select all',
   selectRowLabel,
 }: Props<T>) {
@@ -146,6 +149,7 @@ export function DataTable<T>({
                     key={id}
                     data-testid={rowTestId}
                     data-id={String(id)}
+                    {...rowAttrs?.(row)}
                     data-state={checked ? 'selected' : undefined}
                   >
                     {selection ? (

@@ -19,8 +19,10 @@ import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
 import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
+import { Route as AppSubscribersIndexRouteImport } from './routes/_app/subscribers/index'
 import { Route as AppSubscribersBouncesRouteImport } from './routes/_app/subscribers/bounces'
 import { Route as AppSubscribersImportRouteImport } from './routes/_app/subscribers/import'
+import { Route as AppSubscribersNewRouteImport } from './routes/_app/subscribers/new'
 import { Route as AppTemplatesIndexRouteImport } from './routes/_app/templates/index'
 import { Route as AppTemplatesIdRouteImport } from './routes/_app/templates/$id'
 import { Route as AppTemplatesNewRouteImport } from './routes/_app/templates/new'
@@ -30,6 +32,11 @@ import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
 import { Route as AppUsersNewRouteImport } from './routes/_app/users/new'
 import { Route as AppListsIdIndexRouteImport } from './routes/_app/lists/$id/index'
 import { Route as AppListsIdEditRouteImport } from './routes/_app/lists/$id/edit'
+import { Route as AppSubscribersIdIndexRouteImport } from './routes/_app/subscribers/$id/index'
+import { Route as AppSubscribersIdBouncesRouteImport } from './routes/_app/subscribers/$id/bounces'
+import { Route as AppSubscribersIdEditRouteImport } from './routes/_app/subscribers/$id/edit'
+import { Route as AppSubscribersIdListsRouteImport } from './routes/_app/subscribers/$id/lists'
+import { Route as AppSubscribersListsIdRouteImport } from './routes/_app/subscribers/lists/$id'
 import { Route as AppUsersRolesIndexRouteImport } from './routes/_app/users/roles/index'
 import { Route as AppUsersRolesIdRouteImport } from './routes/_app/users/roles/$id'
 import { Route as AppUsersRolesNewRouteImport } from './routes/_app/users/roles/new'
@@ -86,6 +93,11 @@ const AppSettingsMaintenanceRoute = AppSettingsMaintenanceRouteImport.update({
   path: '/settings/maintenance',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSubscribersIndexRoute = AppSubscribersIndexRouteImport.update({
+  id: '/subscribers/',
+  path: '/subscribers/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSubscribersBouncesRoute = AppSubscribersBouncesRouteImport.update({
   id: '/subscribers/bounces',
   path: '/subscribers/bounces',
@@ -94,6 +106,11 @@ const AppSubscribersBouncesRoute = AppSubscribersBouncesRouteImport.update({
 const AppSubscribersImportRoute = AppSubscribersImportRouteImport.update({
   id: '/subscribers/import',
   path: '/subscribers/import',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersNewRoute = AppSubscribersNewRouteImport.update({
+  id: '/subscribers/new',
+  path: '/subscribers/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTemplatesIndexRoute = AppTemplatesIndexRouteImport.update({
@@ -141,6 +158,31 @@ const AppListsIdEditRoute = AppListsIdEditRouteImport.update({
   path: '/lists/$id/edit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSubscribersIdIndexRoute = AppSubscribersIdIndexRouteImport.update({
+  id: '/subscribers/$id/',
+  path: '/subscribers/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdBouncesRoute = AppSubscribersIdBouncesRouteImport.update({
+  id: '/subscribers/$id/bounces',
+  path: '/subscribers/$id/bounces',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdEditRoute = AppSubscribersIdEditRouteImport.update({
+  id: '/subscribers/$id/edit',
+  path: '/subscribers/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdListsRoute = AppSubscribersIdListsRouteImport.update({
+  id: '/subscribers/$id/lists',
+  path: '/subscribers/$id/lists',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersListsIdRoute = AppSubscribersListsIdRouteImport.update({
+  id: '/subscribers/lists/$id',
+  path: '/subscribers/lists/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersRolesIndexRoute = AppUsersRolesIndexRouteImport.update({
   id: '/users/roles/',
   path: '/users/roles/',
@@ -183,18 +225,25 @@ export interface FileRoutesByFullPath {
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
   '/subscribers/import': typeof AppSubscribersImportRoute
+  '/subscribers/new': typeof AppSubscribersNewRoute
   '/templates/$id': typeof AppTemplatesIdRoute
   '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
   '/lists/': typeof AppListsIndexRoute
+  '/subscribers/': typeof AppSubscribersIndexRoute
   '/templates/': typeof AppTemplatesIndexRoute
   '/users/': typeof AppUsersIndexRoute
   '/lists/$id/edit': typeof AppListsIdEditRoute
+  '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
   '/lists/$id/': typeof AppListsIdIndexRoute
+  '/subscribers/$id/': typeof AppSubscribersIdIndexRoute
   '/users/roles/': typeof AppUsersRolesIndexRoute
   '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -211,18 +260,25 @@ export interface FileRoutesByTo {
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
   '/subscribers/import': typeof AppSubscribersImportRoute
+  '/subscribers/new': typeof AppSubscribersNewRoute
   '/templates/$id': typeof AppTemplatesIdRoute
   '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
   '/lists': typeof AppListsIndexRoute
+  '/subscribers': typeof AppSubscribersIndexRoute
   '/templates': typeof AppTemplatesIndexRoute
   '/users': typeof AppUsersIndexRoute
   '/lists/$id/edit': typeof AppListsIdEditRoute
+  '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
   '/lists/$id': typeof AppListsIdIndexRoute
+  '/subscribers/$id': typeof AppSubscribersIdIndexRoute
   '/users/roles': typeof AppUsersRolesIndexRoute
   '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -241,18 +297,25 @@ export interface FileRoutesById {
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/_app/subscribers/bounces': typeof AppSubscribersBouncesRoute
   '/_app/subscribers/import': typeof AppSubscribersImportRoute
+  '/_app/subscribers/new': typeof AppSubscribersNewRoute
   '/_app/templates/$id': typeof AppTemplatesIdRoute
   '/_app/templates/new': typeof AppTemplatesNewRoute
   '/_app/user/profile': typeof AppUserProfileRoute
   '/_app/users/$id': typeof AppUsersIdRoute
   '/_app/users/new': typeof AppUsersNewRoute
   '/_app/lists/': typeof AppListsIndexRoute
+  '/_app/subscribers/': typeof AppSubscribersIndexRoute
   '/_app/templates/': typeof AppTemplatesIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
   '/_app/lists/$id/edit': typeof AppListsIdEditRoute
+  '/_app/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/_app/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/_app/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/_app/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
   '/_app/users/roles/new': typeof AppUsersRolesNewRoute
   '/_app/lists/$id/': typeof AppListsIdIndexRoute
+  '/_app/subscribers/$id/': typeof AppSubscribersIdIndexRoute
   '/_app/users/roles/': typeof AppUsersRolesIndexRoute
   '/_app/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/_app/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -271,18 +334,25 @@ export interface FileRouteTypes {
     | '/settings/maintenance'
     | '/subscribers/bounces'
     | '/subscribers/import'
+    | '/subscribers/new'
     | '/templates/$id'
     | '/templates/new'
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
     | '/lists/'
+    | '/subscribers/'
     | '/templates/'
     | '/users/'
     | '/lists/$id/edit'
+    | '/subscribers/$id/bounces'
+    | '/subscribers/$id/edit'
+    | '/subscribers/$id/lists'
+    | '/subscribers/lists/$id'
     | '/users/roles/$id'
     | '/users/roles/new'
     | '/lists/$id/'
+    | '/subscribers/$id/'
     | '/users/roles/'
     | '/users/roles/lists/$id'
     | '/users/roles/lists/new'
@@ -299,18 +369,25 @@ export interface FileRouteTypes {
     | '/settings/maintenance'
     | '/subscribers/bounces'
     | '/subscribers/import'
+    | '/subscribers/new'
     | '/templates/$id'
     | '/templates/new'
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
     | '/lists'
+    | '/subscribers'
     | '/templates'
     | '/users'
     | '/lists/$id/edit'
+    | '/subscribers/$id/bounces'
+    | '/subscribers/$id/edit'
+    | '/subscribers/$id/lists'
+    | '/subscribers/lists/$id'
     | '/users/roles/$id'
     | '/users/roles/new'
     | '/lists/$id'
+    | '/subscribers/$id'
     | '/users/roles'
     | '/users/roles/lists/$id'
     | '/users/roles/lists/new'
@@ -328,18 +405,25 @@ export interface FileRouteTypes {
     | '/_app/settings/maintenance'
     | '/_app/subscribers/bounces'
     | '/_app/subscribers/import'
+    | '/_app/subscribers/new'
     | '/_app/templates/$id'
     | '/_app/templates/new'
     | '/_app/user/profile'
     | '/_app/users/$id'
     | '/_app/users/new'
     | '/_app/lists/'
+    | '/_app/subscribers/'
     | '/_app/templates/'
     | '/_app/users/'
     | '/_app/lists/$id/edit'
+    | '/_app/subscribers/$id/bounces'
+    | '/_app/subscribers/$id/edit'
+    | '/_app/subscribers/$id/lists'
+    | '/_app/subscribers/lists/$id'
     | '/_app/users/roles/$id'
     | '/_app/users/roles/new'
     | '/_app/lists/$id/'
+    | '/_app/subscribers/$id/'
     | '/_app/users/roles/'
     | '/_app/users/roles/lists/$id'
     | '/_app/users/roles/lists/new'
@@ -422,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsMaintenanceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/subscribers/': {
+      id: '/_app/subscribers/'
+      path: '/subscribers'
+      fullPath: '/subscribers/'
+      preLoaderRoute: typeof AppSubscribersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/subscribers/bounces': {
       id: '/_app/subscribers/bounces'
       path: '/subscribers/bounces'
@@ -434,6 +525,13 @@ declare module '@tanstack/react-router' {
       path: '/subscribers/import'
       fullPath: '/subscribers/import'
       preLoaderRoute: typeof AppSubscribersImportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/new': {
+      id: '/_app/subscribers/new'
+      path: '/subscribers/new'
+      fullPath: '/subscribers/new'
+      preLoaderRoute: typeof AppSubscribersNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/templates/': {
@@ -499,6 +597,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppListsIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/subscribers/$id/': {
+      id: '/_app/subscribers/$id/'
+      path: '/subscribers/$id'
+      fullPath: '/subscribers/$id/'
+      preLoaderRoute: typeof AppSubscribersIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/bounces': {
+      id: '/_app/subscribers/$id/bounces'
+      path: '/subscribers/$id/bounces'
+      fullPath: '/subscribers/$id/bounces'
+      preLoaderRoute: typeof AppSubscribersIdBouncesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/edit': {
+      id: '/_app/subscribers/$id/edit'
+      path: '/subscribers/$id/edit'
+      fullPath: '/subscribers/$id/edit'
+      preLoaderRoute: typeof AppSubscribersIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/lists': {
+      id: '/_app/subscribers/$id/lists'
+      path: '/subscribers/$id/lists'
+      fullPath: '/subscribers/$id/lists'
+      preLoaderRoute: typeof AppSubscribersIdListsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/lists/$id': {
+      id: '/_app/subscribers/lists/$id'
+      path: '/subscribers/lists/$id'
+      fullPath: '/subscribers/lists/$id'
+      preLoaderRoute: typeof AppSubscribersListsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/users/roles/': {
       id: '/_app/users/roles/'
       path: '/users/roles'
@@ -555,18 +688,25 @@ interface AppRouteChildren {
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
   AppSubscribersBouncesRoute: typeof AppSubscribersBouncesRoute
   AppSubscribersImportRoute: typeof AppSubscribersImportRoute
+  AppSubscribersNewRoute: typeof AppSubscribersNewRoute
   AppTemplatesIdRoute: typeof AppTemplatesIdRoute
   AppTemplatesNewRoute: typeof AppTemplatesNewRoute
   AppUserProfileRoute: typeof AppUserProfileRoute
   AppUsersIdRoute: typeof AppUsersIdRoute
   AppUsersNewRoute: typeof AppUsersNewRoute
   AppListsIndexRoute: typeof AppListsIndexRoute
+  AppSubscribersIndexRoute: typeof AppSubscribersIndexRoute
   AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
   AppListsIdEditRoute: typeof AppListsIdEditRoute
+  AppSubscribersIdBouncesRoute: typeof AppSubscribersIdBouncesRoute
+  AppSubscribersIdEditRoute: typeof AppSubscribersIdEditRoute
+  AppSubscribersIdListsRoute: typeof AppSubscribersIdListsRoute
+  AppSubscribersListsIdRoute: typeof AppSubscribersListsIdRoute
   AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
   AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
   AppListsIdIndexRoute: typeof AppListsIdIndexRoute
+  AppSubscribersIdIndexRoute: typeof AppSubscribersIdIndexRoute
   AppUsersRolesIndexRoute: typeof AppUsersRolesIndexRoute
   AppUsersRolesListsIdRoute: typeof AppUsersRolesListsIdRoute
   AppUsersRolesListsNewRoute: typeof AppUsersRolesListsNewRoute
@@ -584,18 +724,25 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
   AppSubscribersBouncesRoute: AppSubscribersBouncesRoute,
   AppSubscribersImportRoute: AppSubscribersImportRoute,
+  AppSubscribersNewRoute: AppSubscribersNewRoute,
   AppTemplatesIdRoute: AppTemplatesIdRoute,
   AppTemplatesNewRoute: AppTemplatesNewRoute,
   AppUserProfileRoute: AppUserProfileRoute,
   AppUsersIdRoute: AppUsersIdRoute,
   AppUsersNewRoute: AppUsersNewRoute,
   AppListsIndexRoute: AppListsIndexRoute,
+  AppSubscribersIndexRoute: AppSubscribersIndexRoute,
   AppTemplatesIndexRoute: AppTemplatesIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
   AppListsIdEditRoute: AppListsIdEditRoute,
+  AppSubscribersIdBouncesRoute: AppSubscribersIdBouncesRoute,
+  AppSubscribersIdEditRoute: AppSubscribersIdEditRoute,
+  AppSubscribersIdListsRoute: AppSubscribersIdListsRoute,
+  AppSubscribersListsIdRoute: AppSubscribersListsIdRoute,
   AppUsersRolesIdRoute: AppUsersRolesIdRoute,
   AppUsersRolesNewRoute: AppUsersRolesNewRoute,
   AppListsIdIndexRoute: AppListsIdIndexRoute,
+  AppSubscribersIdIndexRoute: AppSubscribersIdIndexRoute,
   AppUsersRolesIndexRoute: AppUsersRolesIndexRoute,
   AppUsersRolesListsIdRoute: AppUsersRolesListsIdRoute,
   AppUsersRolesListsNewRoute: AppUsersRolesListsNewRoute,

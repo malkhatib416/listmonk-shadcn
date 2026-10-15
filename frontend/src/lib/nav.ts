@@ -47,10 +47,13 @@ export const NAV: NavGroup[] = [
     label: 'globals.terms.subscribers',
     icon: 'at-sign',
     items: [
-      item('subscribers.all', 'menu.allSubscribers', '/admin/subscribers', [
-        'subscribers:get',
-        'subscribers:get_all',
-      ]),
+      item(
+        'subscribers.all',
+        'menu.allSubscribers',
+        '/admin/subscribers',
+        ['subscribers:get', 'subscribers:get_all'],
+        true,
+      ),
       item(
         'subscribers.import',
         'menu.import',

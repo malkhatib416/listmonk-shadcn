@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { setTimeout as sleep } from 'node:timers/promises';
 import {
-  openMenu, confirm, resetDB, selectList, getMail, clearMail,
+  openMenu, confirm, resetDB, getMail, clearMail,
 } from '../helpers.js';
 
 const SUBSCRIBERS = '/admin/subscribers';
@@ -21,10 +21,17 @@ function subRowIDs(page) {
   return page.getByTestId('sub-row').evaluateAll((els) => els.map((el) => Number(el.dataset.id)));
 }
 
-// The (filtered) total the listing header shows, e.g. "Subscribers (47)".
+// The (filtered) total the listing header shows.
 async function readTotal(page) {
-  const txt = await page.locator('.page-title').innerText();
-  return Number(txt.match(/\((\d+)\)/)[1]);
+  await expect(page.getByTestId('total')).toBeVisible();
+  return Number(await page.getByTestId('total').innerText());
+}
+
+// Pick a list in the list picker (a searchable multi-select popover).
+async function pickList(page, name) {
+  await page.getByTestId('list-picker').click();
+  await page.getByTestId('list-option').filter({ hasText: name }).click();
+  await page.keyboard.press('Escape');
 }
 
 // Create `n` subscribers via the API. Returns nothing; assert on the DB after.
@@ -46,10 +53,9 @@ async function seedSubscribers(page, n, { prefix = 'seed', lists = [], status = 
 // Select rows and open the bulk-actions menu. With selectAll, promote the visible
 // selection to the whole query (needs total > per-page for the button to render).
 async function openBulkMenu(page, { selectAll = false } = {}) {
-  await page.locator('thead input[type=checkbox]').check();
-  await page.getByTestId('btn-bulk-actions').click();
+  await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
   if (selectAll) {
-    await page.getByTestId('select-all-subscribers').click();
+    await page.getByTestId('select-all-matching').click();
   }
 }
 
@@ -60,10 +66,10 @@ async function bulkManageLists(page, {
   await openBulkMenu(page, { selectAll });
   await page.getByTestId('btn-manage-lists').click();
 
-  const dialog = page.locator('dialog[open]');
+  const dialog = page.getByRole('dialog');
   await dialog.getByTestId(`check-list-${action}`).check();
   for (const l of lists) {
-    await selectList(dialog, l);
+    await pickList(page, l);
   }
   if (preconfirm) {
     await dialog.getByTestId('preconfirm').check();
@@ -71,7 +77,7 @@ async function bulkManageLists(page, {
 
   await Promise.all([
     page.waitForResponse((r) => /\/api\/subscribers(\/query)?\/lists/.test(r.url()) && r.request().method() === 'PUT'),
-    dialog.locator('button[type=submit]').click(),
+    dialog.getByTestId('btn-manage-save').click(),
   ]);
 }
 
@@ -129,7 +135,7 @@ test.describe('Subscribers: listing, search & sort', () => {
       await page.goto(SUBSCRIBERS);
       await page.getByTestId('btn-advanced-search').click();
       await page.getByTestId('query').fill(c.sql);
-      await Promise.all([page.waitForLoadState(), page.getByTestId('btn-query').click()]);
+      await page.getByTestId('btn-query').click();
       await expect(subRow(page)).toHaveCount(c.count);
     }
   });
@@ -151,7 +157,8 @@ test.describe('Subscribers: listing, search & sort', () => {
     await page.goto(SUBSCRIBERS);
 
     const clickSort = async (field, expected) => {
-      await page.locator(`a[data-sort-field="${field}"]`).click();
+      const header = { email: 'E-mail', name: 'Name', created_at: 'Created', updated_at: 'Updated' }[field];
+      await page.getByRole('columnheader', { name: header }).getByRole('button').click();
       await expect.poll(() => subRowIDs(page)).toEqual(expected);
     };
 
@@ -192,13 +199,12 @@ test.describe('Subscribers: create, edit & delete', () => {
     await page.getByTestId('btn-new').click();
 
     await expect(page).toHaveURL(/\/admin\/subscribers\/new$/);
-    const form = page.locator('section.subscribers form');
-    await form.locator('input[name=email]').fill('created@example.com');
-    await form.locator('input[name=name]').fill('Created');
-    await selectList(form, 'Default list');
+    await page.locator('input[name=email]').fill('created@example.com');
+    await page.locator('input[name=name]').fill('Created');
+    await pickList(page, 'Default list');
     await Promise.all([
       page.waitForResponse((r) => /\/api\/subscribers$/.test(r.url()) && r.request().method() === 'POST'),
-      form.getByTestId('btn-save').click(),
+      page.getByTestId('btn-save').click(),
     ]);
 
     // The listing shows the new subscriber on the Default list.
@@ -206,7 +212,7 @@ test.describe('Subscribers: create, edit & delete', () => {
     const row = subRow(page, 'created@example.com');
     await expect(row).toBeVisible();
     await expect(row).toContainText('Default list');
-    await expect(row.locator('.lists a.avatar-label')).toHaveText(['Default list']);
+    await expect(row.getByTestId('sub-lists')).toContainText('Default list');
   });
 
   test('creates a pre-confirmed subscriber on a double opt-in list', async ({ page }) => {
@@ -214,43 +220,47 @@ test.describe('Subscribers: create, edit & delete', () => {
     await page.getByTestId('btn-new').click();
 
     await expect(page).toHaveURL(/\/admin\/subscribers\/new$/);
-    const form = page.locator('section.subscribers form');
-    await form.locator('input[name=email]').fill('confirmed@example.com');
-    await form.locator('input[name=name]').fill('Confirmed');
-    await selectList(form, 'Opt-in list');
+    await page.locator('input[name=email]').fill('confirmed@example.com');
+    await page.locator('input[name=name]').fill('Confirmed');
+    await pickList(page, 'Opt-in list');
     // Pre-confirm only enables once a double opt-in list is picked.
-    await expect(form.getByTestId('preconfirm')).toBeEnabled();
-    await form.getByTestId('preconfirm').check();
+    await expect(page.getByTestId('preconfirm')).toBeEnabled();
+    await page.getByTestId('preconfirm').check();
     await Promise.all([
       page.waitForResponse((r) => /\/api\/subscribers$/.test(r.url()) && r.request().method() === 'POST'),
-      form.getByTestId('btn-save').click(),
+      page.getByTestId('btn-save').click(),
     ]);
 
     // The listing badge shows the Opt-in list subscription as confirmed.
     await page.goto(SUBSCRIBERS);
     const row = subRow(page, 'confirmed@example.com');
     await expect(row).toContainText('Opt-in list');
-    await expect(row.getByRole('link', { name: 'View Opt-in list: Confirmed', exact: true })).toBeVisible();
+    await expect(row.getByTitle('Opt-in list: Confirmed')).toBeVisible();
   });
 
   test('edits a subscriber and blocklists via the status field', async ({ page }) => {
     await page.goto(`${SUBSCRIBERS}/1/edit`);
     await page.locator('input[name=email]').fill('edited@example.com');
     await page.locator('input[name=name]').fill('Edited Name');
-    await page.locator('select[name=status]').selectOption('blocklisted');
+    await page.getByTestId('sub-status').click();
+    await page.getByRole('option', { name: 'Blocklisted', exact: true }).click();
     await page.locator('textarea[name=attribs]').fill('{"string": "hello", "ints": [1, 2, 3], "sub": {"bool": true}}');
-    // Saving reloads the edit view; it re-renders with the persisted values.
-    await Promise.all([page.waitForEvent('load'), page.getByTestId('btn-save').click()]);
+    await Promise.all([
+      page.waitForResponse((r) => /\/api\/subscribers\/1$/.test(r.url()) && r.request().method() === 'PATCH'),
+      page.getByTestId('btn-save').click(),
+    ]);
+    // Reload: the form shows the persisted values.
+    await page.reload();
     await expect(page.locator('input[name=email]')).toHaveValue('edited@example.com');
     await expect(page.locator('input[name=name]')).toHaveValue('Edited Name');
-    await expect(page.locator('select[name=status]')).toHaveValue('blocklisted');
+    await expect(page.getByTestId('sub-status')).toContainText('Blocklisted');
     const attribs = await page.locator('textarea[name=attribs]').inputValue();
     expect(attribs).toContain('"string": "hello"');
     expect(attribs).toContain('"bool": true');
 
     // The listing marks blocklisted subscribers.
     await page.goto(SUBSCRIBERS);
-    await expect(subRow(page, 'edited@example.com')).toHaveClass(/blocklisted/);
+    await expect(subRow(page, 'edited@example.com')).toHaveAttribute('data-status', 'blocklisted');
   });
 
   test('rejects invalid attribs JSON', async ({ page }) => {
@@ -258,7 +268,7 @@ test.describe('Subscribers: create, edit & delete', () => {
     await page.locator('textarea[name=attribs]').fill('{ not valid json');
     await page.getByTestId('btn-save').click();
 
-    await expect(page.locator('.toast')).toBeVisible();
+    await expect(page.locator('[data-sonner-toast]')).toBeVisible();
     // No navigation happened: still on the edit page.
     expect(page.url()).toContain(`${SUBSCRIBERS}/1/edit`);
   });
@@ -267,16 +277,17 @@ test.describe('Subscribers: create, edit & delete', () => {
     await page.goto(SUBSCRIBERS);
     const row = subRow(page, 'anon@example.com');
     await openMenu(row);
-    await expect(row.getByTestId('btn-download')).toHaveAttribute('href', /\/api\/subscribers\/2\/export$/);
+    await expect(page.getByTestId('btn-download')).toHaveAttribute('href', /\/api\/subscribers\/2\/export$/);
   });
 
   test('deletes a subscriber from the row menu', async ({ page }) => {
     await page.goto(SUBSCRIBERS);
+    await expect(subRow(page).first()).toBeVisible();
     const before = await subRow(page).count();
 
     const row = subRow(page, 'created@example.com');
     await openMenu(row);
-    await row.getByTestId('btn-delete').click();
+    await page.getByTestId('btn-delete').click();
     await confirm(page);
 
     await expect(subRow(page)).toHaveCount(before - 1);
@@ -300,13 +311,13 @@ test.describe('Subscribers: filters & pagination', () => {
     await page.goto(SUBSCRIBERS);
     await expect(subRow(page)).toHaveCount(20);
 
-    const nav = page.locator('nav.pagination');
+    const nav = page.getByRole('navigation', { name: 'Pagination' });
     await expect(nav).toBeVisible();
-    await Promise.all([page.waitForLoadState(), nav.locator('a', { hasText: '2' }).click()]);
+    await nav.getByRole('button', { name: 'Page 2' }).click();
 
     await expect(page).toHaveURL(/[?&]page=2/);
     await expect(subRow(page)).toHaveCount(7);
-    await expect(nav.locator('a.pg-selected')).toHaveText('2');
+    await expect(nav.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
   });
 
   test('filters by list', async ({ page }) => {
@@ -314,10 +325,10 @@ test.describe('Subscribers: filters & pagination', () => {
     await page.goto(`${SUBSCRIBERS}/lists/${LIST_OPTIN}`);
     await expect(subRow(page)).toHaveCount(1);
     await expect(subRow(page, 'anon@example.com')).toBeVisible();
-    await expect(page.locator('.page-heading')).toContainText('Opt-in list');
+    await expect(page.getByTestId('btn-remove-filter')).toContainText('Opt-in list');
 
     // Clearing the filter badge returns to the full listing.
-    await Promise.all([page.waitForLoadState(), page.getByTestId('btn-remove-filter').click()]);
+    await page.getByTestId('btn-remove-filter').click();
     await expect(page).toHaveURL(/\/admin\/subscribers$/);
   });
 
@@ -327,7 +338,7 @@ test.describe('Subscribers: filters & pagination', () => {
     await page.goto(`${SUBSCRIBERS}?status=blocklisted`);
     await expect(subRow(page)).toHaveCount(1);
     await expect(subRow(page, 'john@example.com')).toBeVisible();
-    await expect(page.locator('.page-heading')).toContainText('Blocklisted');
+    await expect(page.getByRole('combobox', { name: 'Status' })).toContainText('Blocklisted');
   });
 
   test('filters a list by subscription status', async ({ page }) => {
@@ -340,9 +351,9 @@ test.describe('Subscribers: filters & pagination', () => {
 
     // The confirmed filter shows only anon, with a labeled status icon.
     await page.goto(`${SUBSCRIBERS}/lists/${LIST_OPTIN}?subscription_status=confirmed`);
-    await expect(page.locator('.page-heading')).toContainText('Confirmed');
+    await expect(page.getByTestId('filter-sub-status')).toContainText('Confirmed');
     await expect(subRow(page)).toHaveCount(1);
-    await expect(subRow(page, 'anon@example.com').getByRole('link', { name: 'View Opt-in list: Confirmed', exact: true })).toBeVisible();
+    await expect(subRow(page, 'anon@example.com').getByTitle('Opt-in list: Confirmed')).toBeVisible();
   });
 });
 
@@ -360,6 +371,7 @@ test.describe('Subscribers: bulk actions', () => {
 
   test('adds a list to the selected (visible) page', async ({ page }) => {
     await page.goto(SUBSCRIBERS);
+    await expect(subRow(page).first()).toBeVisible();
     const count = await subRow(page).count();
 
     await bulkManageLists(page, { action: 'add', lists: ['Default list'] });
@@ -398,11 +410,12 @@ test.describe('Subscribers: bulk actions', () => {
 
     // The Opt-in list has no members left.
     await page.goto(`${SUBSCRIBERS}/lists/${LIST_OPTIN}`);
-    await expect(page.locator('.empty-state')).toBeVisible();
+    await expect(page.getByText('Nothing here')).toBeVisible();
   });
 
   test('blocklists the selected (visible) page', async ({ page }) => {
     await page.goto(SUBSCRIBERS);
+    await expect(subRow(page).first()).toBeVisible();
     const count = await subRow(page).count();
 
     await bulkConfirm(page, {
@@ -444,6 +457,7 @@ test.describe('Subscribers: bulk actions', () => {
   test('deletes the selected (visible) page', async ({ page }) => {
     await page.goto(SUBSCRIBERS);
     const before = await readTotal(page);
+    await expect(subRow(page).first()).toBeVisible();
     const count = await subRow(page).count();
 
     await bulkConfirm(page, {
@@ -463,7 +477,7 @@ test.describe('Subscribers: bulk actions', () => {
       match: (r) => /\/api\/subscribers\/query\/delete$/.test(r.url()) && r.request().method() === 'POST',
     });
 
-    await expect(page.locator('.empty-state')).toBeVisible();
+    await expect(page.getByText('Nothing here')).toBeVisible();
     expect(await readTotal(page)).toBe(0);
   });
 });
@@ -515,7 +529,7 @@ test.describe('Subscribers: filtered bulk actions', () => {
             match: (r) => r.url().endsWith(`/api/subscribers/query/${action}`)
               && r.request().method() === (action === 'delete' ? 'POST' : 'PUT'),
           });
-          if (action === 'delete' || scope === 'status') await expect(page.locator('.empty-state')).toBeVisible();
+          if (action === 'delete' || scope === 'status') await expect(page.getByText('Nothing here')).toBeVisible();
         } else if (action === 'export') {
           await openBulkMenu(page, { selectAll: true });
           const [download] = await Promise.all([
@@ -556,15 +570,15 @@ test.describe('Subscribers: filtered bulk actions', () => {
 });
 
 test.describe('Subscriber detail: lists & subscriptions', () => {
-  const listRow = (page, name) => page.locator('.subscriptions tbody tr').filter({ hasText: name });
+  const listRow = (page, name) => page.getByTestId('sub-list-row').filter({ hasText: name });
 
-  // Per-subscription actions confirm, then reload the page on success.
+  // Per-subscription actions confirm, then the table refreshes.
   async function rowAction(page, name, testid) {
     const row = listRow(page, name);
     await openMenu(row);
     await Promise.all([
-      page.waitForEvent('load'),
-      (async () => { await row.getByTestId(testid).click(); await confirm(page); })(),
+      page.waitForResponse((r) => /\/api\/subscribers\/lists/.test(r.url()) && r.request().method() === 'PUT'),
+      (async () => { await page.getByTestId(testid).click(); await confirm(page); })(),
     ]);
   }
 
@@ -576,16 +590,16 @@ test.describe('Subscriber detail: lists & subscriptions', () => {
     await page.goto(`${SUBSCRIBERS}/1/lists`);
     await page.getByTestId('btn-manage').click();
 
-    const dialog = page.locator('dialog[open]');
+    const dialog = page.getByRole('dialog');
     await dialog.getByTestId('check-list-add').check();
-    await selectList(dialog, 'Opt-in list');
+    await pickList(page, 'Opt-in list');
     await Promise.all([
-      page.waitForEvent('load'),
-      dialog.locator('button[type=submit]').click(),
+      page.waitForResponse((r) => /\/api\/subscribers\/lists/.test(r.url()) && r.request().method() === 'PUT'),
+      dialog.getByTestId('btn-manage-save').click(),
     ]);
 
     await expect(listRow(page, 'Opt-in list')).toBeVisible();
-    await expect(listRow(page, 'Opt-in list').locator('.status-unconfirmed')).toBeVisible();
+    await expect(listRow(page, 'Opt-in list').getByText('Unconfirmed')).toBeVisible();
   });
 
   test('sends an opt-in confirmation email', async ({ page }) => {
@@ -607,17 +621,17 @@ test.describe('Subscriber detail: lists & subscriptions', () => {
   test('confirms a double opt-in subscription', async ({ page }) => {
     await page.goto(`${SUBSCRIBERS}/1/lists`);
     await rowAction(page, 'Opt-in list', 'btn-confirm-sub');
-    await expect(listRow(page, 'Opt-in list').locator('.status-confirmed')).toBeVisible();
+    await expect(listRow(page, 'Opt-in list').getByText('Confirmed', { exact: true })).toBeVisible();
   });
 
   test('unsubscribes and re-subscribes a subscription', async ({ page }) => {
     await page.goto(`${SUBSCRIBERS}/1/lists`);
     await rowAction(page, 'Opt-in list', 'btn-unsubscribe');
-    await expect(listRow(page, 'Opt-in list').locator('.status-unsubscribed')).toBeVisible();
+    await expect(listRow(page, 'Opt-in list').getByText('Unsubscribed')).toBeVisible();
 
     await page.goto(`${SUBSCRIBERS}/1/lists`);
     await rowAction(page, 'Opt-in list', 'btn-resubscribe');
-    await expect(listRow(page, 'Opt-in list').locator('.status-unconfirmed')).toBeVisible();
+    await expect(listRow(page, 'Opt-in list').getByText('Unconfirmed')).toBeVisible();
   });
 
   test('deletes a subscription', async ({ page }) => {
@@ -635,15 +649,15 @@ test.describe('Subscriber detail: activity tab', () => {
   test('shows the overview and weekly charts by default', async ({ page }) => {
     await page.goto(`${SUBSCRIBERS}/1`);
     await expect(page.getByRole('tab').first()).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#chart-subscriber-views')).toBeVisible();
-    await expect(page.locator('#chart-subscriber-clicks')).toBeVisible();
-    const charts = await page.evaluate(() => window._subscriberCharts);
+    await expect(page.getByTestId('chart-subscriber-views')).toBeVisible();
+    await expect(page.getByTestId('chart-subscriber-clicks')).toBeVisible();
+    const charts = (await (await page.request.get('/api/subscribers/1/charts')).json()).data;
     for (const rows of [charts.campaign_views, charts.link_clicks]) {
       expect(rows.length).toBeGreaterThanOrEqual(52);
       expect(rows.every((row) => row.count === 0)).toBeTruthy();
       expect(rows.map((row) => row.date)).toEqual(rows.map((row) => row.date).sort());
     }
-    const stats = page.locator('.activity .stat-value');
+    const stats = page.getByTestId('stat-value');
     await expect(stats).toHaveCount(3);
     // No campaigns yet: campaigns, views and clicks are all zero.
     for (let i = 0; i < 3; i += 1) {
@@ -653,13 +667,13 @@ test.describe('Subscriber detail: activity tab', () => {
 
   test('subscriber overview links to edit and back to the overview', async ({ page }) => {
     await page.goto(`${SUBSCRIBERS}/1`);
-    await expect(page.locator('#chart-subscriber-views')).toBeVisible();
+    await expect(page.getByTestId('chart-subscriber-views')).toBeVisible();
     await page.getByRole('tab', { name: 'Edit', exact: true }).click();
     await expect(page).toHaveURL(/\/subscribers\/1\/edit$/);
     await expect(page.locator('input[name=email]')).toBeVisible();
     await page.getByRole('tab', { name: 'View', exact: true }).click();
     await expect(page).toHaveURL(/\/subscribers\/1$/);
-    await expect(page.locator('#chart-subscriber-clicks')).toBeVisible();
+    await expect(page.getByTestId('chart-subscriber-clicks')).toBeVisible();
   });
 });
 
