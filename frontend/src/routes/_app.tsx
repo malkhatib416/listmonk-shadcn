@@ -4,6 +4,7 @@ import { AppProvider } from '@/components/app-context';
 import { AppSidebar } from '@/components/app-sidebar';
 import { BootstrapError } from '@/components/bootstrap-error';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { ConfirmProvider } from '@/components/confirm-dialog';
 import { GlobalNotices } from '@/components/global-notices';
 import { Toaster } from '@/components/ui/sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -27,19 +28,21 @@ function AppLayout() {
   useErrorEvents(can(data.user, 'settings:get'));
   return (
     <AppProvider value={data}>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-14 items-center gap-3 px-6">
-            <SidebarTrigger className="-ml-2" />
-            <Breadcrumbs />
-          </header>
-          <div className="animate-in fade-in slide-in-from-bottom-1 mx-auto w-full max-w-6xl flex-1 px-6 pb-10 duration-300 motion-reduce:animate-none">
-            <GlobalNotices />
-            <Outlet />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <ConfirmProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <header className="flex h-14 items-center gap-3 px-6">
+              <SidebarTrigger className="-ml-2" />
+              <Breadcrumbs />
+            </header>
+            <div className="animate-in fade-in slide-in-from-bottom-1 mx-auto w-full max-w-6xl flex-1 px-6 pb-10 duration-300 motion-reduce:animate-none">
+              <GlobalNotices />
+              <Outlet />
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </ConfirmProvider>
       <Toaster />
     </AppProvider>
   );
