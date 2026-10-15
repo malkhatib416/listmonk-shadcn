@@ -26,8 +26,10 @@ export interface Column<T> {
   id: string;
   header: ReactNode;
   cell: (row: T) => ReactNode;
-  // Present = the header is clickable and sorts rows with this comparator.
+  // Client-side sorting: the header is clickable and sorts rows with this comparator.
   compare?: (a: T, b: T) => number;
+  // Server-side sorting (see `serverSort`): the value sent as order_by.
+  sortKey?: string;
   className?: string;
 }
 
@@ -37,6 +39,8 @@ interface Props<T> {
   getRowId: (row: T) => RowId;
   selection?: { selected: Set<RowId>; onChange: (next: Set<RowId>) => void };
   defaultSort?: SortState;
+  // Rows arrive already sorted by the server: headers with a `sortKey` report clicks here.
+  serverSort?: { state: SortState | null; onChange: (next: SortState | null) => void };
   loading?: boolean;
   empty?: ReactNode;
   rowTestId?: string;
@@ -51,18 +55,21 @@ export function DataTable<T>({
   getRowId,
   selection,
   defaultSort,
+  serverSort,
   loading,
   empty,
   rowTestId,
   selectAllLabel = 'Select all',
   selectRowLabel,
 }: Props<T>) {
-  const [sort, setSort] = useState<SortState | null>(defaultSort ?? null);
+  const [localSort, setLocalSort] = useState<SortState | null>(defaultSort ?? null);
+  const sort = serverSort ? serverSort.state : localSort;
 
   const sorted = useMemo(() => {
+    if (serverSort) return rows;
     const col = sort ? columns.find((c) => c.id === sort.id) : undefined;
     return sortRows(rows, col?.compare, sort?.dir ?? 'asc');
-  }, [rows, columns, sort]);
+  }, [rows, columns, sort, serverSort]);
 
   const ids = useMemo(() => sorted.map(getRowId), [sorted, getRowId]);
   const state = selection ? selectionState(selection.selected, ids) : 'none';
@@ -83,7 +90,8 @@ export function DataTable<T>({
               </TableHead>
             ) : null}
             {columns.map((c) => {
-              const active = sort?.id === c.id ? sort : null;
+              const sortId = serverSort ? c.sortKey : c.compare ? c.id : undefined;
+              const active = sortId && sort?.id === sortId ? sort : null;
               return (
                 <TableHead
                   key={c.id}
@@ -92,10 +100,14 @@ export function DataTable<T>({
                     active ? (active.dir === 'asc' ? 'ascending' : 'descending') : undefined
                   }
                 >
-                  {c.compare ? (
+                  {sortId ? (
                     <button
                       type="button"
-                      onClick={() => setSort(cycleSort(sort, c.id))}
+                      onClick={() => {
+                        const next = cycleSort(sort, sortId);
+                        if (serverSort) serverSort.onChange(next);
+                        else setLocalSort(next);
+                      }}
                       className="hover:text-foreground -ml-1 inline-flex items-center gap-1 rounded px-1 py-0.5"
                     >
                       {c.header}

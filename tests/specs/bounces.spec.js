@@ -54,6 +54,7 @@ test.describe('Bounces', () => {
 
   test('lists the recorded bounces', async ({ page }) => {
     await page.goto(BOUNCES);
+    await expect(bounceRow(page).first()).toBeVisible();
 
     // The complaint subscriber (and its bounce) were deleted. The blocklisted
     // subscriber kept its bounces up to the point it was blocklisted.
@@ -65,16 +66,17 @@ test.describe('Bounces', () => {
 
   test('views a bounce record and deletes it', async ({ page }) => {
     await page.goto(BOUNCES);
+    await expect(bounceRow(page).first()).toBeVisible();
     const before = await bounceRow(page).count();
 
     const row = bounceRow(page).first();
     await openMenu(row);
-    await row.getByTestId('btn-meta').click();
-    await expect(page.locator('dialog[open] pre')).toBeVisible();
-    await page.locator('dialog[open] button').click();
+    await page.getByTestId('btn-meta').click();
+    await expect(page.getByTestId('bounce-meta')).toBeVisible();
+    await page.keyboard.press('Escape');
 
     await openMenu(row);
-    await row.getByTestId('btn-delete').click();
+    await page.getByTestId('btn-delete').click();
     await confirm(page);
     await expect(bounceRow(page)).toHaveCount(before - 1);
   });
@@ -164,17 +166,21 @@ test.describe('Bounces: bulk actions', () => {
           'selected IDs': '', 'deselected row': '',
         }[filter];
         await page.goto(`${BOUNCES}?${query}`);
-        await page.locator('thead input[type=checkbox]').check();
-        await page.getByTestId('btn-bulk-actions').click();
-        if (filter !== 'selected IDs') await page.getByTestId('select-all-bounces').click();
+        await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
+        if (filter !== 'selected IDs') await page.getByTestId('select-all-matching').click();
         if (filter === 'deselected row') {
-          await page.getByTestId('btn-bulk-actions').click();
-          await bounceRow(page).first().locator('input[name=id]').uncheck();
-          await page.getByTestId('btn-bulk-actions').click();
+          // Unchecking a row after "select all" falls back to the explicit rows on the page.
+          await bounceRow(page).first().getByRole('checkbox').click();
         }
-        const selected = filter.includes('selected')
-          ? await page.locator('input[name=id]:checked').evaluateAll((els) => els.map((el) => Number(el.dataset.subscriberId)))
-          : targets;
+        let selected = targets;
+        if (filter.includes('selected')) {
+          const all = (await data(await page.request.get('/api/subscribers?per_page=100'))).results;
+          const byEmail = Object.fromEntries(all.map((s) => [s.email, s.id]));
+          const emails = await page.locator('[data-testid=bounce-row][data-state=selected]').evaluateAll(
+            (els) => els.map((el) => el.querySelector('a[href*="/admin/subscribers/"]').textContent.trim()),
+          );
+          selected = emails.map((e) => byEmail[e]);
+        }
         await page.getByTestId(action === 'delete' ? 'btn-delete-bounces' : 'btn-manage-blocklist').click();
         const [res] = await Promise.all([
           page.waitForResponse((r) => r.request().method() === (action === 'delete' ? 'DELETE' : 'PUT')),
