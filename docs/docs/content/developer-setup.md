@@ -59,6 +59,17 @@ The app bootstraps from `GET /api/config`, `/api/profile` and `/api/lang/:lang`,
 
 When adding shadcn components with `bunx shadcn@latest add`, the generated files import `cn` from the `cn` npm package and the sonner component imports `next-themes`. Point them at `@/lib/utils` and `@/components/theme-provider`, and remove both packages.
 
+### Fake data
+
+`dev/seed/` fills a freshly installed dev instance with fake lists, subscribers, templates, campaigns (with views, clicks and bounces), users and roles, using [faker](https://fakerjs.dev):
+
+```sh
+cd dev/seed && bun install
+LISTMONK_URL=http://localhost:9000 bun seed.ts   # SEED=7 for reproducible data, SUBSCRIBERS=1000 for more
+```
+
+Stats and bounces are inserted with SQL through `docker exec dev-db-1 psql`; set `SEED_PSQL` to a different command if your database container has another name.
+
 ### Frontend tests
 
 listmonk maintains a Playwright suite in `tests/` for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bug etc.).
