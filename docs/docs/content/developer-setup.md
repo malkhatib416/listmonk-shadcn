@@ -27,6 +27,25 @@ The app is a Go backend that server-renders the admin UI (HTML templates with JS
 
 Run `make stop-dev-docker` to stop the container and `make rm-dev-docker` to completely remove it.
 
+### New admin frontend (`frontend/`)
+
+A TanStack Start SPA with shadcn and Tailwind v4, being ported page by page. Ported pages are served by Go from `frontend/dist/client`; the rest of `/admin` is still the Go-template admin.
+
+Inside the dev container, in `frontend/`:
+
+```sh
+bun install
+bun run dev          # Vite dev server on http://localhost:5173/admin/next (proxies /api etc. to :9000)
+bun run lint         # oxlint
+bun run fmt          # oxfmt (fmt:check in CI)
+bun run typecheck
+bun test
+```
+
+`make build-frontend-app` produces the production build, which `make dist` embeds into the binary.
+
+Log in at http://localhost:9000/admin first. The session cookie is shared with the Vite dev server on `localhost`.
+
 ### Frontend tests
 
 listmonk maintains a Playwright suite in `tests/` for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bug etc.).

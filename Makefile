@@ -27,6 +27,17 @@ FRONTEND_DEPS = \
 	$(FRONTEND)/build.mjs \
 	$(shell find $(FRONTEND)/assets -type f)
 
+# TanStack Start admin frontend (built from frontend/ -> frontend/dist/client).
+FRONTEND_APP = frontend
+FRONTEND_APP_DIST = $(FRONTEND_APP)/dist/client
+FRONTEND_APP_DEPS_STAMP = $(FRONTEND_APP)/node_modules/.installed
+FRONTEND_APP_DEPS = \
+	$(FRONTEND_APP_DEPS_STAMP) \
+	$(FRONTEND_APP)/package.json \
+	$(FRONTEND_APP)/bun.lock \
+	$(FRONTEND_APP)/vite.config.ts \
+	$(shell find $(FRONTEND_APP)/src -type f)
+
 BIN := listmonk
 STATIC := config.toml.sample \
 	schema.sql queries:/queries permissions.json \
@@ -34,6 +45,7 @@ STATIC := config.toml.sample \
 	static/admin/views:/admin/views \
 	static/admin/partials:/admin/partials \
 	static/admin/dist:/admin/static \
+	frontend/dist/client:/admin/app \
 	static/admin/i18n.txt:/admin/i18n.txt \
 	static/email-templates \
 	i18n:/i18n
@@ -60,7 +72,7 @@ $(BIN): FORCE $(SRC) go.mod go.sum schema.sql $(SQL) permissions.json
 GO_RUN = CGO_ENABLED=0 go run -ldflags="-s -w -X 'main.buildString=${BUILDSTR}' -X 'main.versionString=${VERSION}'" ./cmd
 
 .PHONY: run
-run: $(FRONTEND_DIST)
+run: $(FRONTEND_DIST) $(FRONTEND_APP_DIST)
 ifneq ($(DEV_CONFIG),)
 	$(GO_RUN) --config="$(DEV_CONFIG)" --install --idempotent --yes
 endif
@@ -86,6 +98,19 @@ $(FRONTEND_DIST): $(FRONTEND_ICONS) $(FRONTEND_DEPS)
 .PHONY: build-frontend
 build-frontend: $(FRONTEND_DIST)
 
+# Install new admin frontend deps.
+$(FRONTEND_APP_DEPS_STAMP): $(FRONTEND_APP)/package.json $(FRONTEND_APP)/bun.lock
+	cd $(FRONTEND_APP) && bun install --frozen-lockfile
+	touch $@
+
+# Build the new admin frontend (TanStack Start SPA) into frontend/dist/client.
+$(FRONTEND_APP_DIST): $(FRONTEND_APP_DEPS)
+	cd $(FRONTEND_APP) && bun run build
+	touch -c $(FRONTEND_APP_DIST)
+
+.PHONY: build-frontend-app
+build-frontend-app: $(FRONTEND_APP_DIST)
+
 # Run Go tests.
 .PHONY: test
 test:
@@ -94,12 +119,12 @@ test:
 # Bundle all static assets including the SSR admin frontend into the ./listmonk binary
 # using stuffbin.
 .PHONY: dist
-dist: $(STUFFBIN) build build-frontend pack-bin
+dist: $(STUFFBIN) build build-frontend build-frontend-app pack-bin
 
 # pack-bin runs stuffbin packing on the given binary. This is used
 # in the .goreleaser post-build hook.
 .PHONY: pack-bin
-pack-bin: build-frontend $(BIN) $(STUFFBIN)
+pack-bin: build-frontend build-frontend-app $(BIN) $(STUFFBIN)
 	$(STUFFBIN) -a stuff -in ${BIN} -out ${BIN} ${STATIC}
 
 # Use goreleaser to do a dry run producing local builds.
