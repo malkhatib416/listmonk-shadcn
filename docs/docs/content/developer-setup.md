@@ -82,6 +82,7 @@ Inside the dev container shell at `/app`:
 
 ```sh
 make dist
+mkdir -p uploads   # media uploads (and the attachment specs) need this directory
 
 cd tests
 bun install

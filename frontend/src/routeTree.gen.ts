@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
 import { Route as AppSubscribersBouncesRouteImport } from './routes/_app/subscribers/bounces'
@@ -35,6 +36,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
+  id: '/campaigns/media',
+  path: '/campaigns/media',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
@@ -120,6 +126,7 @@ const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/campaigns/media': typeof AppCampaignsMediaRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/campaigns/media': typeof AppCampaignsMediaRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/': typeof AppIndexRoute
+  '/_app/campaigns/media': typeof AppCampaignsMediaRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/_app/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/campaigns/media'
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/campaigns/media'
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/'
+    | '/_app/campaigns/media'
     | '/_app/settings/logs'
     | '/_app/settings/maintenance'
     | '/_app/subscribers/bounces'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/media': {
+      id: '/_app/campaigns/media'
+      path: '/campaigns/media'
+      fullPath: '/campaigns/media'
+      preLoaderRoute: typeof AppCampaignsMediaRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings/logs': {
@@ -375,6 +394,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
   AppSubscribersBouncesRoute: typeof AppSubscribersBouncesRoute
@@ -395,6 +415,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppCampaignsMediaRoute: AppCampaignsMediaRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
   AppSubscribersBouncesRoute: AppSubscribersBouncesRoute,

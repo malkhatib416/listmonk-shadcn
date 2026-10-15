@@ -32,23 +32,6 @@ type mediaView struct {
 	Page     models.PageProps
 }
 
-// ViewMedia renders the HTML gallery view for uploaded media.
-func (a *App) ViewMedia(c echo.Context) error {
-	res, props, err := a.getMedia(c)
-	if err != nil {
-		return err
-	}
-
-	data := mediaView{
-		adminView: newAdminView(c, a.i18n.T("media.title"), "", "campaigns.media"),
-		Media:     res,
-		Provider:  a.cfg.MediaUpload.Provider,
-		Page:      props,
-	}
-
-	return c.Render(http.StatusOK, "admin-media", data)
-}
-
 // ViewMediaFragment renders the header/footer-less media gallery for in iframes (popup dialogs).
 func (a *App) ViewMediaFragment(c echo.Context) error {
 	res, props, err := a.getMedia(c)
