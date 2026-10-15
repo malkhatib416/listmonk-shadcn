@@ -23,32 +23,6 @@ var (
 	imageExts  = []string{"gif", "png", "jpg", "jpeg"}
 )
 
-// mediaView is the admin view for the media gallery page.
-type mediaView struct {
-	adminView
-
-	Media    []media.Media
-	Provider string
-	Page     models.PageProps
-}
-
-// ViewMediaFragment renders the header/footer-less media gallery for in iframes (popup dialogs).
-func (a *App) ViewMediaFragment(c echo.Context) error {
-	res, props, err := a.getMedia(c)
-	if err != nil {
-		return err
-	}
-
-	data := mediaView{
-		adminView: newAdminView(c, a.i18n.T("media.title"), "", "campaigns.media"),
-		Media:     res,
-		Provider:  a.cfg.MediaUpload.Provider,
-		Page:      props,
-	}
-
-	return c.Render(http.StatusOK, "admin-media-fragment", data)
-}
-
 // mediaQueryDefaults is the allow list of filter query params.
 var mediaQueryDefaults = map[string]string{
 	"page":     "",

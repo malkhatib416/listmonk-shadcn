@@ -75,10 +75,13 @@ export const NAV: NavGroup[] = [
     label: 'globals.terms.campaigns',
     icon: 'send',
     items: [
-      item('campaigns.all', 'menu.allCampaigns', '/admin/campaigns', [
-        'campaigns:get',
-        'campaigns:get_all',
-      ]),
+      item(
+        'campaigns.all',
+        'menu.allCampaigns',
+        '/admin/campaigns',
+        ['campaigns:get', 'campaigns:get_all'],
+        true,
+      ),
       item('campaigns.new', 'menu.newCampaign', '/admin/campaigns/new', [
         'campaigns:manage',
         'campaigns:manage_all',

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useT } from '@/components/app-context';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,16 +30,15 @@ export function PreviewDialog({
 }) {
   const t = useT();
   const frame = useId();
-  const form = useRef<HTMLFormElement>(null);
   // The source whose frame has finished loading; anything else is still loading.
   const [loadedFor, setLoadedFor] = useState<PreviewSource | null>(null);
   const loading = loadedFor !== source;
   const url = source ? apiUrl(window._LM_ROOT, source.path) : '';
 
-  useEffect(() => {
-    // A POST preview is a form submitted into the iframe.
-    if (source?.method === 'POST') form.current?.submit();
-  }, [source]);
+  // A POST preview is a form submitted into the iframe. The dialog content mounts after the
+  // first render (portal), so submit when the form node appears, once per source.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const submit = useCallback((el: HTMLFormElement | null) => el?.submit(), [source]);
 
   return (
     <Dialog open={source !== null} onOpenChange={(open) => !open && onClose()}>
@@ -50,7 +49,7 @@ export function PreviewDialog({
         <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg border bg-white">
           {loading ? <Skeleton className="absolute inset-0" /> : null}
           {source?.method === 'POST' ? (
-            <form ref={form} method="post" action={url} target={frame} hidden>
+            <form ref={submit} method="post" action={url} target={frame} hidden>
               {Object.entries(source.fields ?? {}).map(([k, v]) => (
                 <input key={k} type="hidden" name={k} value={v} />
               ))}

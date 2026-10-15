@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCampaignsIndexRouteImport } from './routes/_app/campaigns/index'
 import { Route as AppCampaignsAnalyticsRouteImport } from './routes/_app/campaigns/analytics'
 import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
+import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
 import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
 import { Route as AppListsAnalyticsRouteImport } from './routes/_app/lists/analytics'
 import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
@@ -30,6 +32,8 @@ import { Route as AppUserProfileRouteImport } from './routes/_app/user/profile'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
 import { Route as AppUsersNewRouteImport } from './routes/_app/users/new'
+import { Route as AppCampaignsIdIndexRouteImport } from './routes/_app/campaigns/$id/index'
+import { Route as AppCampaignsIdTabRouteImport } from './routes/_app/campaigns/$id/$tab'
 import { Route as AppListsIdIndexRouteImport } from './routes/_app/lists/$id/index'
 import { Route as AppListsIdEditRouteImport } from './routes/_app/lists/$id/edit'
 import { Route as AppSubscribersIdIndexRouteImport } from './routes/_app/subscribers/$id/index'
@@ -53,6 +57,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCampaignsIndexRoute = AppCampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCampaignsAnalyticsRoute = AppCampaignsAnalyticsRouteImport.update({
   id: '/campaigns/analytics',
   path: '/campaigns/analytics',
@@ -61,6 +70,11 @@ const AppCampaignsAnalyticsRoute = AppCampaignsAnalyticsRouteImport.update({
 const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
   id: '/campaigns/media',
   path: '/campaigns/media',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
+  id: '/campaigns/new',
+  path: '/campaigns/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppListsIndexRoute = AppListsIndexRouteImport.update({
@@ -148,6 +162,16 @@ const AppUsersNewRoute = AppUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCampaignsIdIndexRoute = AppCampaignsIdIndexRouteImport.update({
+  id: '/campaigns/$id/',
+  path: '/campaigns/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsIdTabRoute = AppCampaignsIdTabRouteImport.update({
+  id: '/campaigns/$id/$tab',
+  path: '/campaigns/$id/$tab',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppListsIdIndexRoute = AppListsIdIndexRouteImport.update({
   id: '/lists/$id/',
   path: '/lists/$id/',
@@ -218,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/analytics': typeof AppListsAnalyticsRoute
   '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
@@ -231,10 +256,12 @@ export interface FileRoutesByFullPath {
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/campaigns/': typeof AppCampaignsIndexRoute
   '/lists/': typeof AppListsIndexRoute
   '/subscribers/': typeof AppSubscribersIndexRoute
   '/templates/': typeof AppTemplatesIndexRoute
   '/users/': typeof AppUsersIndexRoute
+  '/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
   '/lists/$id/edit': typeof AppListsIdEditRoute
   '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
   '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
@@ -242,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/campaigns/$id/': typeof AppCampaignsIdIndexRoute
   '/lists/$id/': typeof AppListsIdIndexRoute
   '/subscribers/$id/': typeof AppSubscribersIdIndexRoute
   '/users/roles/': typeof AppUsersRolesIndexRoute
@@ -253,6 +281,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
   '/lists/analytics': typeof AppListsAnalyticsRoute
   '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
@@ -266,10 +295,12 @@ export interface FileRoutesByTo {
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/campaigns': typeof AppCampaignsIndexRoute
   '/lists': typeof AppListsIndexRoute
   '/subscribers': typeof AppSubscribersIndexRoute
   '/templates': typeof AppTemplatesIndexRoute
   '/users': typeof AppUsersIndexRoute
+  '/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
   '/lists/$id/edit': typeof AppListsIdEditRoute
   '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
   '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
@@ -277,6 +308,7 @@ export interface FileRoutesByTo {
   '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/campaigns/$id': typeof AppCampaignsIdIndexRoute
   '/lists/$id': typeof AppListsIdIndexRoute
   '/subscribers/$id': typeof AppSubscribersIdIndexRoute
   '/users/roles': typeof AppUsersRolesIndexRoute
@@ -290,6 +322,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/_app/campaigns/media': typeof AppCampaignsMediaRoute
+  '/_app/campaigns/new': typeof AppCampaignsNewRoute
   '/_app/lists/analytics': typeof AppListsAnalyticsRoute
   '/_app/lists/forms': typeof AppListsFormsRoute
   '/_app/lists/new': typeof AppListsNewRoute
@@ -303,10 +336,12 @@ export interface FileRoutesById {
   '/_app/user/profile': typeof AppUserProfileRoute
   '/_app/users/$id': typeof AppUsersIdRoute
   '/_app/users/new': typeof AppUsersNewRoute
+  '/_app/campaigns/': typeof AppCampaignsIndexRoute
   '/_app/lists/': typeof AppListsIndexRoute
   '/_app/subscribers/': typeof AppSubscribersIndexRoute
   '/_app/templates/': typeof AppTemplatesIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
   '/_app/lists/$id/edit': typeof AppListsIdEditRoute
   '/_app/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
   '/_app/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
@@ -314,6 +349,7 @@ export interface FileRoutesById {
   '/_app/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
   '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
   '/_app/users/roles/new': typeof AppUsersRolesNewRoute
+  '/_app/campaigns/$id/': typeof AppCampaignsIdIndexRoute
   '/_app/lists/$id/': typeof AppListsIdIndexRoute
   '/_app/subscribers/$id/': typeof AppSubscribersIdIndexRoute
   '/_app/users/roles/': typeof AppUsersRolesIndexRoute
@@ -327,6 +363,7 @@ export interface FileRouteTypes {
     | '/'
     | '/campaigns/analytics'
     | '/campaigns/media'
+    | '/campaigns/new'
     | '/lists/analytics'
     | '/lists/forms'
     | '/lists/new'
@@ -340,10 +377,12 @@ export interface FileRouteTypes {
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/campaigns/'
     | '/lists/'
     | '/subscribers/'
     | '/templates/'
     | '/users/'
+    | '/campaigns/$id/$tab'
     | '/lists/$id/edit'
     | '/subscribers/$id/bounces'
     | '/subscribers/$id/edit'
@@ -351,6 +390,7 @@ export interface FileRouteTypes {
     | '/subscribers/lists/$id'
     | '/users/roles/$id'
     | '/users/roles/new'
+    | '/campaigns/$id/'
     | '/lists/$id/'
     | '/subscribers/$id/'
     | '/users/roles/'
@@ -362,6 +402,7 @@ export interface FileRouteTypes {
     | '/'
     | '/campaigns/analytics'
     | '/campaigns/media'
+    | '/campaigns/new'
     | '/lists/analytics'
     | '/lists/forms'
     | '/lists/new'
@@ -375,10 +416,12 @@ export interface FileRouteTypes {
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/campaigns'
     | '/lists'
     | '/subscribers'
     | '/templates'
     | '/users'
+    | '/campaigns/$id/$tab'
     | '/lists/$id/edit'
     | '/subscribers/$id/bounces'
     | '/subscribers/$id/edit'
@@ -386,6 +429,7 @@ export interface FileRouteTypes {
     | '/subscribers/lists/$id'
     | '/users/roles/$id'
     | '/users/roles/new'
+    | '/campaigns/$id'
     | '/lists/$id'
     | '/subscribers/$id'
     | '/users/roles'
@@ -398,6 +442,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/campaigns/analytics'
     | '/_app/campaigns/media'
+    | '/_app/campaigns/new'
     | '/_app/lists/analytics'
     | '/_app/lists/forms'
     | '/_app/lists/new'
@@ -411,10 +456,12 @@ export interface FileRouteTypes {
     | '/_app/user/profile'
     | '/_app/users/$id'
     | '/_app/users/new'
+    | '/_app/campaigns/'
     | '/_app/lists/'
     | '/_app/subscribers/'
     | '/_app/templates/'
     | '/_app/users/'
+    | '/_app/campaigns/$id/$tab'
     | '/_app/lists/$id/edit'
     | '/_app/subscribers/$id/bounces'
     | '/_app/subscribers/$id/edit'
@@ -422,6 +469,7 @@ export interface FileRouteTypes {
     | '/_app/subscribers/lists/$id'
     | '/_app/users/roles/$id'
     | '/_app/users/roles/new'
+    | '/_app/campaigns/$id/'
     | '/_app/lists/$id/'
     | '/_app/subscribers/$id/'
     | '/_app/users/roles/'
@@ -450,6 +498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/campaigns/': {
+      id: '/_app/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof AppCampaignsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/campaigns/analytics': {
       id: '/_app/campaigns/analytics'
       path: '/campaigns/analytics'
@@ -462,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/campaigns/media'
       fullPath: '/campaigns/media'
       preLoaderRoute: typeof AppCampaignsMediaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/new': {
+      id: '/_app/campaigns/new'
+      path: '/campaigns/new'
+      fullPath: '/campaigns/new'
+      preLoaderRoute: typeof AppCampaignsNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lists/': {
@@ -583,6 +645,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/campaigns/$id/': {
+      id: '/_app/campaigns/$id/'
+      path: '/campaigns/$id'
+      fullPath: '/campaigns/$id/'
+      preLoaderRoute: typeof AppCampaignsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/$id/$tab': {
+      id: '/_app/campaigns/$id/$tab'
+      path: '/campaigns/$id/$tab'
+      fullPath: '/campaigns/$id/$tab'
+      preLoaderRoute: typeof AppCampaignsIdTabRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lists/$id/': {
       id: '/_app/lists/$id/'
       path: '/lists/$id'
@@ -681,6 +757,7 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppCampaignsAnalyticsRoute: typeof AppCampaignsAnalyticsRoute
   AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
+  AppCampaignsNewRoute: typeof AppCampaignsNewRoute
   AppListsAnalyticsRoute: typeof AppListsAnalyticsRoute
   AppListsFormsRoute: typeof AppListsFormsRoute
   AppListsNewRoute: typeof AppListsNewRoute
@@ -694,10 +771,12 @@ interface AppRouteChildren {
   AppUserProfileRoute: typeof AppUserProfileRoute
   AppUsersIdRoute: typeof AppUsersIdRoute
   AppUsersNewRoute: typeof AppUsersNewRoute
+  AppCampaignsIndexRoute: typeof AppCampaignsIndexRoute
   AppListsIndexRoute: typeof AppListsIndexRoute
   AppSubscribersIndexRoute: typeof AppSubscribersIndexRoute
   AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
+  AppCampaignsIdTabRoute: typeof AppCampaignsIdTabRoute
   AppListsIdEditRoute: typeof AppListsIdEditRoute
   AppSubscribersIdBouncesRoute: typeof AppSubscribersIdBouncesRoute
   AppSubscribersIdEditRoute: typeof AppSubscribersIdEditRoute
@@ -705,6 +784,7 @@ interface AppRouteChildren {
   AppSubscribersListsIdRoute: typeof AppSubscribersListsIdRoute
   AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
   AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
+  AppCampaignsIdIndexRoute: typeof AppCampaignsIdIndexRoute
   AppListsIdIndexRoute: typeof AppListsIdIndexRoute
   AppSubscribersIdIndexRoute: typeof AppSubscribersIdIndexRoute
   AppUsersRolesIndexRoute: typeof AppUsersRolesIndexRoute
@@ -717,6 +797,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppCampaignsAnalyticsRoute: AppCampaignsAnalyticsRoute,
   AppCampaignsMediaRoute: AppCampaignsMediaRoute,
+  AppCampaignsNewRoute: AppCampaignsNewRoute,
   AppListsAnalyticsRoute: AppListsAnalyticsRoute,
   AppListsFormsRoute: AppListsFormsRoute,
   AppListsNewRoute: AppListsNewRoute,
@@ -730,10 +811,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppUserProfileRoute: AppUserProfileRoute,
   AppUsersIdRoute: AppUsersIdRoute,
   AppUsersNewRoute: AppUsersNewRoute,
+  AppCampaignsIndexRoute: AppCampaignsIndexRoute,
   AppListsIndexRoute: AppListsIndexRoute,
   AppSubscribersIndexRoute: AppSubscribersIndexRoute,
   AppTemplatesIndexRoute: AppTemplatesIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
+  AppCampaignsIdTabRoute: AppCampaignsIdTabRoute,
   AppListsIdEditRoute: AppListsIdEditRoute,
   AppSubscribersIdBouncesRoute: AppSubscribersIdBouncesRoute,
   AppSubscribersIdEditRoute: AppSubscribersIdEditRoute,
@@ -741,6 +824,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSubscribersListsIdRoute: AppSubscribersListsIdRoute,
   AppUsersRolesIdRoute: AppUsersRolesIdRoute,
   AppUsersRolesNewRoute: AppUsersRolesNewRoute,
+  AppCampaignsIdIndexRoute: AppCampaignsIdIndexRoute,
   AppListsIdIndexRoute: AppListsIdIndexRoute,
   AppSubscribersIdIndexRoute: AppSubscribersIdIndexRoute,
   AppUsersRolesIndexRoute: AppUsersRolesIndexRoute,

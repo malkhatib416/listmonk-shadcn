@@ -165,7 +165,7 @@ function ListsPage() {
         }),
       }),
     onSuccess: (c) => {
-      window.location.assign(hardHref(window._LM_ROOT, `/admin/campaigns/${c.id}#tab=content`));
+      void navigate({ to: '/campaigns/$id', params: { id: String(c.id) }, hash: 'tab=content' });
     },
   });
 
@@ -354,9 +354,9 @@ function ListsPage() {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild data-testid="btn-campaign">
-                    <a href={hardHref(window._LM_ROOT, `/admin/campaigns/new?list_id=${l.id}`)}>
+                    <Link to="/campaigns/new" search={{ list_id: [l.id] }}>
                       <Send /> {t('campaigns.newCampaign')}
-                    </a>
+                    </Link>
                   </DropdownMenuItem>
                   {l.optin === 'double' ? (
                     <DropdownMenuItem

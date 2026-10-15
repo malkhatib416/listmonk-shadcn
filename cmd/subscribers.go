@@ -56,14 +56,6 @@ var (
 	}
 )
 
-// getViewableLists returns all active lists the user has access to.
-func (a *App) getViewableLists(c echo.Context) ([]models.List, error) {
-	user := auth.GetUser(c)
-
-	hasAllPerm, permittedIDs := user.GetPermittedLists(auth.PermTypeGet)
-	return a.core.GetLists("", models.ListStatusActive, hasAllPerm, permittedIDs)
-}
-
 // GetSubscriber handles the retrieval of a single subscriber by ID.
 func (a *App) GetSubscriber(c echo.Context) error {
 	user := auth.GetUser(c)

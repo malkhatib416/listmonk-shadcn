@@ -25,8 +25,6 @@ async function build() {
   // Verbatim static assets (icons, images) and stylesheets.
   await cp(path.join(root, 'assets/static'), dist, { recursive: true });
   await cp(path.join(root, 'assets/css/style.css'), path.join(dist, 'style.css'));
-  // Rich text editor styles, loaded only on pages that render the editor partial.
-  await cp(path.join(root, 'assets/css/richtext.css'), path.join(dist, 'richtext.css'));
 
   // Oat CSS is loaded in <head> as is.
   await cp(path.join(root, 'node_modules/@knadh/oat/oat.min.css'), path.join(dist, 'oat.min.css'));
@@ -40,9 +38,6 @@ async function build() {
   const result = await Bun.build({
     entrypoints: [
       path.join(srcJS, 'main.js'),
-      path.join(srcJS, 'code-editor.js'),
-      path.join(srcJS, 'richtext-editor.js'),
-      path.join(srcJS, 'visual-editor.js'),
       ...views,
     ],
     outdir: path.join(dist, 'js'),

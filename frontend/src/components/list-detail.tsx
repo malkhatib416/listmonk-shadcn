@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Copy, Eye, EyeOff, Pencil, UserCheck, UserX } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { useApp, useCan, useT } from '@/components/app-context';
+import { CampaignsTable } from '@/components/campaigns-table';
 import { ListForm } from '@/components/list-form';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -13,6 +15,7 @@ import { apiFetch } from '@/lib/api';
 import { hardHref } from '@/lib/basepath';
 import { formatDate } from '@/lib/format';
 import { listQuery, type List } from '@/lib/lists';
+import type { CampaignsSearch } from '@/lib/campaigns';
 import { canManageList } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
@@ -91,6 +94,7 @@ function Overview({ list }: { list: List }) {
   const canSubs = can('subscribers:get', 'subscribers:get_all');
   const showViews = can('campaigns:get', 'campaigns:get_all') && can('campaigns:get_analytics');
   const s = list.subscriber_statuses ?? {};
+  const [campaignsSearch, setCampaignsSearch] = useState<CampaignsSearch>({});
 
   const copy = (v: string) => {
     void navigator.clipboard?.writeText(v);
@@ -190,6 +194,24 @@ function Overview({ list }: { list: List }) {
           </section>
         ) : null}
       </div>
+
+      {can('campaigns:get', 'campaigns:get_all') ? (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold">{t('globals.terms.campaigns')}</h2>
+          <CampaignsTable
+            readonly
+            listId={list.id}
+            search={campaignsSearch}
+            onSearch={(patch, resetPage = true) =>
+              setCampaignsSearch((prev) => ({
+                ...prev,
+                ...(resetPage ? { page: undefined } : {}),
+                ...patch,
+              }))
+            }
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

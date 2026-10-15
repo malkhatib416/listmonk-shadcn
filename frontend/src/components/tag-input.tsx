@@ -12,6 +12,7 @@ export function TagInput({
   disabled,
   id,
   className,
+  type,
 }: {
   value: string[];
   onChange: (tags: string[]) => void;
@@ -19,6 +20,8 @@ export function TagInput({
   disabled?: boolean;
   id?: string;
   className?: string;
+  // The text field's input type, e.g. email.
+  type?: string;
 }) {
   const [text, setText] = useState('');
 
@@ -61,6 +64,7 @@ export function TagInput({
       ))}
       <input
         id={id}
+        type={type}
         value={text}
         disabled={disabled}
         maxLength={50}

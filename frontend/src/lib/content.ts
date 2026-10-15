@@ -1,7 +1,23 @@
-// Different content conversions for campaign bodies, eg: html -> plaintext
+/* oxlint-disable no-control-regex -- NUL marks stashed spans while Markdown is converted */
+// Content conversions for campaign bodies (HTML, Markdown, plain text, visual), all client side.
+// The Markdown/HTML converters are deliberately small and lossy: they cover what the campaign
+// editor needs when switching formats, not full CommonMark.
+
+interface Token {
+  type: 'text' | 'raw' | 'other' | 'tag';
+  raw: string;
+  name?: string;
+  closing?: boolean;
+  selfClose?: boolean;
+}
+
+export interface ConvertResult {
+  body: string;
+  bodySource: string | null;
+}
 
 // Trim multilines and optionally remove empty lines.
-function trimLines(str, removeEmptyLines) {
+function trimLines(str: string, removeEmptyLines?: boolean) {
   const out = str.split('\n');
   for (let i = 0; i < out.length; i += 1) {
     const line = out[i].trim();
@@ -19,22 +35,49 @@ function trimLines(str, removeEmptyLines) {
 // Pretty-print an HTML string with 4-space indentation.
 class HTMLBeautifier {
   // Tags whose content flows inline and so must not force line breaks.
-  static INLINE_TAGS = new Set(['a', 'span', 'b', 'strong', 'em', 'i', 'code',
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+  static INLINE_TAGS = new Set<string>([
+    'a',
+    'span',
+    'b',
+    'strong',
+    'em',
+    'i',
+    'code',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+  ]);
 
   // Void elements never have a closing tag / children.
-  static VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img',
-    'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+  static VOID_TAGS = new Set<string>([
+    'area',
+    'base',
+    'br',
+    'col',
+    'embed',
+    'hr',
+    'img',
+    'input',
+    'link',
+    'meta',
+    'param',
+    'source',
+    'track',
+    'wbr',
+  ]);
 
   // Raw-text elements whose contents must be preserved verbatim (they can hold
   // stray '<' that isn't markup).
-  static RAW_TAGS = new Set(['script', 'style', 'pre', 'textarea']);
+  static RAW_TAGS = new Set<string>(['script', 'style', 'pre', 'textarea']);
 
   static INDENT = '  ';
 
   // Pretty-print HTML.
-  beautify(html) {
-    const lines = [];
+  beautify(html: string): string {
+    const lines: string[] = [];
     let depth = 0;
     let buf = '';
 
@@ -57,7 +100,7 @@ class HTMLBeautifier {
       } else if (tk.type === 'other') {
         flush();
         lines.push(pad() + tk.raw.trim());
-      } else if (HTMLBeautifier.INLINE_TAGS.has(tk.name)) {
+      } else if (HTMLBeautifier.INLINE_TAGS.has(tk.name ?? '')) {
         buf += tk.raw;
       } else if (tk.closing) {
         flush();
@@ -74,18 +117,21 @@ class HTMLBeautifier {
     });
     flush();
 
-    return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    return lines
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   }
 
   // Find the index just past the '>' that closes a tag opened at `start`,
   // skipping any '>' inside quoted attribute values.
-  _findTagEnd(html, start) {
-    let quote = null;
+  _findTagEnd(html: string, start: number): number {
+    let quote: string | null = null;
     for (let j = start + 1; j < html.length; j += 1) {
       const ch = html[j];
       if (quote) {
         if (ch === quote) quote = null;
-      } else if (ch === '"' || ch === '\'') {
+      } else if (ch === '"' || ch === "'") {
         quote = ch;
       } else if (ch === '>') {
         return j + 1;
@@ -95,8 +141,8 @@ class HTMLBeautifier {
   }
 
   // Split HTML into a list of tokens. Won't error-out on malformed tags.
-  _tokenize(html) {
-    const tokens = [];
+  _tokenize(html: string): Token[] {
+    const tokens: Token[] = [];
     const n = html.length;
     let i = 0;
 
@@ -128,7 +174,11 @@ class HTMLBeautifier {
           const closing = m[1] === '/';
           const selfClose = /\/>\s*$/.test(raw) || HTMLBeautifier.VOID_TAGS.has(name);
           tokens.push({
-            type: 'tag', raw, name, closing, selfClose,
+            type: 'tag',
+            raw,
+            name,
+            closing,
+            selfClose,
           });
           i = stop;
 
@@ -151,11 +201,38 @@ class HTMLBeautifier {
 
 // Simple HTML to Markdown (lossy!) converter.
 class HTMLToMarkdown {
-  static BLOCK_TAGS = new Set(['div', 'section', 'article', 'main', 'header', 'footer',
-    'aside', 'figure', 'fieldset', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th',
-    'ul', 'ol', 'li', 'p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+  static BLOCK_TAGS = new Set<string>([
+    'div',
+    'section',
+    'article',
+    'main',
+    'header',
+    'footer',
+    'aside',
+    'figure',
+    'fieldset',
+    'table',
+    'thead',
+    'tbody',
+    'tfoot',
+    'tr',
+    'td',
+    'th',
+    'ul',
+    'ol',
+    'li',
+    'p',
+    'blockquote',
+    'pre',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+  ]);
 
-  convert(html) {
+  convert(html: string): string {
     const div = document.createElement('div');
     div.innerHTML = html || '';
 
@@ -167,17 +244,20 @@ class HTMLToMarkdown {
       .trim();
   }
 
-  _isBlock(n) {
-    return HTMLToMarkdown.BLOCK_TAGS.has(n.tagName.toLowerCase())
-      || [...n.children].some((c) => HTMLToMarkdown.BLOCK_TAGS.has(c.tagName.toLowerCase()));
+  _isBlock(n: Element): boolean {
+    return (
+      HTMLToMarkdown.BLOCK_TAGS.has(n.tagName.toLowerCase()) ||
+      [...n.children].some((c) => HTMLToMarkdown.BLOCK_TAGS.has(c.tagName.toLowerCase()))
+    );
   }
 
   // Render inline elements (bold, italics, links, code, images).
-  _inline(node) {
+  _inline(node: Node): string {
     let out = '';
-    node.childNodes.forEach((n) => {
+    node.childNodes.forEach((child) => {
+      const n = child as Element;
       if (n.nodeType === Node.TEXT_NODE) {
-        out += n.textContent.replace(/\s+/g, ' ');
+        out += (n.textContent ?? '').replace(/\s+/g, ' ');
         return;
       }
       if (n.nodeType !== Node.ELEMENT_NODE) {
@@ -204,11 +284,12 @@ class HTMLToMarkdown {
   }
 
   // Render block-level content.
-  _block(node) {
+  _block(node: Node): string {
     let out = '';
-    node.childNodes.forEach((n) => {
+    node.childNodes.forEach((child) => {
+      const n = child as Element;
       if (n.nodeType === Node.TEXT_NODE) {
-        out += n.textContent.replace(/\s+/g, ' ').replace(/^\s+$/, '');
+        out += (n.textContent ?? '').replace(/\s+/g, ' ').replace(/^\s+$/, '');
         return;
       }
       if (n.nodeType !== Node.ELEMENT_NODE) {
@@ -222,7 +303,11 @@ class HTMLToMarkdown {
       } else if (t === 'hr') {
         out += '\n---\n\n';
       } else if (t === 'blockquote') {
-        out += `${this._block(n).trim().split('\n').map((l) => `> ${l}`).join('\n')}\n\n`;
+        out += `${this._block(n)
+          .trim()
+          .split('\n')
+          .map((l) => `> ${l}`)
+          .join('\n')}\n\n`;
       } else if (t === 'pre') {
         out += `\`\`\`\n${n.textContent.trim()}\n\`\`\`\n\n`;
       } else if (t === 'ul' || t === 'ol') {
@@ -247,22 +332,27 @@ class HTMLToMarkdown {
 
 // Simple Markdown to HTML (lossy!) converter.
 class MarkdownToHTML {
-  convert(md) {
+  convert(md: string): string {
     // Normalise newlines and drop NULs (used internally as placeholders).
-    const src = String(md ?? '').replace(/\r\n?/g, '\n').replace(/ /g, '');
+    const src = String(md ?? '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/\u0000/g, '');
     return this._blocks(src.split('\n')).trim();
   }
 
   // Render an array of lines into block-level HTML.
-  _blocks(lines) {
-    const out = [];
+  _blocks(lines: string[]): string {
+    const out: string[] = [];
     let i = 0;
 
     while (i < lines.length) {
       const line = lines[i];
 
       // Skip empty lines.
-      if (line.trim() === '') { i += 1; continue; }
+      if (line.trim() === '') {
+        i += 1;
+        continue;
+      }
 
       // Fenced code blocks (``` or ~~~), keep them as-is.
       const fence = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
@@ -272,7 +362,10 @@ class MarkdownToHTML {
         const close = new RegExp(`^ {0,3}\\${marker}{${fence[1].length},}\\s*$`);
         const body = [];
         i += 1;
-        while (i < lines.length && !close.test(lines[i])) { body.push(lines[i]); i += 1; }
+        while (i < lines.length && !close.test(lines[i])) {
+          body.push(lines[i]);
+          i += 1;
+        }
         i += 1; // Skip the closing fence.
         const cls = lang ? ` class="language-${this._escapeAttr(lang)}"` : '';
         out.push(`<pre><code${cls}>${this._escape(body.join('\n'))}\n</code></pre>`);
@@ -284,7 +377,9 @@ class MarkdownToHTML {
       if (h) {
         const text = (h[2] || '').replace(/\s+#+\s*$/, '');
         const id = this._slug(text);
-        out.push(`<h${h[1].length}${id ? ` id="${id}"` : ''}>${this._inline(text)}</h${h[1].length}>`);
+        out.push(
+          `<h${h[1].length}${id ? ` id="${id}"` : ''}>${this._inline(text)}</h${h[1].length}>`,
+        );
         i += 1;
         continue;
       }
@@ -326,7 +421,10 @@ class MarkdownToHTML {
       // Raw HTML block.
       if (/^ {0,3}<(\/?[a-zA-Z][\w-]*|!--)/.test(line)) {
         const buf = [];
-        while (i < lines.length && lines[i].trim() !== '') { buf.push(lines[i]); i += 1; }
+        while (i < lines.length && lines[i].trim() !== '') {
+          buf.push(lines[i]);
+          i += 1;
+        }
         out.push(buf.join('\n'));
         continue;
       }
@@ -354,25 +452,27 @@ class MarkdownToHTML {
   }
 
   // Does line `i` begin a block-level construct (used to break paragraphs)?
-  _isBlockStart(lines, i) {
+  _isBlockStart(lines: string[], i: number): boolean {
     const l = lines[i];
-    return /^ {0,3}(`{3,}|~{3,})/.test(l)
-      || /^ {0,3}#{1,6}(\s|$)/.test(l)
-      || /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(l)
-      || /^ {0,3}>/.test(l)
-      || /^ {0,3}([-*+]|\d{1,9}[.)])(\s+|$)/.test(l)
-      || /^ {0,3}<(\/?[a-zA-Z][\w-]*|!--)/.test(l)
-      || (l.includes('|') && this._isTableDelim(lines[i + 1]));
+    return (
+      /^ {0,3}(`{3,}|~{3,})/.test(l) ||
+      /^ {0,3}#{1,6}(\s|$)/.test(l) ||
+      /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(l) ||
+      /^ {0,3}>/.test(l) ||
+      /^ {0,3}([-*+]|\d{1,9}[.)])(\s+|$)/.test(l) ||
+      /^ {0,3}<(\/?[a-zA-Z][\w-]*|!--)/.test(l) ||
+      (l.includes('|') && this._isTableDelim(lines[i + 1]))
+    );
   }
 
-  _isTableDelim(l) {
+  _isTableDelim(l: string | undefined): boolean {
     return !!l && /^ {0,3}\|?[ \t]*:?-+:?[ \t]*(\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$/.test(l);
   }
 
   // Parse a list starting at `start`. Returns [html, linesConsumed].
-  _list(lines, start) {
+  _list(lines: string[], start: number): [string, number] {
     const marker = /^(\s*)([-*+]|\d{1,9}[.)])(\s+|$)/;
-    const first = lines[start].match(marker);
+    const first = lines[start].match(marker)!;
     const ordered = /\d/.test(first[2]);
     const indent = first[1].length;
     const items = [];
@@ -390,9 +490,14 @@ class MarkdownToHTML {
       const item = [lines[i].slice(contentAt)];
       i += 1;
       while (i < lines.length) {
-        if (lines[i].trim() === '') { item.push(''); blank = true; i += 1; continue; }
+        if (lines[i].trim() === '') {
+          item.push('');
+          blank = true;
+          i += 1;
+          continue;
+        }
 
-        if (/^\s*/.exec(lines[i])[0].length >= contentAt) {
+        if (/^\s*/.exec(lines[i])![0].length >= contentAt) {
           if (blank) loose = true;
           item.push(lines[i].slice(contentAt));
           i += 1;
@@ -426,13 +531,19 @@ class MarkdownToHTML {
   }
 
   // Parse a table starting at `start`. Returns [html, linesConsumed].
-  _table(lines, start) {
-    const split = (row) => {
+  _table(lines: string[], start: number): [string, number] {
+    const split = (row: string) => {
       const s = row.trim().replace(/^\|/, '').replace(/\|$/, '');
       const cells = [];
       let cur = '';
       for (let k = 0; k < s.length; k += 1) {
-        if (s[k] === '\\' && s[k + 1] === '|') { cur += '|'; k += 1; } else if (s[k] === '|') { cells.push(cur); cur = ''; } else cur += s[k];
+        if (s[k] === '\\' && s[k + 1] === '|') {
+          cur += '|';
+          k += 1;
+        } else if (s[k] === '|') {
+          cells.push(cur);
+          cur = '';
+        } else cur += s[k];
       }
       cells.push(cur);
       return cells.map((c) => c.trim());
@@ -455,10 +566,14 @@ class MarkdownToHTML {
       i += 1;
     }
 
-    const cell = (t, text, a) => `<${t}${a ? ` align="${a}"` : ''}>${this._inline(text)}</${t}>`;
+    const cell = (t: string, text: string, a: string) =>
+      `<${t}${a ? ` align="${a}"` : ''}>${this._inline(text)}</${t}>`;
     let html = `<table>\n<thead>\n<tr>\n${header.map((c, k) => cell('th', c, aligns[k])).join('\n')}\n</tr>\n</thead>\n`;
     if (rows.length) {
-      const body = rows.map((r) => `<tr>\n${header.map((_, k) => cell('td', r[k] || '', aligns[k])).join('\n')}\n</tr>`);
+      const body = rows.map(
+        (r) =>
+          `<tr>\n${header.map((_c, k) => cell('td', r[k] || '', aligns[k])).join('\n')}\n</tr>`,
+      );
       html += `<tbody>\n${body.join('\n')}\n</tbody>\n`;
     }
 
@@ -466,9 +581,9 @@ class MarkdownToHTML {
   }
 
   // Render inline Markdown (emphasis, code, links, images).
-  _inline(text) {
-    const stash = [];
-    const hold = (html) => ` ${stash.push(html) - 1} `;
+  _inline(text: string): string {
+    const stash: string[] = [];
+    const hold = (html: string) => `\u0000${stash.push(html) - 1}\u0000`;
     let s = text;
 
     // Backslash escapes and hard line breaks.
@@ -476,31 +591,47 @@ class MarkdownToHTML {
     s = s.replace(/(?: {2,}|\\)\n/g, () => `${hold('<br />')}\n`);
 
     // Code spans, autolinks and raw HTML, keep as-is.
-    s = s.replace(/(`+)([\s\S]*?[^`])\1(?!`)/g, (_, __, code) => hold(`<code>${this._escape(code.replace(/^ (.*) $/, '$1'))}</code>`));
-    s = s.replace(/<((?:https?|ftp|mailto):[^\s<>]+)>/gi, (_, url) => hold(`<a href="${this._escapeAttr(url)}">${this._escape(url.replace(/^mailto:/i, ''))}</a>`));
-    s = s.replace(/<([^\s<>@]+@[^\s<>@]+\.[^\s<>]+)>/g, (_, mail) => hold(`<a href="mailto:${this._escapeAttr(mail)}">${this._escape(mail)}</a>`));
+    s = s.replace(/(`+)([\s\S]*?[^`])\1(?!`)/g, (_, __, code) =>
+      hold(`<code>${this._escape(code.replace(/^ (.*) $/, '$1'))}</code>`),
+    );
+    s = s.replace(/<((?:https?|ftp|mailto):[^\s<>]+)>/gi, (_, url) =>
+      hold(`<a href="${this._escapeAttr(url)}">${this._escape(url.replace(/^mailto:/i, ''))}</a>`),
+    );
+    s = s.replace(/<([^\s<>@]+@[^\s<>@]+\.[^\s<>]+)>/g, (_, mail) =>
+      hold(`<a href="mailto:${this._escapeAttr(mail)}">${this._escape(mail)}</a>`),
+    );
     s = s.replace(/<\/?[a-zA-Z][^<>]*>|<!--[\s\S]*?-->/g, (m) => hold(m));
 
     // Escape stray text before emphasis/links inject their own markup.
-    s = s.replace(/&(?![a-zA-Z][\w]*;|#\d+;|#x[\da-fA-F]+;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    s = s
+      .replace(/&(?![a-zA-Z][\w]*;|#\d+;|#x[\da-fA-F]+;)/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
     // Images.
-    s = s.replace(/!\[([^\]]*)\]\(\s*([^\s)]*)(?:\s+"([^"]*)")?\s*\)/g,
-      (_, alt, src, title) => hold(`<img src="${this._escapeAttr(src)}" alt="${this._escapeAttr(alt)}"${title ? ` title="${this._escapeAttr(title)}"` : ''} />`));
+    s = s.replace(/!\[([^\]]*)\]\(\s*([^\s)]*)(?:\s+"([^"]*)")?\s*\)/g, (_, alt, src, title) =>
+      hold(
+        `<img src="${this._escapeAttr(src)}" alt="${this._escapeAttr(alt)}"${title ? ` title="${this._escapeAttr(title)}"` : ''} />`,
+      ),
+    );
 
     // Links.
-    s = s.replace(/\[([^\]]*)\]\(\s*([^\s)]*)(?:\s+"([^"]*)")?\s*\)/g,
-      (_, txt, href, title) => hold(`<a href="${this._escapeAttr(href)}"${title ? ` title="${this._escapeAttr(title)}"` : ''}>${this._emphasis(txt)}</a>`));
+    s = s.replace(/\[([^\]]*)\]\(\s*([^\s)]*)(?:\s+"([^"]*)")?\s*\)/g, (_, txt, href, title) =>
+      hold(
+        `<a href="${this._escapeAttr(href)}"${title ? ` title="${this._escapeAttr(title)}"` : ''}>${this._emphasis(txt)}</a>`,
+      ),
+    );
 
     s = this._emphasis(s);
 
     // Resolve placeholders.
-    const resolve = (_, k) => stash[k].replace(/ (\d+) /g, resolve);
-    return s.replace(/ (\d+) /g, resolve);
+    const resolve = (_m: string, k: string): string =>
+      stash[Number(k)].replace(/\u0000(\d+)\u0000/g, resolve);
+    return s.replace(/\u0000(\d+)\u0000/g, resolve);
   }
 
   // Convert strikethrough, bold and italic.
-  _emphasis(s) {
+  _emphasis(s: string): string {
     return s
       .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>')
       .replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>')
@@ -509,16 +640,16 @@ class MarkdownToHTML {
       .replace(/(^|[^\w])_(?=\S)([\s\S]*?\S)_(?!\w)/g, '$1<em>$2</em>');
   }
 
-  _escape(s) {
+  _escape(s: string): string {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  _escapeAttr(s) {
+  _escapeAttr(s: string): string {
     return this._escape(s).replace(/"/g, '&quot;');
   }
 
   // Make a slug for headingg ids.
-  _slug(text) {
+  _slug(text: string): string {
     return text
       .replace(/[*_`~]/g, '')
       .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
@@ -531,17 +662,18 @@ class MarkdownToHTML {
 
 // A simple HTML to plaintext converter and converts links to "text (url)".
 class HTMLToText {
-  convert(html) {
+  convert(html: string): string {
     const div = document.createElement('div');
     div.innerHTML = html || '';
     return trimLines(this._walk(div), true).trim();
   }
 
-  _walk(node) {
+  _walk(node: Node): string {
     let out = '';
-    node.childNodes.forEach((n) => {
+    node.childNodes.forEach((child) => {
+      const n = child as Element;
       if (n.nodeType === Node.TEXT_NODE) {
-        out += n.textContent.replace(/\s+/g, ' ');
+        out += (n.textContent ?? '').replace(/\s+/g, ' ');
         return;
       }
       if (n.nodeType !== Node.ELEMENT_NODE) {
@@ -556,7 +688,10 @@ class HTMLToText {
         out += href && href !== text ? `${text} (${href})` : text;
       } else if (t === 'li') {
         out += `- ${this._walk(n).trim()}\n`;
-      } else if (/^h[1-6]$/.test(t) || ['p', 'div', 'ul', 'ol', 'blockquote', 'tr', 'table'].includes(t)) {
+      } else if (
+        /^h[1-6]$/.test(t) ||
+        ['p', 'div', 'ul', 'ol', 'blockquote', 'tr', 'table'].includes(t)
+      ) {
         out += `${this._walk(n).trim()}\n\n`;
       } else {
         out += this._walk(n);
@@ -568,20 +703,23 @@ class HTMLToText {
 
 // Convert Markdown to email-builder JSON struct.
 class MarkdownToVisual {
-  convert(markdown) {
+  convert(markdown: string): Record<string, unknown> {
     const lines = markdown.split('\n');
-    const blocks = [];
+    const blocks: { id: string; type: string; data: unknown }[] = [];
     const idBase = Date.now();
-    let textBuf = [];
+    let textBuf: string[] = [];
 
-    const createBlock = (type, props, style = {}) => ({
+    const createBlock = (type: string, props: Record<string, unknown>, style = {}) => ({
       id: `block-${idBase + blocks.length}`,
       type,
       data: {
         props,
         style: {
           padding: {
-            top: 16, bottom: 16, right: 24, left: 24,
+            top: 16,
+            bottom: 16,
+            right: 24,
+            left: 24,
           },
           ...style,
         },
@@ -601,24 +739,28 @@ class MarkdownToVisual {
       if (heading) {
         flushText();
 
-        blocks.push(createBlock('Heading', {
-          text: heading[2],
-          level: `h${Math.min(heading[1].length, 6)}`,
-        }));
+        blocks.push(
+          createBlock('Heading', {
+            text: heading[2],
+            level: `h${Math.min(heading[1].length, 6)}`,
+          }),
+        );
         return;
       }
 
       // Setext headings (===== or -----).
       const trimmed = line.trim();
       if (/^(=+|-+)$/.test(trimmed) && textBuf.length > 0) {
-        const lastLine = textBuf.pop();
+        const lastLine = textBuf.pop() ?? '';
         if (lastLine.trim()) {
           flushText();
 
-          blocks.push(createBlock('Heading', {
-            text: lastLine,
-            level: trimmed[0] === '=' ? 'h1' : 'h2',
-          }));
+          blocks.push(
+            createBlock('Heading', {
+              text: lastLine,
+              level: trimmed[0] === '=' ? 'h1' : 'h2',
+            }),
+          );
 
           return;
         }
@@ -648,13 +790,12 @@ const htmlConverter = new MarkdownToHTML();
 const textConverter = new HTMLToText();
 const visualConverter = new MarkdownToVisual();
 
-
 class ContentConverter {
   // Convert a campaign body from one content type to another. Returns
   // { body, bodySource }. All conversions run client-side.
-  convert(body, from, to) {
+  convert(body: string | null | undefined, from: string, to: string): ConvertResult {
     let out = body ?? '';
-    let bodySource = null;
+    let bodySource: string | null = null;
 
     let isHTML = false;
     if (from === 'richtext' || from === 'html' || from === 'visual') {
@@ -690,7 +831,7 @@ class ContentConverter {
     } else if (from === 'markdown' && (to === 'richtext' || to === 'html')) {
       out = beautifier.beautify(htmlConverter.convert(out).trim());
     } else if (from === 'plain' && (to === 'richtext' || to === 'html')) {
-      out = out.replace(/\n/ig, '<br>\n');
+      out = out.replace(/\n/gi, '<br>\n');
     } else if (to === 'visual') {
       bodySource = JSON.stringify(visualConverter.convert(out));
     }
@@ -702,6 +843,10 @@ class ContentConverter {
 const converter = new ContentConverter();
 
 // Export APIs.
-export const convert = (body, from, to) => converter.convert(body, from, to);
-export const beautifyHTML = (html) => beautifier.beautify(html);
-export const htmlToText = (html) => textConverter.convert(html);
+export const convert = (body: string | null | undefined, from: string, to: string) =>
+  converter.convert(body, from, to);
+export const beautifyHTML = (html: string) => beautifier.beautify(html);
+export const htmlToText = (html: string) => textConverter.convert(html);
+
+export const markdownToHtml = (md: string) => htmlConverter.convert(md);
+export const markdownToVisual = (md: string) => visualConverter.convert(md);
