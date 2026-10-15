@@ -35,7 +35,7 @@ Inside the dev container, in `frontend/`:
 
 ```sh
 bun install
-bun run dev          # Vite dev server on http://localhost:5173/admin/next (proxies /api etc. to :9000)
+bun run dev          # Vite dev server on http://localhost:5173/admin/settings/logs (proxies /api etc. to :9000)
 bun run lint         # oxlint
 bun run fmt          # oxfmt (fmt:check in CI)
 bun run typecheck
@@ -45,6 +45,19 @@ bun test
 `make build-frontend-app` produces the production build, which `make dist` embeds into the binary.
 
 Log in at http://localhost:9000/admin first. The session cookie is shared with the Vite dev server on `localhost`.
+
+The app bootstraps from `GET /api/config`, `/api/profile` and `/api/lang/:lang`, then renders the sidebar layout (`src/routes/_app.tsx`). Sidebar entries live in `src/lib/nav.ts`; unported entries are plain links to the old Go pages.
+
+#### Porting a page
+
+1. Add the route under `src/routes/_app/` (for example `settings/logs.tsx`) and build it from `src/components/ui` and `PageHeader`. Fetch with `apiFetch`, translate with `useT()`, gate actions with `useCan()`.
+2. In `cmd/handlers.go`, point the page's route at `a.ServeAdminApp`, keeping its `pm(...)` permission check.
+3. Set `ported: true` on the item in `src/lib/nav.ts`.
+4. Delete the old Go view, template and JS.
+5. Add or update the Playwright spec in `tests/specs/`.
+6. Check the page in light and dark, and at 375px wide.
+
+When adding shadcn components with `bunx shadcn@latest add`, the generated files import `cn` from the `cn` npm package and the sonner component imports `next-themes`. Point them at `@/lib/utils` and `@/components/theme-provider`, and remove both packages.
 
 ### Frontend tests
 
