@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/jmoiron/sqlx/types"
 	"github.com/knadh/listmonk/internal/auth"
 	"github.com/knadh/listmonk/models"
 	"github.com/labstack/echo/v4"
@@ -23,28 +21,6 @@ var listsQueryDefaults = map[string]string{
 	"type":     "",
 	"optin":    "",
 	"status":   models.ListStatusActive,
-}
-
-// listsView is the admin page view.
-type listsView struct {
-	adminView
-
-	Lists            []models.List
-	Page             models.PageProps
-	CacheSlowQueries bool
-}
-
-type listView struct {
-	adminView
-
-	Charts                types.JSONText
-	CanViewCampaignCharts bool
-	CacheSlowQueries      bool
-	IsNew                 bool
-	Tab                   string
-	List                  models.List
-	Campaigns             []models.Campaign
-	Page                  models.PageProps
 }
 
 // publicListForm is the minimal list representation used by the forms view.
@@ -69,83 +45,6 @@ func (a *App) GetLists(c echo.Context) error {
 		Results:   lists,
 		PageProps: props,
 	}})
-}
-
-// ViewLists renders the HTML view for lists.
-func (a *App) ViewLists(c echo.Context) error {
-	lists, props, err := a.getLists(c)
-	if err != nil {
-		return err
-	}
-
-	pageID := "lists.all"
-	if c.QueryParam("status") == models.ListStatusArchived {
-		pageID = "lists.archived"
-	}
-
-	data := listsView{
-		adminView:        newAdminView(c, a.i18n.T("globals.terms.lists"), "", pageID),
-		Lists:            lists,
-		Page:             props,
-		CacheSlowQueries: ko.Bool("app.cache_slow_queries"),
-	}
-
-	return c.Render(http.StatusOK, "admin-lists", data)
-}
-
-// ViewNewList renders the new list page.
-func (a *App) ViewNewList(c echo.Context) error {
-	data := listView{
-		adminView: newAdminView(c, fmt.Sprintf("%s / %s", a.i18n.T("lists.newList"), a.i18n.T("globals.terms.lists")), "", "lists.all"),
-		IsNew:     true,
-	}
-
-	return c.Render(http.StatusOK, "admin-list", data)
-}
-
-// ViewList renders the list overview and editor.
-func (a *App) ViewList(c echo.Context) error {
-	user := auth.GetUser(c)
-
-	// Check if the user has access to the list.
-	id := getID(c)
-	if err := user.HasListPerm(auth.PermTypeGet, id); err != nil {
-		return a.renderAdminMessage(c, "Error", a.i18n.Ts("globals.messages.permissionDenied", "name", "lists"))
-	}
-
-	list, err := a.core.GetList(id, "")
-	if err != nil {
-		return err
-	}
-
-	tab := "list"
-	if strings.HasSuffix(c.Path(), "/edit") {
-		tab = "edit"
-	}
-
-	data := listView{
-		adminView: newAdminView(c, list.Name+" / "+a.i18n.T("globals.terms.lists"), "", "lists.all"),
-		List:      list,
-		Tab:       tab,
-	}
-
-	if tab == "list" {
-		data.CanViewCampaignCharts = data.Can("campaigns:get", "campaigns:get_all") && data.Can("campaigns:get_analytics")
-		data.CacheSlowQueries = ko.Bool("app.cache_slow_queries")
-		data.Charts, err = a.core.GetListCharts(id, data.CanViewCampaignCharts)
-		if err != nil {
-			return err
-		}
-	}
-
-	if tab == "list" && data.Can("campaigns:get", "campaigns:get_all") {
-		data.Campaigns, data.Page, err = a.getViewCampaigns(c, id)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.Render(http.StatusOK, "admin-list", data)
 }
 
 // ViewForms renders the HTML view for the public subscription form generator.
@@ -190,6 +89,26 @@ func (a *App) GetList(c echo.Context) error {
 
 	// Get the list from the DB.
 	out, err := a.core.GetList(id, "")
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, okResp{out})
+}
+
+// GetListCharts returns the weekly subscription (and, if permitted, campaign view) chart
+// data for a list's overview page.
+func (a *App) GetListCharts(c echo.Context) error {
+	user := auth.GetUser(c)
+
+	id := getID(c)
+	if err := user.HasListPerm(auth.PermTypeGet, id); err != nil {
+		return err
+	}
+
+	// Campaign views are only included for users who can read campaign analytics.
+	views := can(user, "campaigns:get", "campaigns:get_all") && can(user, "campaigns:get_analytics")
+	out, err := a.core.GetListCharts(id, views)
 	if err != nil {
 		return err
 	}

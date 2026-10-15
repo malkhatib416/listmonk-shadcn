@@ -36,7 +36,7 @@ export const NAV: NavGroup[] = [
     label: 'globals.terms.lists',
     icon: 'list',
     items: [
-      item('lists.all', 'menu.allLists', '/admin/lists'),
+      item('lists.all', 'menu.allLists', '/admin/lists', [], true),
       item('lists.archived', 'lists.archived', '/admin/lists?status=archived'),
       item('lists.analytics', 'globals.terms.analytics', '/admin/lists/analytics'),
       item('lists.forms', 'menu.forms', '/admin/lists/forms'),

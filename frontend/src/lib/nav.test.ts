@@ -58,8 +58,9 @@ describe('activeNavItem', () => {
     expect(activeNavItem('/users/roles/lists/new')?.key).toBe('users.list-roles');
   });
 
-  test('no match for an unported or unknown path', () => {
-    expect(activeNavItem('/lists')).toBeUndefined();
+  test('no match for an unknown path', () => {
+    expect(activeNavItem('/nope')).toBeUndefined();
+    expect(activeNavItem('/')).toBeUndefined();
     expect(activeNavItem('/usersx')).toBeUndefined();
   });
 });

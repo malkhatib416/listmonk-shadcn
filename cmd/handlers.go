@@ -86,11 +86,11 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		// register them with a.ServeAdminApp below, keeping their pm(...) permission.
 
 		g.GET(uriAdmin, a.ViewDashboard)
-		g.GET(path.Join(uriAdmin, "/lists"), a.ViewLists)
+		g.GET(path.Join(uriAdmin, "/lists"), a.ServeAdminApp)
 		g.GET(path.Join(uriAdmin, "/lists/analytics"), a.ViewListAnalytics)
-		g.GET(path.Join(uriAdmin, "/lists/new"), pm(a.ViewNewList, "lists:manage_all"))
-		g.GET(path.Join(uriAdmin, "/lists/:id"), hasID(a.ViewList))
-		g.GET(path.Join(uriAdmin, "/lists/:id/edit"), hasID(a.ViewList))
+		g.GET(path.Join(uriAdmin, "/lists/new"), pm(a.ServeAdminApp, "lists:manage_all"))
+		g.GET(path.Join(uriAdmin, "/lists/:id"), hasID(a.ServeAdminApp))
+		g.GET(path.Join(uriAdmin, "/lists/:id/edit"), hasID(a.ServeAdminApp))
 		g.GET(path.Join(uriAdmin, "/lists/forms"), a.ViewForms)
 		g.GET(path.Join(uriAdmin, "/campaigns"), pm(a.ViewCampaigns, "campaigns:get_all", "campaigns:get"))
 		g.GET(path.Join(uriAdmin, "/campaigns/media"), pm(a.ServeAdminApp, "media:get"))
@@ -211,6 +211,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		// Individual list permissions are applied directly within handleGetLists.
 		g.GET("/api/lists", a.GetLists)
 		g.GET("/api/lists/:id", hasID(a.GetList))
+		g.GET("/api/lists/:id/charts", hasID(a.GetListCharts))
 		g.POST("/api/lists", pm(a.CreateList, "lists:manage_all"))
 		g.PUT("/api/lists/:id", hasID(a.UpdateList))
 		g.DELETE("/api/lists", a.DeleteLists)

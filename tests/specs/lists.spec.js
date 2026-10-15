@@ -14,17 +14,23 @@ function rowIDs(page) {
   return page.getByTestId('list-row').evaluateAll((els) => els.map((el) => Number(el.dataset.id)));
 }
 
+// Pick an option of a (Radix) select by its test id and visible name.
+async function choose(scope, page, testId, name) {
+  await scope.getByTestId(testId).click();
+  await page.getByRole('option', { name, exact: true }).click();
+}
+
 // Fill the list form.
-async function fillListForm(scope, { name, type, optin, tag, description } = {}) {
-  await scope.locator('input[name="name"]').fill(name);
-  await scope.locator('select[name="type"]').selectOption(type);
-  await scope.locator('select[name="optin"]').selectOption(optin);
+async function fillListForm(page, { name, type, optin, tag, description } = {}) {
+  await page.locator('input[name="name"]').fill(name);
+  await choose(page, page, 'list-type', type === 'public' ? 'Public' : 'Private');
+  await choose(page, page, 'list-optin', optin === 'double' ? 'Double opt-in' : 'Single opt-in');
   if (tag) {
-    const input = scope.locator('input[name="tags"]');
+    const input = page.getByTestId('tag-input');
     await input.fill(tag);
     await input.press('Enter');
   }
-  await scope.locator('textarea[name="description"]').fill(description);
+  await page.locator('textarea[name="description"]').fill(description);
 }
 
 // Run `action` and wait for the API response.
@@ -51,8 +57,8 @@ test.describe('Lists', () => {
     await expect(listRow(page, 'Opt-in list')).toBeVisible();
 
     // Both seeded lists have exactly one subscriber.
-    await expect(listRow(page, 'Default list').locator('.subscriber-total')).toContainText('1');
-    await expect(listRow(page, 'Opt-in list').locator('.subscriber-total')).toContainText('1');
+    await expect(listRow(page, 'Default list').getByTestId('subscriber-total')).toHaveText('1');
+    await expect(listRow(page, 'Opt-in list').getByTestId('subscriber-total')).toHaveText('1');
 
     // Type / opt-in badges.
     await expect(listRow(page, 'Default list')).toContainText('Private');
@@ -68,7 +74,7 @@ test.describe('Lists', () => {
     await openMenu(row);
     await Promise.all([
       page.waitForURL('**/admin/campaigns/new**'),
-      row.getByTestId('btn-campaign').click(),
+      page.getByTestId('btn-campaign').click(),
     ]);
 
     // The list is pre-selected on the new campaign form.
@@ -80,7 +86,7 @@ test.describe('Lists', () => {
 
     const row = listRow(page, 'Opt-in list');
     await openMenu(row);
-    await row.getByTestId('btn-send-optin-campaign').click();
+    await page.getByTestId('btn-send-optin-campaign').click();
     await confirm(page);
 
     // Redirects to the newly created campaign's content tab.
@@ -96,7 +102,7 @@ test.describe('Lists', () => {
 
     for (const c of cases) {
       await page.goto(LISTS);
-      await listRow(page, c.list).locator('.subscriber-total').click();
+      await listRow(page, c.list).getByTestId('subscriber-total').click();
 
       await expect(page).toHaveURL(/\/admin\/subscribers\/lists\/\d+/);
       await expect(page.locator('tbody tr')).toHaveCount(1);
@@ -106,6 +112,7 @@ test.describe('Lists', () => {
 
   test('edits the default lists', async ({ page }) => {
     await page.goto(LISTS);
+    await expect(listRow(page).first()).toBeVisible();
     const ids = await rowIDs(page);
 
     for (const [n, id] of ids.entries()) {
@@ -141,20 +148,20 @@ test.describe('Lists', () => {
 
   test('deletes all lists', async ({ page }) => {
     await page.goto(LISTS);
+    await expect(listRow(page).first()).toBeVisible();
 
     let count = await listRow(page).count();
     while (count > 0) {
       const row = listRow(page).first();
-      const id = await row.getAttribute('data-id');
       await openMenu(row);
-      await row.getByTestId('btn-delete').click();
+      await page.getByTestId('btn-delete').click();
       await withListAPI(page, 'DELETE', () => confirm(page));
 
       count -= 1;
       await expect(listRow(page)).toHaveCount(count);
     }
 
-    await expect(page.locator('.empty-state')).toBeVisible();
+    await expect(page.getByText('Nothing here')).toBeVisible();
   });
 
   test('adds new lists of every type/opt-in combination', async ({ page }) => {
@@ -171,11 +178,10 @@ test.describe('Lists', () => {
       await page.getByTestId('btn-new').click();
 
       await expect(page).toHaveURL(/\/admin\/lists\/new$/);
-      const form = page.locator('section.lists form');
-      await fillListForm(form, {
+      await fillListForm(page, {
         name, type: c.type, optin: c.optin, tag: `tag${n}`, description: `desc-${c.type}-${n}`,
       });
-      await withListAPI(page, 'POST', () => form.getByTestId('btn-save').click());
+      await withListAPI(page, 'POST', () => page.getByTestId('btn-save').click());
       await expect(page).toHaveURL(/\/admin\/lists\/\d+$/);
       await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
       await page.goto(LISTS);
@@ -201,7 +207,7 @@ test.describe('Lists', () => {
     await page.goto(LISTS);
 
     // Clicking a row's type badge filters the listing by that type.
-    await listRow(page, 'list-private-single-0').locator('a[href*="type="]').click();
+    await listRow(page, 'list-private-single-0').getByRole('button', { name: 'Private' }).click();
     await expect(page).toHaveURL(/[?&]type=private/);
 
     // Only the two private lists remain.
@@ -209,16 +215,16 @@ test.describe('Lists', () => {
     await expect(listRow(page, 'list-private-single-0')).toBeVisible();
     await expect(listRow(page, 'list-private-double-1')).toBeVisible();
 
-    // The active filter shows as a removable badge.
-    await expect(page.locator('.page-heading')).toContainText('Private');
-    await page.getByTestId('btn-remove-filter').click();
+    // The active filter shows in the type selector; "Clear" removes it.
+    await expect(page.getByRole('combobox', { name: 'Type' })).toContainText('Private');
+    await page.getByRole('button', { name: 'Clear' }).click();
     await expect(listRow(page)).toHaveCount(4);
   });
 
   test('filters lists by opt-in', async ({ page }) => {
     await page.goto(LISTS);
 
-    await listRow(page, 'list-private-single-0').locator('a[href*="optin="]').click();
+    await listRow(page, 'list-private-single-0').getByRole('button', { name: 'Single opt-in' }).click();
     await expect(page).toHaveURL(/[?&]optin=single/);
 
     // Only the two single opt-in lists remain.
@@ -226,22 +232,22 @@ test.describe('Lists', () => {
     await expect(listRow(page, 'list-private-single-0')).toBeVisible();
     await expect(listRow(page, 'list-public-single-2')).toBeVisible();
 
-    await expect(page.locator('.page-heading')).toContainText('Single opt-in');
-    await page.getByTestId('btn-remove-filter').click();
+    await expect(page.getByRole('combobox', { name: 'Opt-in' })).toContainText('Single opt-in');
+    await page.getByRole('button', { name: 'Clear' }).click();
     await expect(listRow(page)).toHaveCount(4);
   });
 
   test('filters lists by tag', async ({ page }) => {
     await page.goto(LISTS);
 
-    await listRow(page, 'list-private-single-0').locator('a[href*="tag="]').click();
+    await listRow(page, 'list-private-single-0').getByRole('button', { name: '#tag0' }).click();
     await expect(page).toHaveURL(/[?&]tag=tag0/);
 
     // Each list carries a unique tag, so only one row matches.
     await expect(listRow(page)).toHaveCount(1);
     await expect(listRow(page, 'list-private-single-0')).toBeVisible();
 
-    await expect(page.locator('.page-heading')).toContainText('#tag0');
+    await expect(page.getByTestId('btn-remove-filter')).toContainText('#tag0');
     await page.getByTestId('btn-remove-filter').click();
     await expect(listRow(page)).toHaveCount(4);
   });
@@ -252,9 +258,9 @@ test.describe('Lists', () => {
     await expect(listRow(page)).toHaveCount(1);
     await expect(listRow(page, 'list-public-double-3')).toBeVisible();
 
-    // Both active filters appear as badges in the header.
-    await expect(page.locator('.page-heading')).toContainText('Public');
-    await expect(page.locator('.page-heading')).toContainText('Double opt-in');
+    // Both active filters show in their selectors.
+    await expect(page.getByRole('combobox', { name: 'Type' })).toContainText('Public');
+    await expect(page.getByRole('combobox', { name: 'Opt-in' })).toContainText('Double opt-in');
   });
 
   test('sorts lists by column', async ({ page }) => {
@@ -262,7 +268,8 @@ test.describe('Lists', () => {
 
     // Four lists exist with IDs [3,4,5,6] (see the "adds new lists" test).
     const clickSort = async (field, expected) => {
-      await page.locator(`a[data-sort-field="${field}"]`).click();
+      const header = { name: 'Name', type: 'Type', created_at: 'Created' }[field];
+      await page.getByRole('columnheader', { name: header }).getByRole('button').click();
       await expect.poll(() => rowIDs(page)).toEqual(expected);
     };
 
@@ -296,10 +303,9 @@ test.describe('Lists', () => {
 
     // Delete every list across all pages via the "select all" query option.
     await page.goto(LISTS);
-    await page.locator('thead input[type="checkbox"]').check();
-    await page.getByTestId('btn-bulk-actions').click();
+    await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
 
-    const selectAll = page.getByTestId('select-all-lists');
+    const selectAll = page.getByTestId('select-all-matching');
     if (await selectAll.isVisible()) {
       await selectAll.click();
     }
@@ -307,7 +313,7 @@ test.describe('Lists', () => {
       await page.getByTestId('btn-delete-lists').click();
       await confirm(page);
     });
-    await expect(page.locator('.empty-state')).toBeVisible();
+    await expect(page.getByText('Nothing here')).toBeVisible();
 
     // Now delete a single page's worth using the selected-IDs.
     for (let i = 0; i < 5; i += 1) {
@@ -315,13 +321,12 @@ test.describe('Lists', () => {
     }
 
     await page.goto(LISTS);
-    await page.locator('thead input[type="checkbox"]').check();
-    await page.getByTestId('btn-bulk-actions').click();
+    await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
     await withListAPI(page, 'DELETE', async () => {
       await page.getByTestId('btn-delete-lists').click();
       await confirm(page);
     });
-    await expect(page.locator('.empty-state')).toBeVisible();
+    await expect(page.getByText('Nothing here')).toBeVisible();
   });
 });
 
@@ -357,14 +362,13 @@ test.describe('Lists: filtered bulk deletion', () => {
         if (Object.keys(overrides).length) preserved.push(list.id);
       }
       await page.goto(`${LISTS}?${filter}`);
-      await page.locator('thead input[type=checkbox]').check();
-      await page.getByTestId('btn-bulk-actions').click();
-      await page.getByTestId('select-all-lists').click();
+      await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
+      await page.getByTestId('select-all-matching').click();
       await withListAPI(page, 'DELETE', async () => {
         await page.getByTestId('btn-delete-lists').click();
         await confirm(page);
       });
-      await expect(page.locator('.empty-state')).toBeVisible();
+      await expect(page.getByText('Nothing here')).toBeVisible();
       const remaining = [];
       for (const status of ['active', 'archived']) {
         remaining.push(...(await data(await page.request.get(`/api/lists?status=${status}&per_page=100`))).results);

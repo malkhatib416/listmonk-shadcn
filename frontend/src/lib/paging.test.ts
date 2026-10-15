@@ -30,6 +30,12 @@ describe('rangeLabel', () => {
 });
 
 describe('bulkQuery', () => {
+  test('array filters (tags) repeat the param', () => {
+    expect(
+      bulkQuery({ ids: [], allMatching: true }, { tag: ['a', 'b'], status: 'active' }).toString(),
+    ).toBe('all=true&tag=a&tag=b&status=active');
+  });
+
   test('selected ids become repeated id params', () => {
     expect(bulkQuery({ ids: [3, 5], allMatching: false }, { source: 'api' }).toString()).toBe(
       'id=3&id=5',

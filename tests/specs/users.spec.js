@@ -322,7 +322,8 @@ test.describe('Users, roles & login', () => {
     await expect(page.getByTestId('list-row')).toHaveCount(1);
     await expect(page.getByTestId('list-row')).toContainText('Default list');
     await expect(page.getByTestId('btn-new')).toHaveCount(0);
-    await expect(page.getByTestId('list-row').getByTestId('btn-edit')).toHaveCount(1);
+    await openMenu(page.getByTestId('list-row'));
+    await expect(page.getByTestId('btn-edit')).toHaveCount(1);
 
     await context.close();
   });
@@ -334,8 +335,12 @@ test.describe('Users, roles & login', () => {
 
     // The superadmin-equivalent role sees every list with full actions.
     await expect(page.getByTestId('list-row')).toHaveCount(2);
-    await expect(page.getByTestId('list-row').getByTestId('btn-edit')).toHaveCount(2);
-    await expect(page.getByTestId('list-row').getByTestId('btn-delete')).toHaveCount(2);
+    for (let i = 0; i < 2; i += 1) {
+      await openMenu(page.getByTestId('list-row').nth(i));
+      await expect(page.getByTestId('btn-edit')).toHaveCount(1);
+      await expect(page.getByTestId('btn-delete')).toHaveCount(1);
+      await page.keyboard.press('Escape');
+    }
 
     await context.close();
   });

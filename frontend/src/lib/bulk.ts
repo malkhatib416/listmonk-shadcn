@@ -4,16 +4,21 @@ export interface BulkSelection {
   allMatching: boolean;
 }
 
+type FilterValue = string | number | (string | number)[] | undefined;
+
 // The query string for a bulk API call (delete / blocklist...).
 export function bulkQuery(
   sel: BulkSelection,
-  filters: Record<string, string | number | undefined> = {},
+  filters: Record<string, FilterValue> = {},
 ): URLSearchParams {
   const q = new URLSearchParams();
   if (sel.allMatching) {
     q.set('all', 'true');
-    for (const [k, v] of Object.entries(filters))
-      if (v !== undefined && v !== '') q.set(k, String(v));
+    for (const [k, v] of Object.entries(filters)) {
+      if (v === undefined || v === '') continue;
+      // A list value (tags) becomes repeated params.
+      for (const x of Array.isArray(v) ? v : [v]) q.append(k, String(x));
+    }
   } else {
     for (const id of sel.ids) q.append('id', String(id));
   }

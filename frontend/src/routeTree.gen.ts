@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
+import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
+import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
 import { Route as AppSubscribersBouncesRouteImport } from './routes/_app/subscribers/bounces'
@@ -23,6 +25,8 @@ import { Route as AppUserProfileRouteImport } from './routes/_app/user/profile'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
 import { Route as AppUsersNewRouteImport } from './routes/_app/users/new'
+import { Route as AppListsIdIndexRouteImport } from './routes/_app/lists/$id/index'
+import { Route as AppListsIdEditRouteImport } from './routes/_app/lists/$id/edit'
 import { Route as AppUsersRolesIndexRouteImport } from './routes/_app/users/roles/index'
 import { Route as AppUsersRolesIdRouteImport } from './routes/_app/users/roles/$id'
 import { Route as AppUsersRolesNewRouteImport } from './routes/_app/users/roles/new'
@@ -42,6 +46,16 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
   id: '/campaigns/media',
   path: '/campaigns/media',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsIndexRoute = AppListsIndexRouteImport.update({
+  id: '/lists/',
+  path: '/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsNewRoute = AppListsNewRouteImport.update({
+  id: '/lists/new',
+  path: '/lists/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
@@ -99,6 +113,16 @@ const AppUsersNewRoute = AppUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppListsIdIndexRoute = AppListsIdIndexRouteImport.update({
+  id: '/lists/$id/',
+  path: '/lists/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsIdEditRoute = AppListsIdEditRouteImport.update({
+  id: '/lists/$id/edit',
+  path: '/lists/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppUsersRolesIndexRoute = AppUsersRolesIndexRouteImport.update({
   id: '/users/roles/',
   path: '/users/roles/',
@@ -133,6 +157,7 @@ const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -142,10 +167,13 @@ export interface FileRoutesByFullPath {
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/lists/': typeof AppListsIndexRoute
   '/templates/': typeof AppTemplatesIndexRoute
   '/users/': typeof AppUsersIndexRoute
+  '/lists/$id/edit': typeof AppListsIdEditRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/lists/$id/': typeof AppListsIdIndexRoute
   '/users/roles/': typeof AppUsersRolesIndexRoute
   '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -154,6 +182,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -163,10 +192,13 @@ export interface FileRoutesByTo {
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/lists': typeof AppListsIndexRoute
   '/templates': typeof AppTemplatesIndexRoute
   '/users': typeof AppUsersIndexRoute
+  '/lists/$id/edit': typeof AppListsIdEditRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/lists/$id': typeof AppListsIdIndexRoute
   '/users/roles': typeof AppUsersRolesIndexRoute
   '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -177,6 +209,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/campaigns/media': typeof AppCampaignsMediaRoute
+  '/_app/lists/new': typeof AppListsNewRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/_app/subscribers/bounces': typeof AppSubscribersBouncesRoute
@@ -186,10 +219,13 @@ export interface FileRoutesById {
   '/_app/user/profile': typeof AppUserProfileRoute
   '/_app/users/$id': typeof AppUsersIdRoute
   '/_app/users/new': typeof AppUsersNewRoute
+  '/_app/lists/': typeof AppListsIndexRoute
   '/_app/templates/': typeof AppTemplatesIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/lists/$id/edit': typeof AppListsIdEditRoute
   '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
   '/_app/users/roles/new': typeof AppUsersRolesNewRoute
+  '/_app/lists/$id/': typeof AppListsIdIndexRoute
   '/_app/users/roles/': typeof AppUsersRolesIndexRoute
   '/_app/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
   '/_app/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
@@ -200,6 +236,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/campaigns/media'
+    | '/lists/new'
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
@@ -209,10 +246,13 @@ export interface FileRouteTypes {
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/lists/'
     | '/templates/'
     | '/users/'
+    | '/lists/$id/edit'
     | '/users/roles/$id'
     | '/users/roles/new'
+    | '/lists/$id/'
     | '/users/roles/'
     | '/users/roles/lists/$id'
     | '/users/roles/lists/new'
@@ -221,6 +261,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/campaigns/media'
+    | '/lists/new'
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
@@ -230,10 +271,13 @@ export interface FileRouteTypes {
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/lists'
     | '/templates'
     | '/users'
+    | '/lists/$id/edit'
     | '/users/roles/$id'
     | '/users/roles/new'
+    | '/lists/$id'
     | '/users/roles'
     | '/users/roles/lists/$id'
     | '/users/roles/lists/new'
@@ -243,6 +287,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_app/'
     | '/_app/campaigns/media'
+    | '/_app/lists/new'
     | '/_app/settings/logs'
     | '/_app/settings/maintenance'
     | '/_app/subscribers/bounces'
@@ -252,10 +297,13 @@ export interface FileRouteTypes {
     | '/_app/user/profile'
     | '/_app/users/$id'
     | '/_app/users/new'
+    | '/_app/lists/'
     | '/_app/templates/'
     | '/_app/users/'
+    | '/_app/lists/$id/edit'
     | '/_app/users/roles/$id'
     | '/_app/users/roles/new'
+    | '/_app/lists/$id/'
     | '/_app/users/roles/'
     | '/_app/users/roles/lists/$id'
     | '/_app/users/roles/lists/new'
@@ -287,6 +335,20 @@ declare module '@tanstack/react-router' {
       path: '/campaigns/media'
       fullPath: '/campaigns/media'
       preLoaderRoute: typeof AppCampaignsMediaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/': {
+      id: '/_app/lists/'
+      path: '/lists'
+      fullPath: '/lists/'
+      preLoaderRoute: typeof AppListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/new': {
+      id: '/_app/lists/new'
+      path: '/lists/new'
+      fullPath: '/lists/new'
+      preLoaderRoute: typeof AppListsNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings/logs': {
@@ -366,6 +428,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lists/$id/': {
+      id: '/_app/lists/$id/'
+      path: '/lists/$id'
+      fullPath: '/lists/$id/'
+      preLoaderRoute: typeof AppListsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/$id/edit': {
+      id: '/_app/lists/$id/edit'
+      path: '/lists/$id/edit'
+      fullPath: '/lists/$id/edit'
+      preLoaderRoute: typeof AppListsIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/users/roles/': {
       id: '/_app/users/roles/'
       path: '/users/roles'
@@ -414,6 +490,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
+  AppListsNewRoute: typeof AppListsNewRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
   AppSubscribersBouncesRoute: typeof AppSubscribersBouncesRoute
@@ -423,10 +500,13 @@ interface AppRouteChildren {
   AppUserProfileRoute: typeof AppUserProfileRoute
   AppUsersIdRoute: typeof AppUsersIdRoute
   AppUsersNewRoute: typeof AppUsersNewRoute
+  AppListsIndexRoute: typeof AppListsIndexRoute
   AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
+  AppListsIdEditRoute: typeof AppListsIdEditRoute
   AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
   AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
+  AppListsIdIndexRoute: typeof AppListsIdIndexRoute
   AppUsersRolesIndexRoute: typeof AppUsersRolesIndexRoute
   AppUsersRolesListsIdRoute: typeof AppUsersRolesListsIdRoute
   AppUsersRolesListsNewRoute: typeof AppUsersRolesListsNewRoute
@@ -436,6 +516,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppCampaignsMediaRoute: AppCampaignsMediaRoute,
+  AppListsNewRoute: AppListsNewRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
   AppSubscribersBouncesRoute: AppSubscribersBouncesRoute,
@@ -445,10 +526,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppUserProfileRoute: AppUserProfileRoute,
   AppUsersIdRoute: AppUsersIdRoute,
   AppUsersNewRoute: AppUsersNewRoute,
+  AppListsIndexRoute: AppListsIndexRoute,
   AppTemplatesIndexRoute: AppTemplatesIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
+  AppListsIdEditRoute: AppListsIdEditRoute,
   AppUsersRolesIdRoute: AppUsersRolesIdRoute,
   AppUsersRolesNewRoute: AppUsersRolesNewRoute,
+  AppListsIdIndexRoute: AppListsIdIndexRoute,
   AppUsersRolesIndexRoute: AppUsersRolesIndexRoute,
   AppUsersRolesListsIdRoute: AppUsersRolesListsIdRoute,
   AppUsersRolesListsNewRoute: AppUsersRolesListsNewRoute,
