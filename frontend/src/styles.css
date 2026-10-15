@@ -54,6 +54,16 @@
   --info-foreground: oklch(0.45 0.11 245);
   --danger: oklch(0.955 0.03 20);
   --danger-foreground: oklch(0.47 0.16 25);
+  /* Series colors for multi-series charts. */
+  --chart-1: #0055d4;
+  --chart-2: #d99100;
+  --chart-3: #2a9d8f;
+  --chart-4: #e4572e;
+  --chart-5: #7c5cc4;
+  --chart-6: #3a82d6;
+  --chart-7: #6aa6a0;
+  --chart-8: #b5651d;
+
   /* CodeMirror (widgets/editor-theme.ts). */
   --cm-bg: var(--card);
   --cm-fg: var(--foreground);
@@ -121,6 +131,15 @@
   --info-foreground: oklch(0.82 0.09 235);
   --danger: oklch(0.285 0.04 22);
   --danger-foreground: oklch(0.82 0.11 22);
+  --chart-1: #6aa5f5;
+  --chart-2: #f0b84a;
+  --chart-3: #52c0b0;
+  --chart-4: #f28b6b;
+  --chart-5: #a78bfa;
+  --chart-6: #7fb2ee;
+  --chart-7: #8fcbc4;
+  --chart-8: #e0a066;
+
   --cm-selection: #2c4f7c;
   --cm-selection-match: rgb(255 255 255 / 0.14);
   --cm-search-match: rgb(230 185 92 / 0.3);
@@ -170,6 +189,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);

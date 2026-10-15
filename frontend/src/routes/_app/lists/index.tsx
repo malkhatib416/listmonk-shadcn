@@ -312,9 +312,9 @@ function ListsPage() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild data-testid="btn-analytics">
-                <a href={hardHref(window._LM_ROOT, `/admin/lists/analytics?id=${l.id}`)}>
+                <Link to="/lists/analytics" search={{ id: [l.id] }}>
                   <BarChart2 /> {t('globals.terms.analytics')}
-                </a>
+                </Link>
               </DropdownMenuItem>
               {manage || can('subscribers:import') || canCampaign ? (
                 <DropdownMenuSeparator />

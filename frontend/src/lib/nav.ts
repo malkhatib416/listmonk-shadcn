@@ -38,7 +38,7 @@ export const NAV: NavGroup[] = [
     items: [
       item('lists.all', 'menu.allLists', '/admin/lists', [], true),
       item('lists.archived', 'lists.archived', '/admin/lists?status=archived'),
-      item('lists.analytics', 'globals.terms.analytics', '/admin/lists/analytics'),
+      item('lists.analytics', 'globals.terms.analytics', '/admin/lists/analytics', [], true),
       item('lists.forms', 'menu.forms', '/admin/lists/forms', [], true),
     ],
   },
@@ -94,9 +94,13 @@ export const NAV: NavGroup[] = [
         ['templates:get'],
         true,
       ),
-      item('campaigns.analytics', 'globals.terms.analytics', '/admin/campaigns/analytics', [
-        'campaigns:get_analytics',
-      ]),
+      item(
+        'campaigns.analytics',
+        'globals.terms.analytics',
+        '/admin/campaigns/analytics',
+        ['campaigns:get_analytics'],
+        true,
+      ),
     ],
   },
   {

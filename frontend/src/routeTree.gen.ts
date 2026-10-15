@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCampaignsAnalyticsRouteImport } from './routes/_app/campaigns/analytics'
 import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
 import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
+import { Route as AppListsAnalyticsRouteImport } from './routes/_app/lists/analytics'
 import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
 import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
@@ -44,6 +46,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCampaignsAnalyticsRoute = AppCampaignsAnalyticsRouteImport.update({
+  id: '/campaigns/analytics',
+  path: '/campaigns/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
   id: '/campaigns/media',
   path: '/campaigns/media',
@@ -52,6 +59,11 @@ const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
 const AppListsIndexRoute = AppListsIndexRouteImport.update({
   id: '/lists/',
   path: '/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsAnalyticsRoute = AppListsAnalyticsRouteImport.update({
+  id: '/lists/analytics',
+  path: '/lists/analytics',
   getParentRoute: () => AppRoute,
 } as any)
 const AppListsFormsRoute = AppListsFormsRouteImport.update({
@@ -162,7 +174,9 @@ const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/analytics': typeof AppListsAnalyticsRoute
   '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
@@ -188,7 +202,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/analytics': typeof AppListsAnalyticsRoute
   '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
@@ -216,7 +232,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/': typeof AppIndexRoute
+  '/_app/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
   '/_app/campaigns/media': typeof AppCampaignsMediaRoute
+  '/_app/lists/analytics': typeof AppListsAnalyticsRoute
   '/_app/lists/forms': typeof AppListsFormsRoute
   '/_app/lists/new': typeof AppListsNewRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
@@ -244,7 +262,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/campaigns/analytics'
     | '/campaigns/media'
+    | '/lists/analytics'
     | '/lists/forms'
     | '/lists/new'
     | '/settings/logs'
@@ -270,7 +290,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/campaigns/analytics'
     | '/campaigns/media'
+    | '/lists/analytics'
     | '/lists/forms'
     | '/lists/new'
     | '/settings/logs'
@@ -297,7 +319,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/'
+    | '/_app/campaigns/analytics'
     | '/_app/campaigns/media'
+    | '/_app/lists/analytics'
     | '/_app/lists/forms'
     | '/_app/lists/new'
     | '/_app/settings/logs'
@@ -342,6 +366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/campaigns/analytics': {
+      id: '/_app/campaigns/analytics'
+      path: '/campaigns/analytics'
+      fullPath: '/campaigns/analytics'
+      preLoaderRoute: typeof AppCampaignsAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/campaigns/media': {
       id: '/_app/campaigns/media'
       path: '/campaigns/media'
@@ -354,6 +385,13 @@ declare module '@tanstack/react-router' {
       path: '/lists'
       fullPath: '/lists/'
       preLoaderRoute: typeof AppListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/analytics': {
+      id: '/_app/lists/analytics'
+      path: '/lists/analytics'
+      fullPath: '/lists/analytics'
+      preLoaderRoute: typeof AppListsAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lists/forms': {
@@ -508,7 +546,9 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppCampaignsAnalyticsRoute: typeof AppCampaignsAnalyticsRoute
   AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
+  AppListsAnalyticsRoute: typeof AppListsAnalyticsRoute
   AppListsFormsRoute: typeof AppListsFormsRoute
   AppListsNewRoute: typeof AppListsNewRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
@@ -535,7 +575,9 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppCampaignsAnalyticsRoute: AppCampaignsAnalyticsRoute,
   AppCampaignsMediaRoute: AppCampaignsMediaRoute,
+  AppListsAnalyticsRoute: AppListsAnalyticsRoute,
   AppListsFormsRoute: AppListsFormsRoute,
   AppListsNewRoute: AppListsNewRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
