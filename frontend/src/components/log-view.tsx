@@ -21,17 +21,23 @@ export function LogView({ lines }: { lines: LogLine[] }) {
         const el = e.currentTarget;
         stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < STICKY_PX;
       }}
-      className="bg-muted/40 h-[calc(100svh-14rem)] min-h-64 overflow-auto rounded-md border p-3 font-mono text-xs leading-relaxed"
+      className="bg-card h-[calc(100svh-16rem)] min-h-64 overflow-auto rounded-xl border py-2 font-mono text-[13px] leading-6"
       role="log"
       aria-live="off"
     >
       {lines.map((l, i) => (
-        <div key={i} className="break-words">
-          {l.timestamp ? <span className="text-muted-foreground">{l.timestamp} </span> : null}
+        <div
+          key={i}
+          className={cn(
+            'hover:bg-muted/60 px-4 break-words',
+            isErrorLine(l) && 'bg-danger text-danger-foreground hover:bg-danger',
+          )}
+        >
+          {l.timestamp ? <span className="text-muted-foreground/80">{l.timestamp} </span> : null}
           {l.file && l.file !== '*' ? (
             <span className="text-muted-foreground">{l.file}: </span>
           ) : null}
-          <span className={cn(isErrorLine(l) && 'text-destructive')}>{l.message}</span>
+          <span>{l.message}</span>
         </div>
       ))}
     </div>

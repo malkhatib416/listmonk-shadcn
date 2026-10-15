@@ -29,7 +29,15 @@ function LogsPage() {
 
   return (
     <>
-      <PageHeader title={t('logs.title')} />
+      <PageHeader
+        title={t('logs.title')}
+        actions={
+          <span className="bg-success text-success-foreground inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium">
+            <span className="size-1.5 rounded-full bg-current" aria-hidden />
+            Live
+          </span>
+        }
+      />
       {body}
     </>
   );

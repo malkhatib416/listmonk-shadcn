@@ -3,6 +3,7 @@ import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { AppProvider } from '@/components/app-context';
 import { AppSidebar } from '@/components/app-sidebar';
 import { BootstrapError } from '@/components/bootstrap-error';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 import { GlobalNotices } from '@/components/global-notices';
 import { Toaster } from '@/components/ui/sonner';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -29,10 +30,11 @@ function AppLayout() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-12 items-center gap-2 border-b px-4">
-            <SidebarTrigger />
+          <header className="flex h-14 items-center gap-3 px-6">
+            <SidebarTrigger className="-ml-2" />
+            <Breadcrumbs />
           </header>
-          <div className="flex-1 p-6">
+          <div className="animate-in fade-in slide-in-from-bottom-1 mx-auto w-full max-w-6xl flex-1 px-6 pb-10 duration-300 motion-reduce:animate-none">
             <GlobalNotices />
             <Outlet />
           </div>
