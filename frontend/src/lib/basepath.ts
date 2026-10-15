@@ -28,3 +28,8 @@ export function adminRewrite(prefix: string): UrlRewrite {
     },
   };
 }
+
+// href for a link that must be a full page load (an unported page served by Go).
+export function hardHref(root: string | undefined, path: string): string {
+  return (root ?? '') + path;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { adminPrefix, adminRewrite } from './basepath';
+import { adminPrefix, adminRewrite, hardHref } from './basepath';
 
 const run = (prefix: string, dir: 'input' | 'output', path: string) => {
   const url = new URL(`http://x${path}`);
@@ -42,5 +42,13 @@ describe('adminRewrite output (router URL -> browser URL)', () => {
   test('root maps to the bare prefix', () => {
     expect(run('/admin', 'output', '/')).toBe('/admin');
     expect(run('/lm/admin', 'output', '/')).toBe('/lm/admin');
+  });
+});
+
+describe('hardHref', () => {
+  test('prefixes the root path', () => {
+    expect(hardHref('/lm', '/admin/lists')).toBe('/lm/admin/lists');
+    expect(hardHref('', '/admin/lists')).toBe('/admin/lists');
+    expect(hardHref(undefined, '/admin/lists')).toBe('/admin/lists');
   });
 });
