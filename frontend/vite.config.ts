@@ -40,5 +40,9 @@ export default defineConfig(({ command }) => ({
       return undefined;
     },
   },
-  plugins: [tailwindcss(), tanstackStart({ router: { basepath: '/admin' }, spa: { enabled: true } }), viteReact()],
+  plugins: [
+    tailwindcss(),
+    tanstackStart({ router: { basepath: '/admin' }, spa: { enabled: true } }),
+    viteReact(),
+  ],
 }));
