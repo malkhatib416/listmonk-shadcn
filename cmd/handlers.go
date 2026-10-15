@@ -82,8 +82,8 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		g.GET(path.Join(uriAdmin, "/custom.css"), serveCustomAppearance("admin.custom_css"))
 		g.GET(path.Join(uriAdmin, "/custom.js"), serveCustomAppearance("admin.custom_js"))
 
-		// New admin frontend (frontend/). Ported views are served from the SPA shell.
-		g.GET(path.Join(uriAdmin, "/next"), a.ServeAdminApp)
+		// New admin frontend (frontend/). Ported views are served from the SPA shell:
+		// register them with a.ServeAdminApp below, keeping their pm(...) permission.
 
 		g.GET(uriAdmin, a.ViewDashboard)
 		g.GET(path.Join(uriAdmin, "/lists"), a.ViewLists)
@@ -128,7 +128,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 
 		// Settings.
 		g.GET(path.Join(uriAdmin, "/settings"), pm(a.ViewSettings, "settings:get"))
-		g.GET(path.Join(uriAdmin, "/settings/logs"), pm(a.ViewLogs, "settings:get"))
+		g.GET(path.Join(uriAdmin, "/settings/logs"), pm(a.ServeAdminApp, "settings:get"))
 		g.GET(path.Join(uriAdmin, "/settings/maintenance"), pm(a.ViewMaintenance, "settings:maintain"))
 	}
 

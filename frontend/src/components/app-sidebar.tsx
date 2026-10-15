@@ -62,7 +62,7 @@ export function AppSidebar() {
       <SidebarHeader>
         <a
           href={hardHref(window._LM_ROOT, '/admin')}
-          className="flex h-10 items-center px-2 dark:invert"
+          className="flex h-10 items-center px-2 dark:brightness-0 dark:invert"
         >
           <img
             src={hardHref(window._LM_ROOT, '/admin/static/logo.svg')}

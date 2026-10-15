@@ -10,16 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as NextRouteImport } from './routes/next'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NextRoute = NextRouteImport.update({
-  id: '/next',
-  path: '/next',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -27,32 +22,36 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
+  id: '/settings/logs',
+  path: '/settings/logs',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
-  '/next': typeof NextRoute
+  '/settings/logs': typeof AppSettingsLogsRoute
 }
 export interface FileRoutesByTo {
-  '/next': typeof NextRoute
   '/': typeof AppIndexRoute
+  '/settings/logs': typeof AppSettingsLogsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
-  '/next': typeof NextRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/settings/logs': typeof AppSettingsLogsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/next'
+  fullPaths: '/' | '/settings/logs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/next' | '/'
-  id: '__root__' | '/_app' | '/next' | '/_app/'
+  to: '/' | '/settings/logs'
+  id: '__root__' | '/_app' | '/_app/' | '/_app/settings/logs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
-  NextRoute: typeof NextRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -64,13 +63,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/next': {
-      id: '/next'
-      path: '/next'
-      fullPath: '/next'
-      preLoaderRoute: typeof NextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_app/': {
       id: '/_app/'
       path: '/'
@@ -78,22 +70,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/logs': {
+      id: '/_app/settings/logs'
+      path: '/settings/logs'
+      fullPath: '/settings/logs'
+      preLoaderRoute: typeof AppSettingsLogsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppSettingsLogsRoute: typeof AppSettingsLogsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppSettingsLogsRoute: AppSettingsLogsRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
-  NextRoute: NextRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
