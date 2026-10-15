@@ -1,11 +1,12 @@
 import { createRouter } from '@tanstack/react-router';
-import { adminBasepath } from './env';
+import { adminPrefix, adminRewrite } from './lib/basepath';
 import { routeTree } from './routeTree.gen';
 
 export function getRouter() {
   return createRouter({
     routeTree,
-    basepath: adminBasepath(),
+    // Runtime root-URL-aware prefix, see lib/basepath.ts.
+    rewrite: adminRewrite(adminPrefix(typeof window === 'undefined' ? undefined : window._LM_ROOT)),
     scrollRestoration: true,
     defaultNotFoundComponent: () => <p>Not found</p>,
   });

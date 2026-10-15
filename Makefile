@@ -35,7 +35,8 @@ FRONTEND_APP_DEPS = \
 	$(FRONTEND_APP_DEPS_STAMP) \
 	$(FRONTEND_APP)/package.json \
 	$(FRONTEND_APP)/bun.lock \
-	$(FRONTEND_APP)/vite.config.ts \
+	$(FRONTEND_APP)/tsconfig.json \
+	$(wildcard $(FRONTEND_APP)/*.ts) \
 	$(shell find $(FRONTEND_APP)/src -type f)
 
 BIN := listmonk

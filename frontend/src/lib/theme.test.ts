@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import { applyTheme, readStoredTheme, storeTheme, themeInitScript, type ThemeRoot } from './theme';
+import {
+  applyTheme,
+  getLocalStorage,
+  readStoredTheme,
+  storeTheme,
+  themeInitScript,
+  type ThemeRoot,
+} from './theme';
 
 function fakeRoot() {
   const classes = new Set<string>();
@@ -119,5 +126,31 @@ describe('themeInitScript', () => {
   });
   test('blocked storage does not throw', () => {
     expect(() => run(null, true, true)).not.toThrow();
+  });
+});
+
+describe('getLocalStorage', () => {
+  test('returns the storage object when accessible', () => {
+    const ls = memoryStorage();
+    expect(getLocalStorage({ localStorage: ls as unknown as Storage })).toBe(
+      ls as unknown as Storage,
+    );
+  });
+  test('returns null when the localStorage getter itself throws (storage blocked)', () => {
+    const blocked = {
+      get localStorage(): Storage {
+        throw new DOMException('denied', 'SecurityError');
+      },
+    };
+    expect(getLocalStorage(blocked)).toBeNull();
+  });
+});
+
+describe('null storage', () => {
+  test('readStoredTheme(null) means system', () => {
+    expect(readStoredTheme(null)).toBe('system');
+  });
+  test('storeTheme(null, ...) does not throw', () => {
+    expect(() => storeTheme(null, 'dark')).not.toThrow();
   });
 });

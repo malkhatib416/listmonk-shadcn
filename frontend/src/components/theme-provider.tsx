@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { applyTheme, readStoredTheme, storeTheme, type Theme } from '@/lib/theme';
+import { applyTheme, getLocalStorage, readStoredTheme, storeTheme, type Theme } from '@/lib/theme';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -13,7 +13,7 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // Lazy init so the first effect applies the stored theme, not a "system" flash.
   const [theme, setThemeState] = useState<Theme>(() =>
-    typeof window === 'undefined' ? 'system' : readStoredTheme(window.localStorage),
+    typeof window === 'undefined' ? 'system' : readStoredTheme(getLocalStorage(window)),
   );
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
-    storeTheme(window.localStorage, next);
+    storeTheme(getLocalStorage(window), next);
     setThemeState(next);
   }, []);
 

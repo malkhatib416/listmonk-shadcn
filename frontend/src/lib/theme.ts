@@ -7,20 +7,33 @@ export interface ThemeRoot {
   style: { colorScheme: string };
 }
 
-// Same storage contract as the old admin: "light" | "dark", key absent = system.
-export function readStoredTheme(storage: Pick<Storage, 'getItem'>): Theme {
+// Reading window.localStorage itself can throw (SecurityError when site data is
+// blocked), so the property access has to happen inside the try.
+export function getLocalStorage(win: { localStorage: Storage }): Storage | null {
   try {
-    const v = storage.getItem(THEME_KEY);
+    return win.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+// Same storage contract as the old admin: "light" | "dark", key absent = system.
+export function readStoredTheme(storage: Pick<Storage, 'getItem'> | null): Theme {
+  try {
+    const v = storage?.getItem(THEME_KEY);
     return v === 'light' || v === 'dark' ? v : 'system';
   } catch {
     return 'system';
   }
 }
 
-export function storeTheme(storage: Pick<Storage, 'setItem' | 'removeItem'>, theme: Theme): void {
+export function storeTheme(
+  storage: Pick<Storage, 'setItem' | 'removeItem'> | null,
+  theme: Theme,
+): void {
   try {
-    if (theme === 'system') storage.removeItem(THEME_KEY);
-    else storage.setItem(THEME_KEY, theme);
+    if (theme === 'system') storage?.removeItem(THEME_KEY);
+    else storage?.setItem(THEME_KEY, theme);
   } catch {
     // Storage blocked: the theme still applies for this page load.
   }

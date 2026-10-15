@@ -5,10 +5,4 @@ declare global {
   }
 }
 
-export const ADMIN_PATH = '/admin';
-
-// Router basepath. Client only; the SPA shell is prerendered without a root path.
-export function adminBasepath(): string {
-  if (typeof window === 'undefined') return ADMIN_PATH;
-  return (window._LM_ROOT ?? '') + ADMIN_PATH;
-}
+export {};
