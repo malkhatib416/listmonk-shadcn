@@ -115,21 +115,21 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		g.GET(path.Join(uriAdmin, "/subscribers/:id/bounces"), pm(pm(hasID(a.ViewSubscriberBounces), "bounces:get"), "subscribers:get_all", "subscribers:get"))
 
 		// Users and roles. Static segments are registered before the :id param routes.
-		g.GET(path.Join(uriAdmin, "/users"), pm(a.ViewUsers, "users:get"))
-		g.GET(path.Join(uriAdmin, "/users/new"), pm(a.ViewUser, "users:manage"))
-		g.GET(path.Join(uriAdmin, "/users/roles"), pm(a.ViewUserRoles, "roles:get"))
-		g.GET(path.Join(uriAdmin, "/users/roles/new"), pm(a.ViewUserRole, "roles:manage"))
-		g.GET(path.Join(uriAdmin, "/users/roles/lists"), pm(a.ViewListRoles, "roles:get"))
-		g.GET(path.Join(uriAdmin, "/users/roles/lists/new"), pm(a.ViewListRole, "roles:manage"))
-		g.GET(path.Join(uriAdmin, "/users/roles/lists/:id"), pm(hasID(a.ViewListRole), "roles:get"))
-		g.GET(path.Join(uriAdmin, "/users/roles/:id"), pm(hasID(a.ViewUserRole), "roles:get"))
-		g.GET(path.Join(uriAdmin, "/users/:id"), pm(hasID(a.ViewUser), "users:get"))
-		g.GET(path.Join(uriAdmin, "/user/profile"), a.ViewProfile)
+		g.GET(path.Join(uriAdmin, "/users"), pm(a.ServeAdminApp, "users:get"))
+		g.GET(path.Join(uriAdmin, "/users/new"), pm(a.ServeAdminApp, "users:manage"))
+		g.GET(path.Join(uriAdmin, "/users/roles"), pm(a.ServeAdminApp, "roles:get"))
+		g.GET(path.Join(uriAdmin, "/users/roles/new"), pm(a.ServeAdminApp, "roles:manage"))
+		g.GET(path.Join(uriAdmin, "/users/roles/lists"), pm(a.ServeAdminApp, "roles:get"))
+		g.GET(path.Join(uriAdmin, "/users/roles/lists/new"), pm(a.ServeAdminApp, "roles:manage"))
+		g.GET(path.Join(uriAdmin, "/users/roles/lists/:id"), pm(hasID(a.ServeAdminApp), "roles:get"))
+		g.GET(path.Join(uriAdmin, "/users/roles/:id"), pm(hasID(a.ServeAdminApp), "roles:get"))
+		g.GET(path.Join(uriAdmin, "/users/:id"), pm(hasID(a.ServeAdminApp), "users:get"))
+		g.GET(path.Join(uriAdmin, "/user/profile"), a.ServeAdminApp)
 
 		// Settings.
 		g.GET(path.Join(uriAdmin, "/settings"), pm(a.ViewSettings, "settings:get"))
 		g.GET(path.Join(uriAdmin, "/settings/logs"), pm(a.ServeAdminApp, "settings:get"))
-		g.GET(path.Join(uriAdmin, "/settings/maintenance"), pm(a.ViewMaintenance, "settings:maintain"))
+		g.GET(path.Join(uriAdmin, "/settings/maintenance"), pm(a.ServeAdminApp, "settings:maintain"))
 	}
 
 	// =================================================================
@@ -247,6 +247,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		g.PUT("/api/templates/:id/default", pm(hasID(a.TemplateSetDefault), "templates:manage"))
 		g.DELETE("/api/templates/:id", pm(hasID(a.DeleteTemplate), "templates:manage"))
 
+		g.GET("/api/maintenance/db", pm(a.GetMaintenanceDBSettings, "settings:maintain"))
 		g.DELETE("/api/maintenance/subscribers/:type", pm(a.GCSubscribers, "settings:maintain"))
 		g.DELETE("/api/maintenance/analytics/:type", pm(a.GCCampaignAnalytics, "settings:maintain"))
 		g.GET("/api/maintenance/analytics/:type/export", pm(a.ExportCampaignAnalytics, "settings:maintain"))

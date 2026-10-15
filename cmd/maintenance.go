@@ -11,30 +11,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// maintenanceView is the admin page view for the maintenance/garbage-collection page.
-type maintenanceView struct {
-	adminView
-
-	DBSettings struct {
-		Vacuum         bool   `json:"vacuum"`
-		VacuumInterval string `json:"vacuum_cron_interval"`
-	}
-}
-
-// ViewMaintenance renders the HTML view for the maintenance page.
-func (a *App) ViewMaintenance(c echo.Context) error {
+// GetMaintenanceDBSettings returns the database maintenance (vacuum) settings, so the
+// maintenance page needs only settings:maintain, not the full settings:get.
+func (a *App) GetMaintenanceDBSettings(c echo.Context) error {
 	s, err := a.core.GetSettings()
 	if err != nil {
 		return err
 	}
 
-	data := maintenanceView{
-		adminView: newAdminView(c, a.i18n.T("maintenance.title"), "", "settings.maintenance"),
-	}
-	data.DBSettings.Vacuum = s.MaintenanceDB.Vacuum
-	data.DBSettings.VacuumInterval = s.MaintenanceDB.VacuumInterval
-
-	return c.Render(http.StatusOK, "admin-maintenance", data)
+	return c.JSON(http.StatusOK, okResp{struct {
+		Vacuum         bool   `json:"vacuum"`
+		VacuumInterval string `json:"vacuum_cron_interval"`
+	}{s.MaintenanceDB.Vacuum, s.MaintenanceDB.VacuumInterval}})
 }
 
 // GCSubscribers garbage collects (deletes) orphaned or blocklisted subscribers.
