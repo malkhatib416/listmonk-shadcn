@@ -91,7 +91,7 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		g.GET(path.Join(uriAdmin, "/lists/new"), pm(a.ServeAdminApp, "lists:manage_all"))
 		g.GET(path.Join(uriAdmin, "/lists/:id"), hasID(a.ServeAdminApp))
 		g.GET(path.Join(uriAdmin, "/lists/:id/edit"), hasID(a.ServeAdminApp))
-		g.GET(path.Join(uriAdmin, "/lists/forms"), a.ViewForms)
+		g.GET(path.Join(uriAdmin, "/lists/forms"), a.ServeAdminApp)
 		g.GET(path.Join(uriAdmin, "/campaigns"), pm(a.ViewCampaigns, "campaigns:get_all", "campaigns:get"))
 		g.GET(path.Join(uriAdmin, "/campaigns/media"), pm(a.ServeAdminApp, "media:get"))
 		g.GET(path.Join(uriAdmin, "/campaigns/media/fragment"), pm(a.ViewMediaFragment, "media:get"))

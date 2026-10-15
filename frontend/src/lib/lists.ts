@@ -107,3 +107,6 @@ export const breakdownStatuses = (optin: List['optin']): string[] =>
 
 // Normalise a tag typed or pasted into the tag input.
 export const cleanTag = (t: string): string => t.trim().replace(/^#/, '');
+
+export const toggleStr = (xs: string[], x: string): string[] =>
+  xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x];

@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
 import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
+import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
 import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
@@ -51,6 +52,11 @@ const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
 const AppListsIndexRoute = AppListsIndexRouteImport.update({
   id: '/lists/',
   path: '/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsFormsRoute = AppListsFormsRouteImport.update({
+  id: '/lists/forms',
+  path: '/lists/forms',
   getParentRoute: () => AppRoute,
 } as any)
 const AppListsNewRoute = AppListsNewRouteImport.update({
@@ -157,6 +163,7 @@ const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/lists/forms': typeof AppListsFormsRoute
   '/lists/new': typeof AppListsNewRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/campaigns/media': typeof AppCampaignsMediaRoute
+  '/_app/lists/forms': typeof AppListsFormsRoute
   '/_app/lists/new': typeof AppListsNewRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/campaigns/media'
+    | '/lists/forms'
     | '/lists/new'
     | '/settings/logs'
     | '/settings/maintenance'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/campaigns/media'
+    | '/lists/forms'
     | '/lists/new'
     | '/settings/logs'
     | '/settings/maintenance'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_app/'
     | '/_app/campaigns/media'
+    | '/_app/lists/forms'
     | '/_app/lists/new'
     | '/_app/settings/logs'
     | '/_app/settings/maintenance'
@@ -342,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/lists'
       fullPath: '/lists/'
       preLoaderRoute: typeof AppListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/forms': {
+      id: '/_app/lists/forms'
+      path: '/lists/forms'
+      fullPath: '/lists/forms'
+      preLoaderRoute: typeof AppListsFormsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lists/new': {
@@ -490,6 +509,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
+  AppListsFormsRoute: typeof AppListsFormsRoute
   AppListsNewRoute: typeof AppListsNewRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
@@ -516,6 +536,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppCampaignsMediaRoute: AppCampaignsMediaRoute,
+  AppListsFormsRoute: AppListsFormsRoute,
   AppListsNewRoute: AppListsNewRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,

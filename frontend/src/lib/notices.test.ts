@@ -8,6 +8,13 @@ const config = (over: Partial<ServerConfig> = {}): ServerConfig => ({
   version: 'v1',
   messengers: [],
   permissions: [],
+  public_subscription: {
+    enabled: false,
+    captcha_enabled: false,
+    captcha_provider: null,
+    captcha_key: null,
+    redirect_urls: null,
+  },
   needs_restart: false,
   has_legacy_user: false,
   update: null,

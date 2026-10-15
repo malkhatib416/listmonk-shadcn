@@ -18,7 +18,11 @@ function formHTML(page) {
 }
 
 function redirectURLs(page) {
-  return page.locator('[data-testid=redirect-urls] input[type=radio]');
+  return page.locator('[data-testid=redirect-urls] [role=radio]');
+}
+
+function redirectOption(page, value) {
+  return page.locator(`[data-testid=redirect-urls] [role=radio][value="${value}"]`);
 }
 
 // Saving trusted URLs SIGHUPs the process, which re-execs. Wait for the reload
@@ -80,8 +84,8 @@ test.describe('Forms', () => {
   test('generates form HTML for the selected list', async ({ page }) => {
     await page.goto(FORMS);
 
-    const checkbox = publicLists(page).locator('input');
-    const uuid = await checkbox.inputValue();
+    const checkbox = publicLists(page).getByRole('checkbox');
+    const uuid = await checkbox.getAttribute('data-uuid');
 
     await checkbox.check();
     await expect(formHTML(page)).toBeVisible();
@@ -187,9 +191,9 @@ test.describe('Forms redirect URL whitelist', () => {
 
     // A "None" radio plus one per whitelisted URL, with "None" selected by default.
     await expect(redirectURLs(page)).toHaveCount(REDIRECT_URLS.length + 1);
-    await expect(page.locator('[data-testid=redirect-urls] input[value=""]')).toBeChecked();
+    await expect(redirectOption(page, '')).toBeChecked();
     for (const url of REDIRECT_URLS) {
-      await expect(page.locator(`[data-testid=redirect-urls] input[value="${url}"]`)).toHaveCount(1);
+      await expect(redirectOption(page, url)).toHaveCount(1);
     }
   });
 
@@ -197,15 +201,15 @@ test.describe('Forms redirect URL whitelist', () => {
     await page.goto(FORMS);
 
     // A list has to be picked before any form HTML is generated.
-    await publicLists(page).locator('input').first().check();
+    await publicLists(page).getByRole('checkbox').first().check();
     await expect(formHTML(page)).toBeVisible();
     await expect(formHTML(page)).not.toContainText('name="next"');
 
-    await page.locator(`[data-testid=redirect-urls] input[value="${REDIRECT_URLS[1]}"]`).check();
+    await redirectOption(page, REDIRECT_URLS[1]).check();
     await expect(formHTML(page)).toContainText(`<input type="hidden" name="next" value="${REDIRECT_URLS[1]}" />`);
 
     // Switching back to "None" removes it again.
-    await page.locator('[data-testid=redirect-urls] input[value=""]').check();
+    await redirectOption(page, '').check();
     await expect(formHTML(page)).not.toContainText('name="next"');
   });
 

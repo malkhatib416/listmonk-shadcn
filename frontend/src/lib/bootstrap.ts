@@ -12,12 +12,21 @@ export interface PermissionGroup {
   permissions: string[];
 }
 
+export interface PublicSubscription {
+  enabled: boolean;
+  captcha_enabled: boolean;
+  captcha_provider: string | null;
+  captcha_key: string | null;
+  redirect_urls: string[] | null;
+}
+
 export interface ServerConfig {
   root_url: string;
   lang: string;
   version: string;
   messengers: string[];
   permissions: PermissionGroup[];
+  public_subscription: PublicSubscription;
   needs_restart: boolean;
   has_legacy_user: boolean;
   update: UpdateInfo | null;
