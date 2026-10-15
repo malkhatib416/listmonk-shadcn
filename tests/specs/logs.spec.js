@@ -40,6 +40,50 @@ test.describe('Logs', () => {
   });
 });
 
+test.describe('Logs: layout', () => {
+  test('the sidebar collapses fully and reopens, so no group is stranded', async ({ page }) => {
+    await page.goto(PAGE);
+    const dashboard = page.getByRole('link', { name: 'Dashboard' });
+    await expect(dashboard).toBeVisible();
+
+    // The header button; the sidebar rail has the same accessible name.
+    const trigger = page.locator('[data-sidebar="trigger"]');
+    await trigger.click();
+    // Collapsed means off-screen, not an icon rail with unreachable groups.
+    await expect(dashboard).not.toBeInViewport();
+
+    await trigger.click();
+    await expect(dashboard).toBeInViewport();
+  });
+});
+
+test.describe('Logs: global notices', () => {
+  test('shows the restart, update and upstream message banners from the server config', async ({ page }) => {
+    await page.route('**/api/config', async (route) => {
+      const res = await route.fetch();
+      const body = await res.json();
+      body.data.needs_restart = true;
+      body.data.update = {
+        update: { is_new: true, release_version: 'v99.0.0', release_date: '2026-01-02', url: 'https://example.com/r' },
+        messages: [{ title: 'Heads up', description: 'Maintenance soon', url: '', priority: 'high' }],
+      };
+      await route.fulfill({ response: res, json: body });
+    });
+    await page.goto(PAGE);
+
+    await expect(page.locator('[data-cy=needs-restart]')).toContainText('restart');
+    await expect(page.locator('[data-cy=needs-restart]').getByRole('button', { name: 'Restart' })).toBeVisible();
+    await expect(page.locator('[data-cy=update-available]')).toContainText('v99.0.0 (02 Jan 2026)');
+    await expect(page.locator('[data-cy=update-message]')).toContainText('Heads up');
+  });
+
+  test('no banners when the server has nothing to say', async ({ page }) => {
+    await page.goto(PAGE);
+    await expect(page.getByRole('heading', { name: 'Logs' })).toBeVisible();
+    await expect(page.locator('[data-cy=needs-restart]')).toHaveCount(0);
+  });
+});
+
 test.describe('Logs: failure and permission handling', () => {
   test('an expired session sends the user to login with next', async ({ page, context }) => {
     await page.goto(PAGE);

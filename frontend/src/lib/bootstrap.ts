@@ -2,6 +2,11 @@ import { queryOptions } from '@tanstack/react-query';
 import { apiFetch } from './api';
 import type { AppUser } from './permissions';
 
+export interface UpdateInfo {
+  update: { is_new: boolean; release_version: string; release_date: string; url: string };
+  messages: { title: string; description: string; url: string; priority: string }[];
+}
+
 export interface ServerConfig {
   root_url: string;
   lang: string;
@@ -9,7 +14,7 @@ export interface ServerConfig {
   messengers: string[];
   needs_restart: boolean;
   has_legacy_user: boolean;
-  update: unknown | null;
+  update: UpdateInfo | null;
   [k: string]: unknown;
 }
 

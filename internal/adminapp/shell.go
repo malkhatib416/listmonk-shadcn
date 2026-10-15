@@ -38,6 +38,18 @@ func RewriteShell(shell []byte, rootPath string) []byte {
 		out = bytes.ReplaceAll(out, []byte(AssetPrefix), []byte(prefix+AssetPrefix))
 	}
 
+	// The admin's custom CSS/JS (Settings > Appearance), as the old admin linked them.
+	// Last in <head> so the custom CSS overrides the app styles.
+	custom := `<script src="` + prefix + `/admin/custom.js" defer></script>` +
+		`<link rel="stylesheet" href="` + prefix + `/admin/custom.css"/>`
+	if j := bytes.Index(out, []byte("</head>")); j >= 0 {
+		withCustom := make([]byte, 0, len(out)+len(custom))
+		withCustom = append(withCustom, out[:j]...)
+		withCustom = append(withCustom, custom...)
+		withCustom = append(withCustom, out[j:]...)
+		out = withCustom
+	}
+
 	// json.Marshal escapes <, > and & so the value is safe inside <script>.
 	root, _ := json.Marshal(prefix)
 	script := []byte(`<script>window._LM_ROOT=` + string(root) + `;</script>`)

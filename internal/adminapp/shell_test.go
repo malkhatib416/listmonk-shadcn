@@ -81,3 +81,20 @@ func TestRewriteShellWithoutHead(t *testing.T) {
 		t.Fatalf("unexpected output: %s", out)
 	}
 }
+
+// The admin's custom CSS/JS (Settings > Appearance) must load on every ported page.
+// The CSS goes last in <head> so it overrides the app styles.
+func TestRewriteShellLinksCustomAssets(t *testing.T) {
+	for root, p := range map[string]string{"": "", "/lm": "/lm"} {
+		out := string(RewriteShell([]byte(sampleShell), root))
+
+		css := `<link rel="stylesheet" href="` + p + `/admin/custom.css"/></head>`
+		js := `<script src="` + p + `/admin/custom.js" defer></script>`
+		if !strings.Contains(out, css) {
+			t.Fatalf("root %q: custom.css not linked last in <head>: %s", root, out)
+		}
+		if !strings.Contains(out, js) {
+			t.Fatalf("root %q: custom.js not included: %s", root, out)
+		}
+	}
+}

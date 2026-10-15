@@ -58,7 +58,7 @@ export function AppSidebar() {
   const isActive = (item: NavItem) => item.ported && routerPath(item) === pathname;
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader>
         <a
           href={hardHref(window._LM_ROOT, '/admin')}
