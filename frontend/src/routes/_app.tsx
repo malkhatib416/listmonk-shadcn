@@ -1,7 +1,10 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { AppProvider } from '@/components/app-context';
+import { AppSidebar } from '@/components/app-sidebar';
 import { BootstrapError } from '@/components/bootstrap-error';
+import { Toaster } from '@/components/ui/sonner';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { bootstrapQuery } from '@/lib/bootstrap';
 
 export const Route = createFileRoute('/_app')({
@@ -19,7 +22,18 @@ function AppLayout() {
   const { data } = useSuspenseQuery(bootstrapQuery);
   return (
     <AppProvider value={data}>
-      <Outlet />
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-12 items-center gap-2 border-b px-4">
+            <SidebarTrigger />
+          </header>
+          <div className="flex-1 p-6">
+            <Outlet />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+      <Toaster />
     </AppProvider>
   );
 }
