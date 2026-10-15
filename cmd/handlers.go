@@ -81,6 +81,10 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 		// their routes here. Unported /admin/* paths fall through to the 404 handler.
 		g.GET(path.Join(uriAdmin, "/custom.css"), serveCustomAppearance("admin.custom_css"))
 		g.GET(path.Join(uriAdmin, "/custom.js"), serveCustomAppearance("admin.custom_js"))
+
+		// New admin frontend (frontend/). Ported views are served from the SPA shell.
+		g.GET(path.Join(uriAdmin, "/next"), a.ServeAdminApp)
+
 		g.GET(uriAdmin, a.ViewDashboard)
 		g.GET(path.Join(uriAdmin, "/lists"), a.ViewLists)
 		g.GET(path.Join(uriAdmin, "/lists/analytics"), a.ViewListAnalytics)
