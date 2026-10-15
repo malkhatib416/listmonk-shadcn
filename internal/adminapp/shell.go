@@ -4,6 +4,7 @@ package adminapp
 import (
 	"bytes"
 	"encoding/json"
+	"path"
 	"regexp"
 	"strings"
 )
@@ -25,7 +26,9 @@ var reSafeRootPath = regexp.MustCompile(`^/[A-Za-z0-9._~-]+(/[A-Za-z0-9._~-]+)*$
 // URLs with rootPath and injects window._LM_ROOT as the first element of <head>,
 // which the frontend uses for the router basepath and lazy chunk URLs.
 func RewriteShell(shell []byte, rootPath string) []byte {
-	prefix := strings.TrimRight(rootPath, "/")
+	// Collapse repeated slashes: the caller builds rootPath as "/" + url.Path, which
+	// yields "//lm" for a root_url of https://host/lm.
+	prefix := strings.TrimRight(path.Clean("/"+rootPath), "/")
 	if prefix != "" && !reSafeRootPath.MatchString(prefix) {
 		prefix = ""
 	}

@@ -47,11 +47,24 @@ func TestRewriteShellTrailingSlashRootPath(t *testing.T) {
 	}
 }
 
-func TestRewriteShellRejectsUnsafeRootPath(t *testing.T) {
-	for _, root := range []string{`/a</script><b>`, `/a"b`, `/a b`, `//evil`} {
+// cmd.initUrlConfig builds RootPath as "/" + url.Path, so a root_url of
+// https://host/lm arrives here as "//lm".
+func TestRewriteShellNormalizesDoubleSlashRootPath(t *testing.T) {
+	for _, root := range []string{"//lm", "//lm/", "/lm//"} {
 		out := string(RewriteShell([]byte(sampleShell), root))
 
-		if strings.Contains(out, "<b>") || strings.Contains(out, `a"b`) || strings.Contains(out, "evil") {
+		if !strings.Contains(out, `href="/lm/admin/app/assets/app-abc.css"`) ||
+			!strings.Contains(out, `window._LM_ROOT="/lm";`) {
+			t.Fatalf("root %q not normalized to /lm: %s", root, out)
+		}
+	}
+}
+
+func TestRewriteShellRejectsUnsafeRootPath(t *testing.T) {
+	for _, root := range []string{`/a</script><b>`, `/a"b`, `/a b`} {
+		out := string(RewriteShell([]byte(sampleShell), root))
+
+		if strings.Contains(out, "<b>") || strings.Contains(out, `a"b`) {
 			t.Fatalf("root %q leaked into output: %s", root, out)
 		}
 		// Treated as no root path.
