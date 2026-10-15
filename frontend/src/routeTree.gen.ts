@@ -15,6 +15,7 @@ import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/m
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
 import { Route as AppSubscribersBouncesRouteImport } from './routes/_app/subscribers/bounces'
+import { Route as AppSubscribersImportRouteImport } from './routes/_app/subscribers/import'
 import { Route as AppTemplatesIndexRouteImport } from './routes/_app/templates/index'
 import { Route as AppTemplatesIdRouteImport } from './routes/_app/templates/$id'
 import { Route as AppTemplatesNewRouteImport } from './routes/_app/templates/new'
@@ -56,6 +57,11 @@ const AppSettingsMaintenanceRoute = AppSettingsMaintenanceRouteImport.update({
 const AppSubscribersBouncesRoute = AppSubscribersBouncesRouteImport.update({
   id: '/subscribers/bounces',
   path: '/subscribers/bounces',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersImportRoute = AppSubscribersImportRouteImport.update({
+  id: '/subscribers/import',
+  path: '/subscribers/import',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTemplatesIndexRoute = AppTemplatesIndexRouteImport.update({
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/subscribers/import': typeof AppSubscribersImportRoute
   '/templates/$id': typeof AppTemplatesIdRoute
   '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/subscribers/import': typeof AppSubscribersImportRoute
   '/templates/$id': typeof AppTemplatesIdRoute
   '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_app/settings/logs': typeof AppSettingsLogsRoute
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
   '/_app/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/_app/subscribers/import': typeof AppSubscribersImportRoute
   '/_app/templates/$id': typeof AppTemplatesIdRoute
   '/_app/templates/new': typeof AppTemplatesNewRoute
   '/_app/user/profile': typeof AppUserProfileRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
+    | '/subscribers/import'
     | '/templates/$id'
     | '/templates/new'
     | '/user/profile'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/settings/logs'
     | '/settings/maintenance'
     | '/subscribers/bounces'
+    | '/subscribers/import'
     | '/templates/$id'
     | '/templates/new'
     | '/user/profile'
@@ -235,6 +246,7 @@ export interface FileRouteTypes {
     | '/_app/settings/logs'
     | '/_app/settings/maintenance'
     | '/_app/subscribers/bounces'
+    | '/_app/subscribers/import'
     | '/_app/templates/$id'
     | '/_app/templates/new'
     | '/_app/user/profile'
@@ -296,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/subscribers/bounces'
       fullPath: '/subscribers/bounces'
       preLoaderRoute: typeof AppSubscribersBouncesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/import': {
+      id: '/_app/subscribers/import'
+      path: '/subscribers/import'
+      fullPath: '/subscribers/import'
+      preLoaderRoute: typeof AppSubscribersImportRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/templates/': {
@@ -398,6 +417,7 @@ interface AppRouteChildren {
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
   AppSubscribersBouncesRoute: typeof AppSubscribersBouncesRoute
+  AppSubscribersImportRoute: typeof AppSubscribersImportRoute
   AppTemplatesIdRoute: typeof AppTemplatesIdRoute
   AppTemplatesNewRoute: typeof AppTemplatesNewRoute
   AppUserProfileRoute: typeof AppUserProfileRoute
@@ -419,6 +439,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsLogsRoute: AppSettingsLogsRoute,
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
   AppSubscribersBouncesRoute: AppSubscribersBouncesRoute,
+  AppSubscribersImportRoute: AppSubscribersImportRoute,
   AppTemplatesIdRoute: AppTemplatesIdRoute,
   AppTemplatesNewRoute: AppTemplatesNewRoute,
   AppUserProfileRoute: AppUserProfileRoute,

@@ -51,9 +51,13 @@ export const NAV: NavGroup[] = [
         'subscribers:get',
         'subscribers:get_all',
       ]),
-      item('subscribers.import', 'menu.import', '/admin/subscribers/import', [
-        'subscribers:import',
-      ]),
+      item(
+        'subscribers.import',
+        'menu.import',
+        '/admin/subscribers/import',
+        ['subscribers:import'],
+        true,
+      ),
       item(
         'subscribers.bounces',
         'globals.terms.bounces',
