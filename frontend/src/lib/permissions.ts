@@ -6,6 +6,10 @@ export interface AppUser {
   name: string;
   email: string | null;
   avatar: string | null;
+  // Present on /api/profile; used by the profile page.
+  type?: 'user' | 'api';
+  password_login?: boolean;
+  twofa_type?: string;
   user_role: { id: number; name: string; permissions: string[] };
 }
 

@@ -87,9 +87,9 @@ export const NAV: NavGroup[] = [
     label: 'globals.terms.users',
     icon: 'users',
     items: [
-      item('users.users', 'globals.terms.users', '/admin/users', ['users:get']),
-      item('users.user-roles', 'users.userRoles', '/admin/users/roles', ['roles:get']),
-      item('users.list-roles', 'users.listRoles', '/admin/users/roles/lists', ['roles:get']),
+      item('users.users', 'globals.terms.users', '/admin/users', ['users:get'], true),
+      item('users.user-roles', 'users.userRoles', '/admin/users/roles', ['roles:get'], true),
+      item('users.list-roles', 'users.listRoles', '/admin/users/roles/lists', ['roles:get'], true),
     ],
   },
   {
@@ -111,4 +111,19 @@ export function visibleNav(user: AppUser): NavGroup[] {
     ...g,
     items: g.items.filter((i) => i.perms.length === 0 || can(user, ...i.perms)),
   })).filter((g) => g.items.length > 0);
+}
+
+// The ported sidebar item that owns this router path (the longest matching prefix), so
+// "/users/5" keeps Users active while "/users/roles/5" belongs to User roles.
+export function activeNavItem(pathname: string): NavItem | undefined {
+  let best: NavItem | undefined;
+  for (const g of NAV) {
+    for (const i of g.items) {
+      if (!i.ported) continue;
+      const p = i.path.replace(/^\/admin/, '') || '/';
+      const hit = pathname === p || pathname.startsWith(`${p}/`);
+      if (hit && (!best || p.length > best.path.length - '/admin'.length)) best = i;
+    }
+  }
+  return best;
 }

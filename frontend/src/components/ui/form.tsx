@@ -15,6 +15,7 @@ import {
 } from "react-hook-form"
 
 import { Label } from "@/components/ui/label"
+import { useT } from "@/components/app-context"
 
 const Form = FormProvider
 
@@ -136,8 +137,10 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
 }
 
 function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
-  const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : props.children
+  const { error, formMessageId, name } = useFormField()
+  const t = useT()
+  // Validation messages are i18n keys (with the field name as {name}); other text passes through.
+  const body = error ? t(String(error?.message ?? ""), { name }) : props.children
 
   if (!body) {
     return null

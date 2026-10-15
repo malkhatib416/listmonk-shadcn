@@ -7,11 +7,17 @@ export interface UpdateInfo {
   messages: { title: string; description: string; url: string; priority: string }[];
 }
 
+export interface PermissionGroup {
+  group: string;
+  permissions: string[];
+}
+
 export interface ServerConfig {
   root_url: string;
   lang: string;
   version: string;
   messengers: string[];
+  permissions: PermissionGroup[];
   needs_restart: boolean;
   has_legacy_user: boolean;
   update: UpdateInfo | null;

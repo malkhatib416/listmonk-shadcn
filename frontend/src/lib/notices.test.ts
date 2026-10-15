@@ -7,6 +7,7 @@ const config = (over: Partial<ServerConfig> = {}): ServerConfig => ({
   lang: 'en',
   version: 'v1',
   messengers: [],
+  permissions: [],
   needs_restart: false,
   has_legacy_user: false,
   update: null,

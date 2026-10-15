@@ -17,21 +17,14 @@ import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/lib/api';
 import { hardHref } from '@/lib/basepath';
 import { buildNotices } from '@/lib/notices';
+import { waitForRestart } from '@/lib/restart';
 
-const HEALTH_POLL_MS = 500;
-
-// Restart the app, then reload once /api/health answers again.
+// Restart the app, then reload once it answers again.
 async function restartApp(onUpdated: () => void) {
   await apiFetch('/api/admin/reload', { method: 'POST' });
   onUpdated();
-  const poll = setInterval(() => {
-    apiFetch('/api/health')
-      .then(() => {
-        clearInterval(poll);
-        window.location.reload();
-      })
-      .catch(() => {});
-  }, HEALTH_POLL_MS);
+  await waitForRestart();
+  window.location.reload();
 }
 
 function ExternalLink({ href, children }: { href: string; children: string }) {

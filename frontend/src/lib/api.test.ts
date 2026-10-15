@@ -65,6 +65,25 @@ describe('apiFetch', () => {
     expect((init.headers as Record<string, string>).Accept).toBe('application/json');
   });
 
+  test('a string body is sent as JSON, a caller-set content type is kept', async () => {
+    const sent: Record<string, string>[] = [];
+    const capture = (async (_url: string, init?: RequestInit) => {
+      sent.push(init?.headers as Record<string, string>);
+      return json(200, { data: 1 });
+    }) as unknown as typeof fetch;
+    const { d } = deps(json(200, { data: 1 }), { fetch: capture });
+    await apiFetch('/api/x', { method: 'POST', body: '{"a":1}' }, d);
+    await apiFetch('/api/x', { method: 'GET' }, d);
+    await apiFetch(
+      '/api/x',
+      { method: 'POST', body: 'a=1', headers: { 'Content-Type': 'text/plain' } },
+      d,
+    );
+    expect(sent[0]!['Content-Type']).toBe('application/json');
+    expect(sent[1]!['Content-Type']).toBeUndefined();
+    expect(sent[2]!['Content-Type']).toBe('text/plain');
+  });
+
   test('throws ApiError with the server message', async () => {
     const { d, redirects } = deps(json(500, { message: 'boom' }));
     const err = (await apiFetch('/api/x', undefined, d).catch((e) => e)) as ApiError;

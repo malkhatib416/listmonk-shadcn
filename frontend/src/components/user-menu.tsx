@@ -1,7 +1,7 @@
 import { ChevronsUpDown, LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
 import { useApp, useT } from '@/components/app-context';
 import { useTheme } from '@/components/theme-provider';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/user-avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +13,6 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { apiFetch } from '@/lib/api';
 import { hardHref } from '@/lib/basepath';
-
-const initials = (s: string) =>
-  s
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join('') || '?';
 
 export function UserMenu() {
   const { user } = useApp();
@@ -39,10 +31,7 @@ export function UserMenu() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" aria-label={label}>
-              <Avatar className="size-8 rounded-lg">
-                {user.avatar ? <AvatarImage src={user.avatar} alt="" /> : null}
-                <AvatarFallback className="rounded-lg">{initials(label)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar name={label} src={user.avatar} className="size-8 rounded-lg" />
               <span className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{label}</span>
                 <span className="text-muted-foreground truncate text-xs">{user.username}</span>

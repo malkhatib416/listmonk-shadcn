@@ -39,7 +39,12 @@ export async function apiFetch<T>(
   const res = await deps.fetch(apiUrl(deps.root, path), {
     credentials: 'same-origin',
     ...init,
-    headers: { Accept: 'application/json', ...(init.headers as Record<string, string>) },
+    headers: {
+      Accept: 'application/json',
+      // Go rejects a body without a JSON content type (415).
+      ...(typeof init.body === 'string' ? { 'Content-Type': 'application/json' } : {}),
+      ...(init.headers as Record<string, string>),
+    },
   });
 
   if (!res.ok) {

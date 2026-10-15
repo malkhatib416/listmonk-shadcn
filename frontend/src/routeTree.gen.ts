@@ -12,6 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
+import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
+import { Route as AppUserProfileRouteImport } from './routes/_app/user/profile'
+import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
+import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
+import { Route as AppUsersNewRouteImport } from './routes/_app/users/new'
+import { Route as AppUsersRolesIndexRouteImport } from './routes/_app/users/roles/index'
+import { Route as AppUsersRolesIdRouteImport } from './routes/_app/users/roles/$id'
+import { Route as AppUsersRolesNewRouteImport } from './routes/_app/users/roles/new'
+import { Route as AppUsersRolesListsIndexRouteImport } from './routes/_app/users/roles/lists/index'
+import { Route as AppUsersRolesListsIdRouteImport } from './routes/_app/users/roles/lists/$id'
+import { Route as AppUsersRolesListsNewRouteImport } from './routes/_app/users/roles/lists/new'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -27,27 +38,156 @@ const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
   path: '/settings/logs',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsMaintenanceRoute = AppSettingsMaintenanceRouteImport.update({
+  id: '/settings/maintenance',
+  path: '/settings/maintenance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUserProfileRoute = AppUserProfileRouteImport.update({
+  id: '/user/profile',
+  path: '/user/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersIdRoute = AppUsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersNewRoute = AppUsersNewRouteImport.update({
+  id: '/users/new',
+  path: '/users/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesIndexRoute = AppUsersRolesIndexRouteImport.update({
+  id: '/users/roles/',
+  path: '/users/roles/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesIdRoute = AppUsersRolesIdRouteImport.update({
+  id: '/users/roles/$id',
+  path: '/users/roles/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesNewRoute = AppUsersRolesNewRouteImport.update({
+  id: '/users/roles/new',
+  path: '/users/roles/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsIndexRoute = AppUsersRolesListsIndexRouteImport.update({
+  id: '/users/roles/lists/',
+  path: '/users/roles/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsIdRoute = AppUsersRolesListsIdRouteImport.update({
+  id: '/users/roles/lists/$id',
+  path: '/users/roles/lists/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
+  id: '/users/roles/lists/new',
+  path: '/users/roles/lists/new',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/settings/logs': typeof AppSettingsLogsRoute
+  '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/user/profile': typeof AppUserProfileRoute
+  '/users/$id': typeof AppUsersIdRoute
+  '/users/new': typeof AppUsersNewRoute
+  '/users/': typeof AppUsersIndexRoute
+  '/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/users/roles/': typeof AppUsersRolesIndexRoute
+  '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/users/roles/lists/': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/settings/logs': typeof AppSettingsLogsRoute
+  '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/user/profile': typeof AppUserProfileRoute
+  '/users/$id': typeof AppUsersIdRoute
+  '/users/new': typeof AppUsersNewRoute
+  '/users': typeof AppUsersIndexRoute
+  '/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/users/roles': typeof AppUsersRolesIndexRoute
+  '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/users/roles/lists': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/_app/': typeof AppIndexRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
+  '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/_app/user/profile': typeof AppUserProfileRoute
+  '/_app/users/$id': typeof AppUsersIdRoute
+  '/_app/users/new': typeof AppUsersNewRoute
+  '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/_app/users/roles/new': typeof AppUsersRolesNewRoute
+  '/_app/users/roles/': typeof AppUsersRolesIndexRoute
+  '/_app/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/_app/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/_app/users/roles/lists/': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings/logs'
+  fullPaths:
+    | '/'
+    | '/settings/logs'
+    | '/settings/maintenance'
+    | '/user/profile'
+    | '/users/$id'
+    | '/users/new'
+    | '/users/'
+    | '/users/roles/$id'
+    | '/users/roles/new'
+    | '/users/roles/'
+    | '/users/roles/lists/$id'
+    | '/users/roles/lists/new'
+    | '/users/roles/lists/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings/logs'
-  id: '__root__' | '/_app' | '/_app/' | '/_app/settings/logs'
+  to:
+    | '/'
+    | '/settings/logs'
+    | '/settings/maintenance'
+    | '/user/profile'
+    | '/users/$id'
+    | '/users/new'
+    | '/users'
+    | '/users/roles/$id'
+    | '/users/roles/new'
+    | '/users/roles'
+    | '/users/roles/lists/$id'
+    | '/users/roles/lists/new'
+    | '/users/roles/lists'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/'
+    | '/_app/settings/logs'
+    | '/_app/settings/maintenance'
+    | '/_app/user/profile'
+    | '/_app/users/$id'
+    | '/_app/users/new'
+    | '/_app/users/'
+    | '/_app/users/roles/$id'
+    | '/_app/users/roles/new'
+    | '/_app/users/roles/'
+    | '/_app/users/roles/lists/$id'
+    | '/_app/users/roles/lists/new'
+    | '/_app/users/roles/lists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,17 +217,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsLogsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings/maintenance': {
+      id: '/_app/settings/maintenance'
+      path: '/settings/maintenance'
+      fullPath: '/settings/maintenance'
+      preLoaderRoute: typeof AppSettingsMaintenanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/user/profile': {
+      id: '/_app/user/profile'
+      path: '/user/profile'
+      fullPath: '/user/profile'
+      preLoaderRoute: typeof AppUserProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/': {
+      id: '/_app/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AppUsersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/$id': {
+      id: '/_app/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof AppUsersIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/new': {
+      id: '/_app/users/new'
+      path: '/users/new'
+      fullPath: '/users/new'
+      preLoaderRoute: typeof AppUsersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/': {
+      id: '/_app/users/roles/'
+      path: '/users/roles'
+      fullPath: '/users/roles/'
+      preLoaderRoute: typeof AppUsersRolesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/$id': {
+      id: '/_app/users/roles/$id'
+      path: '/users/roles/$id'
+      fullPath: '/users/roles/$id'
+      preLoaderRoute: typeof AppUsersRolesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/new': {
+      id: '/_app/users/roles/new'
+      path: '/users/roles/new'
+      fullPath: '/users/roles/new'
+      preLoaderRoute: typeof AppUsersRolesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/': {
+      id: '/_app/users/roles/lists/'
+      path: '/users/roles/lists'
+      fullPath: '/users/roles/lists/'
+      preLoaderRoute: typeof AppUsersRolesListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/$id': {
+      id: '/_app/users/roles/lists/$id'
+      path: '/users/roles/lists/$id'
+      fullPath: '/users/roles/lists/$id'
+      preLoaderRoute: typeof AppUsersRolesListsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/new': {
+      id: '/_app/users/roles/lists/new'
+      path: '/users/roles/lists/new'
+      fullPath: '/users/roles/lists/new'
+      preLoaderRoute: typeof AppUsersRolesListsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
+  AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
+  AppUserProfileRoute: typeof AppUserProfileRoute
+  AppUsersIdRoute: typeof AppUsersIdRoute
+  AppUsersNewRoute: typeof AppUsersNewRoute
+  AppUsersIndexRoute: typeof AppUsersIndexRoute
+  AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
+  AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
+  AppUsersRolesIndexRoute: typeof AppUsersRolesIndexRoute
+  AppUsersRolesListsIdRoute: typeof AppUsersRolesListsIdRoute
+  AppUsersRolesListsNewRoute: typeof AppUsersRolesListsNewRoute
+  AppUsersRolesListsIndexRoute: typeof AppUsersRolesListsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
+  AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
+  AppUserProfileRoute: AppUserProfileRoute,
+  AppUsersIdRoute: AppUsersIdRoute,
+  AppUsersNewRoute: AppUsersNewRoute,
+  AppUsersIndexRoute: AppUsersIndexRoute,
+  AppUsersRolesIdRoute: AppUsersRolesIdRoute,
+  AppUsersRolesNewRoute: AppUsersRolesNewRoute,
+  AppUsersRolesIndexRoute: AppUsersRolesIndexRoute,
+  AppUsersRolesListsIdRoute: AppUsersRolesListsIdRoute,
+  AppUsersRolesListsNewRoute: AppUsersRolesListsNewRoute,
+  AppUsersRolesListsIndexRoute: AppUsersRolesListsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

@@ -19,7 +19,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { hardHref } from '@/lib/basepath';
-import { visibleNav, type NavItem } from '@/lib/nav';
+import { activeNavItem, visibleNav, type NavItem } from '@/lib/nav';
 
 // Router paths drop the /admin prefix (see lib/basepath.ts).
 const routerPath = (item: NavItem) => item.path.replace(/^\/admin/, '') || '/';
@@ -55,7 +55,8 @@ export function AppSidebar() {
   const t = useT();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const groups = visibleNav(user);
-  const isActive = (item: NavItem) => item.ported && routerPath(item) === pathname;
+  const activeKey = activeNavItem(pathname)?.key;
+  const isActive = (item: NavItem) => item.key === activeKey;
 
   return (
     <Sidebar variant="inset" collapsible="offcanvas">

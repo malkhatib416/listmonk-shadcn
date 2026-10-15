@@ -133,6 +133,7 @@ export function DataTable<T>({
                   <TableRow
                     key={id}
                     data-testid={rowTestId}
+                    data-id={String(id)}
                     data-state={checked ? 'selected' : undefined}
                   >
                     {selection ? (

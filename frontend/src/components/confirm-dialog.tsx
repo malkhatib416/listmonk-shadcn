@@ -60,6 +60,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <AlertDialogCancel>{t('globals.buttons.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className={cn(opts?.destructive && buttonVariants({ variant: 'destructive' }))}
+              data-confirm-ok
               onClick={() => settle(true)}
             >
               {opts?.confirmLabel ?? t('globals.buttons.ok')}
