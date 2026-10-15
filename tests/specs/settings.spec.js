@@ -305,8 +305,10 @@ test.describe('Maintenance: bulk deletion', () => {
       email: 'orphan@example.com', name: 'Orphan', status: 'enabled', lists: [],
     } }));
     await page.goto('/admin/settings/maintenance');
+    const labels = { blocklisted: 'Blocklisted', orphan: 'Orphans' };
     for (const type of ['blocklisted', 'orphan']) {
-      await page.locator('select[x-model=subscriberType]').selectOption(type);
+      await page.getByRole('combobox', { name: 'Data' }).first().click();
+      await page.getByRole('option', { name: labels[type], exact: true }).click();
       await page.locator('[data-cy=btn-delete-subscribers]').click();
       const [res] = await Promise.all([
         page.waitForResponse((r) => r.url().endsWith(`/api/maintenance/subscribers/${type}`)), confirm(page),

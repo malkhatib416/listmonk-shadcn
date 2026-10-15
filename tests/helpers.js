@@ -25,7 +25,8 @@ export async function openMenu(row) {
 
 // Click the "Ok" button on the confirmation dialog.
 export async function confirm(page) {
-  await page.locator('dialog[open] [data-confirm-ok]').click();
+  // The new admin confirms in an alert dialog, the old admin in a <dialog>.
+  await page.locator('[role=alertdialog] [data-confirm-ok], dialog[open] [data-confirm-ok]').click();
 }
 
 // Pick a list by name in an <ot-taginput> list selector. Filling the input
