@@ -44,6 +44,7 @@ services:
       MAILHOG_SMTP_HOST: mailhog
     ports:
       - "127.0.0.1:9000:9000"
+      - "127.0.0.1:5173:5173" # Vite dev server (frontend/)
     depends_on:
       db:
         condition: service_healthy
@@ -52,6 +53,12 @@ services:
       - go-mod:/go/pkg/mod
       - go-build:/root/.cache/go-build
       - admin-dist:/app/static/admin/dist
+      - frontend-dist:/app/frontend/dist
+      - type: volume
+        source: frontend-node-modules
+        target: /app/frontend/node_modules
+        volume:
+          nocopy: true
       - type: volume
         source: node-modules
         target: /app/static/admin/node_modules
@@ -64,3 +71,5 @@ volumes:
   go-build:
   admin-dist:
   node-modules:
+  frontend-dist:
+  frontend-node-modules:

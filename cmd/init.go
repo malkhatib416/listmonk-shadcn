@@ -304,6 +304,14 @@ func initFS(appDir, staticDir, i18nDir string) stuffbin.FileSystem {
 		files = append(files, joinFSPaths(staticDir, staticFiles)...)
 	}
 
+	// New admin frontend build output. Only mapped when it exists locally so a missing
+	// build doesn't stop the app from starting (embedded builds carry it in the binary).
+	if !hasEmbed {
+		if _, err := os.Stat(path.Join(appDir, "frontend/dist/client")); err == nil {
+			files = append(files, joinFSPaths(appDir, []string{"./frontend/dist/client:/admin/app"})...)
+		}
+	}
+
 	// No additional files to load.
 	if len(files) == 0 {
 		return fs
@@ -1047,6 +1055,9 @@ func initHTTPServer(cfg *Config, urlCfg *UrlConfig, i *i18n.I18n, fs stuffbin.Fi
 
 	// Admin (frontend) facing static files (SSR admin JS/CSS/asset bundle).
 	srv.GET("/admin/static/*", echo.WrapHandler(fSrv))
+
+	// New admin frontend bundle (TanStack Start build).
+	srv.GET("/admin/app/*", echo.WrapHandler(fSrv))
 
 	// Public (subscriber) facing media upload files.
 	var (
