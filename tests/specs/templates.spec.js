@@ -36,10 +36,10 @@ test.describe('Templates', () => {
     await page.goto(TEMPLATES);
 
     const row = tplRow(page, 'Default campaign template');
-    // The clone name is entered via a native prompt().
-    page.once('dialog', (d) => d.accept('cloned campaign'));
     await openMenu(row);
-    await row.getByTestId('btn-clone').click();
+    await page.getByTestId('btn-clone').click();
+    await page.getByTestId('clone-name').fill('cloned campaign');
+    await page.getByTestId('btn-clone-ok').click();
 
     await expect(tplRow(page, 'cloned campaign')).toBeVisible();
   });
@@ -48,9 +48,10 @@ test.describe('Templates', () => {
     await page.goto(TEMPLATES);
 
     const row = tplRow(page, 'Sample transactional template');
-    page.once('dialog', (d) => d.accept('cloned tx'));
     await openMenu(row);
-    await row.getByTestId('btn-clone').click();
+    await page.getByTestId('btn-clone').click();
+    await page.getByTestId('clone-name').fill('cloned tx');
+    await page.getByTestId('btn-clone-ok').click();
 
     await expect(tplRow(page, 'cloned tx')).toBeVisible();
   });
@@ -61,13 +62,14 @@ test.describe('Templates', () => {
 
     await page.locator('input[name=name]').fill('edited');
 
-    // The body is a CodeMirror <code-editor>; set its value directly.
+    // The body is a CodeMirror editor: replace its content by typing.
     const body = '<span>test</span><div class="wrap">{{ template "content" . }}</div>';
-    await page.locator('code-editor').evaluate((el, v) => { el.value = v; }, body);
+    await page.locator('.cm-content').click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.insertText(body);
 
-    // Saving PUTs then reloads the same page; wait for the reload before navigating.
     await Promise.all([
-      page.waitForEvent('load'),
+      page.waitForResponse((r) => /\/api\/templates\/\d+$/.test(r.url()) && r.request().method() === 'PUT'),
       page.getByTestId('btn-save').click(),
     ]);
 
@@ -98,13 +100,29 @@ test.describe('Templates', () => {
 
     const row = tplRow(page, 'cloned campaign');
     await openMenu(row);
-    await row.getByTestId('btn-set-default').click();
+    await page.getByTestId('btn-set-default').click();
     await confirm(page);
 
     // The new default can't be deleted; the previous default now can.
     await expect(tplRow(page, 'cloned campaign')).toContainText('Default');
-    await expect(tplRow(page, 'cloned campaign').getByTestId('btn-delete')).toHaveCount(0);
-    await expect(tplRow(page, 'edited').getByTestId('btn-delete')).toHaveCount(1);
+    await openMenu(tplRow(page, 'cloned campaign'));
+    await expect(page.getByTestId('btn-delete')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await openMenu(tplRow(page, 'edited'));
+    await expect(page.getByTestId('btn-delete')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+  });
+
+  test('the new template form enforces the placeholder and previews unsaved content', async ({ page }) => {
+    await page.goto(`${TEMPLATES}/new`);
+    await page.locator('input[name=name]').fill('draft');
+    await page.locator('.cm-content').click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.insertText('<p>no placeholder</p>');
+    // Previewing a campaign template without {{ template "content" . }} is rejected by the server.
+    await page.getByTestId('btn-preview').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
   });
 
   test('deletes templates', async ({ page }) => {
@@ -113,7 +131,7 @@ test.describe('Templates', () => {
     for (const name of ['Default archive template', 'Sample transactional template']) {
       const row = tplRow(page, name);
       await openMenu(row);
-      await row.getByTestId('btn-delete').click();
+      await page.getByTestId('btn-delete').click();
       await confirm(page);
       await expect(row).toHaveCount(0);
     }

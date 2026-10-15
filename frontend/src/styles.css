@@ -54,6 +54,31 @@
   --info-foreground: oklch(0.45 0.11 245);
   --danger: oklch(0.955 0.03 20);
   --danger-foreground: oklch(0.47 0.16 25);
+  /* CodeMirror (widgets/editor-theme.ts). */
+  --cm-bg: var(--card);
+  --cm-fg: var(--foreground);
+  --cm-caret: var(--foreground);
+  --cm-border: var(--border);
+  --cm-selection: #cfe0fa;
+  --cm-selection-match: rgb(0 85 212 / 0.12);
+  --cm-search-match: #ffe9a8;
+  --cm-active-line: rgb(0 0 0 / 0.04);
+  --cm-gutter-fg: var(--muted-foreground);
+  --cm-gutter-active-fg: var(--foreground);
+  --cm-button-bg: var(--muted);
+  --cm-button-active-bg: var(--accent);
+  --cm-keyword: #0055d4;
+  --cm-control: #af00db;
+  --cm-variable: #c8402f;
+  --cm-type: #0055d4;
+  --cm-function: #795e26;
+  --cm-number: #098658;
+  --cm-operator: #383a42;
+  --cm-regexp: #af00db;
+  --cm-string: #3f8a3e;
+  --cm-comment: #8a8680;
+  --cm-link: var(--primary);
+  --cm-invalid: var(--destructive);
 }
 
 .dark {
@@ -96,6 +121,20 @@
   --info-foreground: oklch(0.82 0.09 235);
   --danger: oklch(0.285 0.04 22);
   --danger-foreground: oklch(0.82 0.11 22);
+  --cm-selection: #2c4f7c;
+  --cm-selection-match: rgb(255 255 255 / 0.14);
+  --cm-search-match: rgb(230 185 92 / 0.3);
+  --cm-active-line: rgb(255 255 255 / 0.045);
+  --cm-keyword: #6aabec;
+  --cm-control: #c586c0;
+  --cm-variable: #9cdcfe;
+  --cm-type: #4ec9b0;
+  --cm-function: #dcdcaa;
+  --cm-number: #b5cea8;
+  --cm-operator: #d4d4d4;
+  --cm-regexp: #d16969;
+  --cm-string: #ce9178;
+  --cm-comment: #7d8590;
 }
 
 @theme inline {

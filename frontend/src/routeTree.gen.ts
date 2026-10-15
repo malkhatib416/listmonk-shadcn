@@ -13,6 +13,9 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
+import { Route as AppTemplatesIndexRouteImport } from './routes/_app/templates/index'
+import { Route as AppTemplatesIdRouteImport } from './routes/_app/templates/$id'
+import { Route as AppTemplatesNewRouteImport } from './routes/_app/templates/new'
 import { Route as AppUserProfileRouteImport } from './routes/_app/user/profile'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
 import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
@@ -41,6 +44,21 @@ const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
 const AppSettingsMaintenanceRoute = AppSettingsMaintenanceRouteImport.update({
   id: '/settings/maintenance',
   path: '/settings/maintenance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesIndexRoute = AppTemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesIdRoute = AppTemplatesIdRouteImport.update({
+  id: '/templates/$id',
+  path: '/templates/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesNewRoute = AppTemplatesNewRouteImport.update({
+  id: '/templates/new',
+  path: '/templates/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppUserProfileRoute = AppUserProfileRouteImport.update({
@@ -98,9 +116,12 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/templates/$id': typeof AppTemplatesIdRoute
+  '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/templates/': typeof AppTemplatesIndexRoute
   '/users/': typeof AppUsersIndexRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
@@ -113,9 +134,12 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/settings/logs': typeof AppSettingsLogsRoute
   '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/templates/$id': typeof AppTemplatesIdRoute
+  '/templates/new': typeof AppTemplatesNewRoute
   '/user/profile': typeof AppUserProfileRoute
   '/users/$id': typeof AppUsersIdRoute
   '/users/new': typeof AppUsersNewRoute
+  '/templates': typeof AppTemplatesIndexRoute
   '/users': typeof AppUsersIndexRoute
   '/users/roles/$id': typeof AppUsersRolesIdRoute
   '/users/roles/new': typeof AppUsersRolesNewRoute
@@ -130,9 +154,12 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/settings/logs': typeof AppSettingsLogsRoute
   '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/_app/templates/$id': typeof AppTemplatesIdRoute
+  '/_app/templates/new': typeof AppTemplatesNewRoute
   '/_app/user/profile': typeof AppUserProfileRoute
   '/_app/users/$id': typeof AppUsersIdRoute
   '/_app/users/new': typeof AppUsersNewRoute
+  '/_app/templates/': typeof AppTemplatesIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
   '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
   '/_app/users/roles/new': typeof AppUsersRolesNewRoute
@@ -147,9 +174,12 @@ export interface FileRouteTypes {
     | '/'
     | '/settings/logs'
     | '/settings/maintenance'
+    | '/templates/$id'
+    | '/templates/new'
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/templates/'
     | '/users/'
     | '/users/roles/$id'
     | '/users/roles/new'
@@ -162,9 +192,12 @@ export interface FileRouteTypes {
     | '/'
     | '/settings/logs'
     | '/settings/maintenance'
+    | '/templates/$id'
+    | '/templates/new'
     | '/user/profile'
     | '/users/$id'
     | '/users/new'
+    | '/templates'
     | '/users'
     | '/users/roles/$id'
     | '/users/roles/new'
@@ -178,9 +211,12 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/settings/logs'
     | '/_app/settings/maintenance'
+    | '/_app/templates/$id'
+    | '/_app/templates/new'
     | '/_app/user/profile'
     | '/_app/users/$id'
     | '/_app/users/new'
+    | '/_app/templates/'
     | '/_app/users/'
     | '/_app/users/roles/$id'
     | '/_app/users/roles/new'
@@ -222,6 +258,27 @@ declare module '@tanstack/react-router' {
       path: '/settings/maintenance'
       fullPath: '/settings/maintenance'
       preLoaderRoute: typeof AppSettingsMaintenanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/': {
+      id: '/_app/templates/'
+      path: '/templates'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof AppTemplatesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/$id': {
+      id: '/_app/templates/$id'
+      path: '/templates/$id'
+      fullPath: '/templates/$id'
+      preLoaderRoute: typeof AppTemplatesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/new': {
+      id: '/_app/templates/new'
+      path: '/templates/new'
+      fullPath: '/templates/new'
+      preLoaderRoute: typeof AppTemplatesNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/user/profile': {
@@ -301,9 +358,12 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppSettingsLogsRoute: typeof AppSettingsLogsRoute
   AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
+  AppTemplatesIdRoute: typeof AppTemplatesIdRoute
+  AppTemplatesNewRoute: typeof AppTemplatesNewRoute
   AppUserProfileRoute: typeof AppUserProfileRoute
   AppUsersIdRoute: typeof AppUsersIdRoute
   AppUsersNewRoute: typeof AppUsersNewRoute
+  AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
   AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
   AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
@@ -317,9 +377,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppSettingsLogsRoute: AppSettingsLogsRoute,
   AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
+  AppTemplatesIdRoute: AppTemplatesIdRoute,
+  AppTemplatesNewRoute: AppTemplatesNewRoute,
   AppUserProfileRoute: AppUserProfileRoute,
   AppUsersIdRoute: AppUsersIdRoute,
   AppUsersNewRoute: AppUsersNewRoute,
+  AppTemplatesIndexRoute: AppTemplatesIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
   AppUsersRolesIdRoute: AppUsersRolesIdRoute,
   AppUsersRolesNewRoute: AppUsersRolesNewRoute,

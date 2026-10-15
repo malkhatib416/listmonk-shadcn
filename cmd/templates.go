@@ -29,79 +29,7 @@ const (
 
 var (
 	regexpTplTag = regexp.MustCompile(`{{(\s+)?template\s+?"content"(\s+)?\.(\s+)?}}`)
-
-	// templatesQueryDefaults is the allow list of filter query params.
-	templatesQueryDefaults = map[string]string{
-		"type":     "",
-		"query":    "",
-		"order_by": "created_at",
-		"order":    "asc",
-	}
 )
-
-// templatesView is the admin page view for the templates list page.
-type templatesView struct {
-	adminView
-
-	Templates []models.Template
-	Page      models.PageProps
-	Type      string
-}
-
-// templateView is the admin page view for creating/editing a single template.
-type templateView struct {
-	adminView
-
-	IsNew    bool
-	Template models.Template
-}
-
-// ViewTemplates renders the HTML list view for templates.
-func (a *App) ViewTemplates(c echo.Context) error {
-	q := makeQuery(c.Request().URL.Query(), templatesQueryDefaults)
-	typ := q.Get("type")
-
-	out, err := a.core.GetTemplates(q.Get("query"), typ, true, q.Get("order_by"), q.Get("order"))
-	if err != nil {
-		return err
-	}
-
-	data := templatesView{
-		adminView: newAdminView(c, a.i18n.T("globals.terms.templates"), "", "campaigns.templates"),
-		Templates: out,
-		Page:      models.NewPageProps(q, len(out), 1, 0),
-		Type:      typ,
-	}
-
-	return c.Render(http.StatusOK, "admin-templates", data)
-}
-
-// ViewNewTemplate renders the new template page.
-func (a *App) ViewNewTemplate(c echo.Context) error {
-	data := templateView{
-		adminView: newAdminView(c, a.i18n.T("templates.newTemplate")+" / "+a.i18n.T("globals.terms.templates"), "", "campaigns.templates"),
-		IsNew:     true,
-		Template:  models.Template{Type: models.TemplateTypeCampaign},
-	}
-
-	return c.Render(http.StatusOK, "admin-template", data)
-}
-
-// ViewTemplate renders the single-page editor for an existing template.
-func (a *App) ViewTemplate(c echo.Context) error {
-	id := getID(c)
-	out, err := a.core.GetTemplate(id, false)
-	if err != nil {
-		return err
-	}
-
-	data := templateView{
-		adminView: newAdminView(c, out.Name+" / "+a.i18n.T("globals.terms.templates"), "", "campaigns.templates"),
-		Template:  out,
-	}
-
-	return c.Render(http.StatusOK, "admin-template", data)
-}
 
 // GetTemplate handles the retrieval of a template
 func (a *App) GetTemplate(c echo.Context) error {

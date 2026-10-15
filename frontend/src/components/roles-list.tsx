@@ -16,14 +16,8 @@ import { useConfirm } from '@/components/confirm-dialog';
 import { DataTable, type Column } from '@/components/data-table';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
+import { PromptDialog } from '@/components/prompt-dialog';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,7 +55,6 @@ export function RolesList({ kind }: { kind: Kind }) {
   const data: Role[] | undefined = kind === 'user' ? userRoles.data : listRoles.data;
   const [query, setQuery] = useState('');
   const [cloning, setCloning] = useState<Role | null>(null);
-  const [cloneName, setCloneName] = useState('');
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -159,13 +152,7 @@ export function RolesList({ kind }: { kind: Kind }) {
                       <Pencil /> {t('globals.buttons.edit')}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    data-testid="btn-clone"
-                    onClick={() => {
-                      setCloneName(t('campaigns.copyOf', { name: r.name }));
-                      setCloning(r);
-                    }}
-                  >
+                  <DropdownMenuItem data-testid="btn-clone" onClick={() => setCloning(r)}>
                     <Copy /> {t('globals.buttons.clone')}
                   </DropdownMenuItem>
                   {r.id !== SUPER_ADMIN_ROLE_ID || kind === 'list' ? (
@@ -235,38 +222,15 @@ export function RolesList({ kind }: { kind: Kind }) {
         />
       )}
 
-      <Dialog open={cloning !== null} onOpenChange={(open) => !open && setCloning(null)}>
-        <DialogContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (cloning && cloneName.trim())
-                clone.mutate({ role: cloning, name: cloneName.trim() });
-            }}
-            className="flex flex-col gap-4"
-          >
-            <DialogHeader>
-              <DialogTitle>{t('globals.buttons.clone')}</DialogTitle>
-            </DialogHeader>
-            <Input
-              value={cloneName}
-              onChange={(e) => setCloneName(e.target.value)}
-              aria-label={t('globals.fields.name')}
-              data-testid="clone-name"
-              maxLength={200}
-            />
-            <DialogFooter>
-              <Button
-                type="submit"
-                disabled={clone.isPending || !cloneName.trim()}
-                data-testid="btn-clone-ok"
-              >
-                {t('globals.buttons.clone')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <PromptDialog
+        open={cloning !== null}
+        title={t('globals.buttons.clone')}
+        initial={cloning ? t('campaigns.copyOf', { name: cloning.name }) : ''}
+        confirmLabel={t('globals.buttons.clone')}
+        busy={clone.isPending}
+        onClose={() => setCloning(null)}
+        onSubmit={(name) => cloning && clone.mutate({ role: cloning, name })}
+      />
     </>
   );
 }

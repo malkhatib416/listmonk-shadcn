@@ -76,7 +76,13 @@ export const NAV: NavGroup[] = [
         'media:get',
         'media:manage',
       ]),
-      item('campaigns.templates', 'globals.terms.templates', '/admin/templates', ['templates:get']),
+      item(
+        'campaigns.templates',
+        'globals.terms.templates',
+        '/admin/templates',
+        ['templates:get'],
+        true,
+      ),
       item('campaigns.analytics', 'globals.terms.analytics', '/admin/campaigns/analytics', [
         'campaigns:get_analytics',
       ]),
