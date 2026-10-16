@@ -29,17 +29,8 @@ async function build() {
   // Oat CSS is loaded in <head> as is.
   await cp(path.join(root, 'node_modules/@knadh/oat/oat.min.css'), path.join(dist, 'oat.min.css'));
 
-  // Entry points = modules loaded directly by a <script> tag: the global main.js and
-  // every per-view module under assets/js/views/.
-  const views = (await readdir(path.join(srcJS, 'views')))
-    .filter((f) => f.endsWith('.js'))
-    .map((f) => path.join(srcJS, 'views', f));
-
   const result = await Bun.build({
-    entrypoints: [
-      path.join(srcJS, 'main.js'),
-      ...views,
-    ],
+    entrypoints: [path.join(srcJS, 'main.js')],
     outdir: path.join(dist, 'js'),
     root: srcJS,
     splitting: true,

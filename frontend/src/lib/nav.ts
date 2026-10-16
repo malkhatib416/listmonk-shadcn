@@ -124,7 +124,7 @@ export const NAV: NavGroup[] = [
     label: 'menu.settings',
     icon: 'settings',
     items: [
-      item('settings.all', 'menu.settings', '/admin/settings', ['settings:get']),
+      item('settings.all', 'menu.settings', '/admin/settings', ['settings:get'], true),
       item('settings.logs', 'menu.logs', '/admin/settings/logs', ['settings:get'], true),
       item('settings.maintenance', 'menu.maintenance', '/admin/settings/maintenance', [
         'settings:maintain',

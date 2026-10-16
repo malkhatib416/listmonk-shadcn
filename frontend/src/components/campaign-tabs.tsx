@@ -2,6 +2,7 @@ import { Check, ExternalLink, Paperclip, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { useApp, useT } from '@/components/app-context';
 import { EmptyState } from '@/components/empty-state';
+import { Field, Section } from '@/components/form-field';
 import { ListPicker } from '@/components/list-picker';
 import { StatusBadge } from '@/components/status-badge';
 import { TagInput } from '@/components/tag-input';
@@ -26,7 +27,6 @@ import {
 } from '@/lib/campaign-form';
 import { fileExt } from '@/lib/media';
 import type { Template } from '@/lib/templates';
-import { cn } from '@/lib/utils';
 
 export interface TabProps {
   form: CampaignFormValues;
@@ -39,43 +39,6 @@ export interface TabProps {
 }
 
 export const CONTENT_TYPES: ContentType[] = ['richtext', 'html', 'markdown', 'plain', 'visual'];
-
-export function Section({
-  title,
-  children,
-  className,
-}: {
-  title?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={cn('bg-card flex flex-col gap-4 rounded-xl border p-5', className)}>
-      {title ? <h2 className="text-sm font-semibold">{title}</h2> : null}
-      {children}
-    </section>
-  );
-}
-
-export function Field({
-  label,
-  htmlFor,
-  hint,
-  children,
-}: {
-  label: string;
-  htmlFor?: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
-      {children}
-      {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
-    </div>
-  );
-}
 
 export function FormatSelect({
   id,

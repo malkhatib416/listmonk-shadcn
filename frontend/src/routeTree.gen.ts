@@ -19,6 +19,7 @@ import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
 import { Route as AppListsAnalyticsRouteImport } from './routes/_app/lists/analytics'
 import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
 import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
 import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
 import { Route as AppSubscribersIndexRouteImport } from './routes/_app/subscribers/index'
@@ -95,6 +96,11 @@ const AppListsFormsRoute = AppListsFormsRouteImport.update({
 const AppListsNewRoute = AppListsNewRouteImport.update({
   id: '/lists/new',
   path: '/lists/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/users/new': typeof AppUsersNewRoute
   '/campaigns/': typeof AppCampaignsIndexRoute
   '/lists/': typeof AppListsIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
   '/subscribers/': typeof AppSubscribersIndexRoute
   '/templates/': typeof AppTemplatesIndexRoute
   '/users/': typeof AppUsersIndexRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByTo {
   '/users/new': typeof AppUsersNewRoute
   '/campaigns': typeof AppCampaignsIndexRoute
   '/lists': typeof AppListsIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
   '/subscribers': typeof AppSubscribersIndexRoute
   '/templates': typeof AppTemplatesIndexRoute
   '/users': typeof AppUsersIndexRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/_app/users/new': typeof AppUsersNewRoute
   '/_app/campaigns/': typeof AppCampaignsIndexRoute
   '/_app/lists/': typeof AppListsIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
   '/_app/subscribers/': typeof AppSubscribersIndexRoute
   '/_app/templates/': typeof AppTemplatesIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/campaigns/'
     | '/lists/'
+    | '/settings/'
     | '/subscribers/'
     | '/templates/'
     | '/users/'
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/campaigns'
     | '/lists'
+    | '/settings'
     | '/subscribers'
     | '/templates'
     | '/users'
@@ -458,6 +469,7 @@ export interface FileRouteTypes {
     | '/_app/users/new'
     | '/_app/campaigns/'
     | '/_app/lists/'
+    | '/_app/settings/'
     | '/_app/subscribers/'
     | '/_app/templates/'
     | '/_app/users/'
@@ -552,6 +564,13 @@ declare module '@tanstack/react-router' {
       path: '/lists/new'
       fullPath: '/lists/new'
       preLoaderRoute: typeof AppListsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings/logs': {
@@ -773,6 +792,7 @@ interface AppRouteChildren {
   AppUsersNewRoute: typeof AppUsersNewRoute
   AppCampaignsIndexRoute: typeof AppCampaignsIndexRoute
   AppListsIndexRoute: typeof AppListsIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppSubscribersIndexRoute: typeof AppSubscribersIndexRoute
   AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
@@ -813,6 +833,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppUsersNewRoute: AppUsersNewRoute,
   AppCampaignsIndexRoute: AppCampaignsIndexRoute,
   AppListsIndexRoute: AppListsIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppSubscribersIndexRoute: AppSubscribersIndexRoute,
   AppTemplatesIndexRoute: AppTemplatesIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,

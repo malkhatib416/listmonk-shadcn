@@ -2,13 +2,8 @@ import { ExternalLink, Settings2 } from 'lucide-react';
 import { type RefObject } from 'react';
 import { useT } from '@/components/app-context';
 import { useConfirm } from '@/components/confirm-dialog';
-import {
-  Field,
-  FormatSelect,
-  Section,
-  TemplateSelect,
-  type TabProps,
-} from '@/components/campaign-tabs';
+import { FormatSelect, TemplateSelect, type TabProps } from '@/components/campaign-tabs';
+import { Field, Section } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
