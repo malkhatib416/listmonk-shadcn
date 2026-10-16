@@ -133,3 +133,11 @@ export const runningStatsQuery = (enabled: boolean) =>
     queryFn: async () => (await apiFetch<RunningStats[]>('/api/campaigns/running/stats')) ?? [],
     refetchInterval: 1000,
   });
+
+// True when a row the list still shows as running is absent from the live stats: the
+// campaign finished (or was paused) since the list was loaded, so the list is stale.
+export function stoppedRunning(rows: Campaign[], live: RunningStats[] | undefined): boolean {
+  if (!live) return false;
+  const ids = new Set(live.map((s) => s.id));
+  return rows.some((r) => r.status === 'running' && !ids.has(r.id));
+}

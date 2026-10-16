@@ -209,3 +209,13 @@ export function tabFromHash(hash: string | undefined): CampaignTab {
   const tab = new URLSearchParams((hash ?? '').replace(/^#/, '')).get('tab');
   return CAMPAIGN_TABS.find((t) => t === tab) ?? 'campaign';
 }
+
+// The archive metadata box, for saving the archive settings on their own: it is sent as
+// typed whether or not archiving is currently on.
+export function parseArchiveMeta(
+  s: string,
+): { ok: true; meta: Record<string, unknown> } | { ok: false; detail: string } {
+  if (!s.trim()) return { ok: true, meta: {} };
+  const r = parse<Record<string, unknown>>(s);
+  return r.ok ? { ok: true, meta: r.value } : { ok: false, detail: r.detail };
+}

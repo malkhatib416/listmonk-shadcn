@@ -4,6 +4,7 @@ import {
   campaignsSearchSchema,
   mergeRunningStats,
   progressPercent,
+  stoppedRunning,
   statusTone,
   type Campaign,
 } from './campaigns';
@@ -103,6 +104,21 @@ describe('mergeRunningStats', () => {
   test('no live stats leaves rows as they are', () => {
     const rows = [camp({ id: 1 })];
     expect(mergeRunningStats(rows, [])).toEqual(rows);
+  });
+});
+
+describe('stoppedRunning', () => {
+  const live = (id: number) => ({ id, sent: 1, to_send: 2, rate: 0, status: 'running' });
+  test('a row still shown as running but missing from the live stats has stopped', () => {
+    const rows = [camp({ id: 1, status: 'running' }), camp({ id: 2, status: 'running' })];
+    expect(stoppedRunning(rows, [live(1)])).toBe(true);
+  });
+  test('all running rows present, or none running, means nothing stopped', () => {
+    expect(stoppedRunning([camp({ id: 1, status: 'running' })], [live(1)])).toBe(false);
+    expect(stoppedRunning([camp({ id: 1, status: 'draft' })], [])).toBe(false);
+  });
+  test('before the first live answer nothing is judged', () => {
+    expect(stoppedRunning([camp({ id: 1, status: 'running' })], undefined)).toBe(false);
   });
 });
 

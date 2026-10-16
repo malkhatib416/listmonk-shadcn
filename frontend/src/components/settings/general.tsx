@@ -86,6 +86,7 @@ export function GeneralTab() {
           <TagInput
             id="notify-emails"
             type="email"
+            maxLength={320}
             value={emails.value}
             onChange={emails.onChange}
             placeholder="you@yoursite.com"

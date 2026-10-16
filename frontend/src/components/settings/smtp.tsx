@@ -336,6 +336,7 @@ function ServerBox({
           <Label htmlFor={`smtp-from-${n}`}>{t('settings.smtp.fromAddresses')}</Label>
           <TagInput
             id={`smtp-from-${n}`}
+            maxLength={320}
             value={row.from_addresses}
             onChange={(v) => set('from_addresses', v)}
             placeholder="user@example.com, anothersite.com"

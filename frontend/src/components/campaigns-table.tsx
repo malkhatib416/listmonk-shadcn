@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import {
   BarChart2,
@@ -14,7 +14,7 @@ import {
   UserCheck,
   XCircle,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApp, useCan, useT } from '@/components/app-context';
 import { BulkBar } from '@/components/bulk-bar';
 import { useConfirm } from '@/components/confirm-dialog';
@@ -43,6 +43,7 @@ import {
   mergeRunningStats,
   progressPercent,
   runningStatsQuery,
+  stoppedRunning,
   statusTone,
   type Campaign,
   type CampaignStatus,
@@ -70,6 +71,12 @@ export function CampaignsTable({
   const { data, isPending, error } = useQuery(campaignsQuery(search, listId));
   const hasRunning = (data?.results ?? []).some((c) => c.status === 'running');
   const live = useQuery(runningStatsQuery(hasRunning));
+  const qc = useQueryClient();
+  const stale = stoppedRunning(data?.results ?? [], live.data);
+  useEffect(() => {
+    // A campaign finished or paused since the list was loaded: reload the rows.
+    if (stale) void qc.invalidateQueries({ queryKey: ['campaigns'] });
+  }, [stale, qc]);
   const { selected, allMatching, setSelected, selectAllMatching, clear } = useSelection(
     JSON.stringify([search, listId]),
   );

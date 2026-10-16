@@ -28,6 +28,7 @@ export function MediaTab() {
           onChange={ext.onChange}
           placeholder="jpg, png, gif .."
           id="upload-extensions"
+          maxLength={50}
         />
       </SettingsCard>
 

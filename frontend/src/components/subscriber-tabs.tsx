@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { CheckCircle2, Mail, MoreHorizontal, RefreshCw, Trash2, UserX } from 'lucide-react';
+import { CheckCircle2, MoreHorizontal, RefreshCw, Trash2, UserX } from 'lucide-react';
 import { useApp, useCan, useT } from '@/components/app-context';
 import { useConfirm } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
@@ -209,8 +209,6 @@ export function useSendOptin(sub: Subscriber) {
     success: () => t('subscribers.sentOptinConfirm'),
   });
 }
-
-export const SendOptinIcon = Mail;
 
 // ---- Bounces -----------------------------------------------------------
 

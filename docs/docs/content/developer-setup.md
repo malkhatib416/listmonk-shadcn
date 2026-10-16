@@ -71,7 +71,7 @@ Stats and bounces are inserted with SQL through `docker exec dev-db-1 psql`; set
 
 ### Frontend tests
 
-listmonk maintains a Playwright suite in `tests/` for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bug etc.).
+listmonk maintains a Playwright suite in `tests/` for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bun etc.).
 
 #### Running
 

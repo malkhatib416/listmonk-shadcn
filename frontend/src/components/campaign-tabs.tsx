@@ -410,7 +410,7 @@ export function ArchiveTab({
                     id="c-arch-tpl"
                     value={form.archive_template_id}
                     onChange={(archive_template_id) => patch({ archive_template_id })}
-                    templates={templates}
+                    templates={templates.filter((x) => x.type === 'campaign')}
                     disabled={!allowed || form.content_type === 'visual'}
                   />
                 </Field>

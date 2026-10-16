@@ -21,6 +21,8 @@ import { apiFetch } from '@/lib/api';
 import {
   buildPayload,
   campaignQuery,
+  canArchive,
+  parseArchiveMeta,
   canEdit,
   canSchedule,
   canStart,
@@ -89,6 +91,7 @@ function Editor({
   const canManage = can('campaigns:manage', 'campaigns:manage_all');
   const canSend = can('campaigns:send');
   const status = campaign?.status ?? 'draft';
+  const archivable = campaign ? canArchive(campaign.status, campaign.type) : false;
   const editable = canManage && (isNew || canEdit(status));
 
   const campaignTemplates = templates.filter((x) => x.type === 'campaign');
@@ -218,9 +221,9 @@ function Editor({
   };
 
   const onSaveArchive = () => {
-    const r = buildPayload(form);
-    if (!r.ok) return jsonError(r.field, r.detail);
-    saveArchive.mutate({ meta: r.payload.archive_meta });
+    const r = parseArchiveMeta(form.archiveMetaStr);
+    if (!r.ok) return jsonError('archive_meta', r.detail);
+    saveArchive.mutate({ meta: r.meta });
   };
 
   const onStart = async () => {
@@ -232,7 +235,8 @@ function Editor({
       title: t(`campaigns.status.${next}`),
       description: schedule ? t('campaigns.confirmSchedule') : form.name,
     });
-    if (!ok || !(await onSave())) return;
+    // Sending needs only campaigns:send; the save in front of it needs manage rights.
+    if (!ok || (editable && !(await onSave()))) return;
     try {
       await setStatus.mutateAsync(next);
     } catch {
@@ -336,7 +340,7 @@ function Editor({
         e.preventDefault();
         if (isNew) k.onCreate();
         else if (editable) void k.onSave();
-        else if (canManage) k.onSaveArchive();
+        else if (canManage && archivable) k.onSaveArchive();
       } else if (e.key === 'F9' && !isNew) {
         e.preventDefault();
         k.previewContent();
@@ -344,7 +348,7 @@ function Editor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isNew, editable, canManage]);
+  }, [isNew, editable, canManage, archivable]);
 
   const copy = (v: string) => {
     void navigator.clipboard?.writeText(v);
@@ -413,7 +417,7 @@ function Editor({
                     />
                     <p className="text-muted-foreground text-xs">{t('campaigns.sendTestHelp')}</p>
                     <div className="flex justify-end">
-                      <Button onClick={onTest} disabled={test.isPending || testEmails.length === 0}>
+                      <Button onClick={onTest} disabled={test.isPending}>
                         <Send /> {t('campaigns.send')}
                       </Button>
                     </div>

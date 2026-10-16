@@ -7,6 +7,7 @@ import {
   canStart,
   canUnschedule,
   formFromCampaign,
+  parseArchiveMeta,
   tabFromHash,
   toLocalInput,
   type CampaignDetail,
@@ -146,6 +147,16 @@ describe('buildPayload', () => {
     const r = buildPayload({ ...base, headersStr: '  ', attribsStr: '' });
     expect(r.ok && r.payload.headers).toEqual([]);
     expect(r.ok && r.payload.attribs).toBeNull();
+  });
+});
+
+describe('parseArchiveMeta', () => {
+  test('parses whatever is in the box, even when archiving is switched off', () => {
+    expect(parseArchiveMeta('{"name":"x"}')).toEqual({ ok: true, meta: { name: 'x' } });
+    expect(parseArchiveMeta('  ')).toEqual({ ok: true, meta: {} });
+  });
+  test('bad JSON is reported', () => {
+    expect(parseArchiveMeta('{bad').ok).toBe(false);
   });
 });
 

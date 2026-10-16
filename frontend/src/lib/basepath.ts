@@ -29,7 +29,8 @@ export function adminRewrite(prefix: string): UrlRewrite {
   };
 }
 
-// href for a link that must be a full page load (an unported page served by Go).
+// href for a link that must be a full page load: an API download, or a page served by Go
+// outside the SPA (login).
 export function hardHref(root: string | undefined, path: string): string {
   return (root ?? '') + path;
 }

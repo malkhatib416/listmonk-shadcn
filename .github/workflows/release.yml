@@ -29,10 +29,6 @@ jobs:
         with:
           bun-version: "1.4.3"
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
 
       - name: Login to Docker Registry
         uses: docker/login-action@v3

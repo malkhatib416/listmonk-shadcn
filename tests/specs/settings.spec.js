@@ -354,6 +354,17 @@ test.describe('Settings', () => {
     await expect(js).toHaveText('// public settings test');
   });
 
+  test('validation covers every tab, and shows the tab with the problem', async ({ page }) => {
+    await page.locator('[name="app.root_url"]').fill('not-a-url');
+    await tab(page, 'SMTP').click();
+    const sent = [];
+    page.on('request', (r) => { if (r.method() === 'PUT' && r.url().endsWith('/api/settings')) sent.push(r.url()); });
+    await saveButton(page).click();
+    await expect(tab(page, 'General')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('[name="app.root_url"]')).toBeVisible();
+    expect(sent).toEqual([]);
+  });
+
   test('an invalid saved value is rejected without restarting', async ({ page }) => {
     await page.locator('[name="app.root_url"]').fill('not-a-url');
     const request = page.waitForRequest((r) => r.url().endsWith('/api/settings') && r.method() === 'PUT', { timeout: 1500 }).catch(() => null);

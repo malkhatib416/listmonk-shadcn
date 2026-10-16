@@ -130,8 +130,20 @@ function SettingsEditor({
     void navigate({ to: '.', hash: `tab=${tab}`, replace: true, resetScroll: false });
   };
 
-  const save = async (e: FormEvent) => {
+  const save = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Every tab is in the DOM (hidden ones included), so the browser's required/pattern
+    // checks cover the whole form. Show the tab of the first problem and report it there.
+    const f = e.currentTarget;
+    const bad = [...f.elements].find(
+      (el) => (el as HTMLInputElement).willValidate && !(el as HTMLInputElement).validity.valid,
+    );
+    if (bad) {
+      const tab = bad.closest('[data-tab]')?.getAttribute('data-tab') as SettingsTab | null;
+      if (tab && (match || tab !== active)) selectTab(tab);
+      requestAnimationFrame(() => f.reportValidity());
+      return;
+    }
     const r = buildSettingsPayload(form);
     if (!r.ok) {
       if (r.kind === 'dummy') {
@@ -158,7 +170,7 @@ function SettingsEditor({
 
   return (
     <SettingsProvider value={ctx}>
-      <form onSubmit={(e) => void save(e)} noValidate={false}>
+      <form onSubmit={(e) => void save(e)} noValidate>
         <PageHeader
           title={`${t('settings.title')}${config.version ? ` (${config.version})` : ''}`}
           actions={
@@ -210,11 +222,13 @@ function SettingsEditor({
             ))}
           </div>
           <fieldset disabled={!canManage} className="flex min-w-0 flex-1 flex-col gap-6">
-            {shown.map((tab) => (
+            {SETTINGS_TABS.map((tab) => (
               <div
                 key={tab}
                 role="tabpanel"
                 aria-label={t(LABELS[tab])}
+                data-tab={tab}
+                hidden={!shown.includes(tab)}
                 className="flex flex-col gap-6"
               >
                 {BODIES[tab]()}

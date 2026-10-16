@@ -20,3 +20,4 @@ dist/*
 uploads/
 frontend/dist/
 frontend/.tanstack/
+scripts/.icons/

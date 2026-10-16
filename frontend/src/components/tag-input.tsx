@@ -13,6 +13,7 @@ export function TagInput({
   id,
   className,
   type,
+  maxLength = 50,
 }: {
   value: string[];
   onChange: (tags: string[]) => void;
@@ -22,6 +23,8 @@ export function TagInput({
   className?: string;
   // The text field's input type, e.g. email.
   type?: string;
+  // Longest entry; the default suits tags, addresses need more.
+  maxLength?: number;
 }) {
   const [text, setText] = useState('');
 
@@ -67,7 +70,7 @@ export function TagInput({
         type={type}
         value={text}
         disabled={disabled}
-        maxLength={50}
+        maxLength={maxLength}
         placeholder={value.length === 0 ? placeholder : undefined}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={onKeyDown}

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { FileText, MoreHorizontal, Trash2, UserX, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useApp, useCan, useT } from '@/components/app-context';
@@ -106,12 +106,13 @@ function BouncesPage() {
           />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
-              <a
-                href={`${window._LM_ROOT ?? ''}/admin/subscribers/${b.subscriber_id}`}
+              <Link
+                to="/subscribers/$id"
+                params={{ id: String(b.subscriber_id) }}
                 className="font-medium hover:underline"
               >
                 {b.email}
-              </a>
+              </Link>
               {b.subscriber_status !== 'enabled' ? (
                 <StatusBadge tone="danger" dot>
                   {t(`subscribers.status.${b.subscriber_status}`)}

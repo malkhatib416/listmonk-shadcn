@@ -38,6 +38,7 @@ import (
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/posflag"
 	"github.com/knadh/koanf/v2"
+	"github.com/knadh/listmonk/internal/adminapp"
 	"github.com/knadh/listmonk/internal/auth"
 	"github.com/knadh/listmonk/internal/bounce"
 	"github.com/knadh/listmonk/internal/bounce/mailbox"
@@ -1038,12 +1039,8 @@ func initHTTPServer(cfg *Config, urlCfg *UrlConfig, i *i18n.I18n, fs stuffbin.Fi
 func staticServer(fs stuffbin.FileSystem) http.Handler {
 	fSrv := fs.FileServer()
 
-	// Set long cache headers. New dists have `?v=.AssetVersion` param that changes,
-	// so that'll bust cache.
-	const cacheControl = "public, max-age=31536000, immutable"
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", cacheControl)
+		w.Header().Set("Cache-Control", adminapp.CacheControl(r.URL.Path))
 
 		// Is there a .gz version?
 		f, err := fs.Get(r.URL.Path + ".gz")

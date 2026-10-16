@@ -171,6 +171,7 @@ export function FieldNumber({
       <Input
         id={id}
         type="number"
+        required
         value={Number.isFinite(value) ? value : ''}
         onChange={(e) => onChange(e.target.value === '' ? NaN : Number(e.target.value))}
         aria-describedby={hint ? `${id}-hint` : undefined}
