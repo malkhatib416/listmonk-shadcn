@@ -461,3 +461,129 @@ body:has(section.login) footer a:hover {
     max-width: none;
   }
 }
+
+/* ==========================================================================
+   AlertJO brand for the public pages (subscription, unsubscribe, preferences,
+   opt-in, archive): navy #0f172b, red #d81e25, slate neutrals, rounded corners,
+   as on alertjo.fr. Scoped away from the admin auth pages, which have their own
+   theme above. Forced light: these pages have no dark styling, and the native
+   checkboxes and radios turned black under a dark OS theme.
+   ========================================================================== */
+body:not(:has(section.login)) {
+  color-scheme: light;
+  background: #f8fafc;
+  color: #020618;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body:not(:has(section.login)) .container.wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(2, 6, 24, 0.04), 0 8px 24px rgba(2, 6, 24, 0.05);
+  padding: 40px;
+}
+
+body:not(:has(section.login)) .header {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body:not(:has(section.login)) h1,
+body:not(:has(section.login)) h2,
+body:not(:has(section.login)) h3,
+body:not(:has(section.login)) h4 {
+  color: #020618;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+body:not(:has(section.login)) h2 {
+  font-size: 1.5rem; line-height: 1.3; margin: 0 0 14px;
+}
+
+body:not(:has(section.login)) p,
+body:not(:has(section.login)) label,
+body:not(:has(section.login)) li {
+  color: #334155;
+}
+
+body:not(:has(section.login)) a {
+  color: #0f172b; text-decoration-color: #d81e25; text-underline-offset: 3px;
+}
+
+body:not(:has(section.login)) a:hover {
+  color: #d81e25;
+}
+
+body:not(:has(section.login)) .button {
+  background: #0f172b;
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 12px 26px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+body:not(:has(section.login)) .button:hover {
+  background: #1e293b; color: #fff;
+}
+
+body:not(:has(section.login)) .button.button-outline {
+  background: #fff;
+  color: #0f172b;
+  border: 1px solid #cbd5e1;
+}
+
+body:not(:has(section.login)) .button.button-outline:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172b;
+}
+
+body:not(:has(section.login)) input[type="text"],
+body:not(:has(section.login)) input[type="email"],
+body:not(:has(section.login)) input[type="password"],
+body:not(:has(section.login)) select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 10px 14px;
+}
+
+body:not(:has(section.login)) input:focus {
+  border-color: #0f172b;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(15, 23, 43, 0.15);
+}
+
+body:not(:has(section.login)) input[type="checkbox"],
+body:not(:has(section.login)) input[type="radio"] {
+  accent-color: #0f172b;
+  width: 1rem;
+  height: 1rem;
+  margin: 0 8px 0 0;
+  vertical-align: -2px;
+}
+
+body:not(:has(section.login)) .unsub-all {
+  border-top: 1px solid #e2e8f0;
+}
+
+body:not(:has(section.login)) .lists .description {
+  color: #586a84;
+}
+
+body:not(:has(section.login)) .error {
+  color: #cb0012;
+}
+
+body:not(:has(section.login)) footer.container,
+body:not(:has(section.login)) footer.container a {
+  color: #94a3b8;
+}
+
+body:not(:has(section.login)) footer.container a:hover {
+  color: #0f172b;
+}
