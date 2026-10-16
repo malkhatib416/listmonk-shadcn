@@ -228,3 +228,243 @@ footer.container {
     max-width: none;
   }
 }
+
+/* ==========================================================================
+   Admin auth pages (login, first-time setup, forgot/reset password, 2FA).
+   Scoped to pages that contain section.login, so the public subscription,
+   archive and opt-in pages keep their own look.
+   ========================================================================== */
+@font-face {
+  font-family: "Geist";
+  src: url("fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+body:has(section.login) {
+  --a-bg: #faf9f7;
+  --a-card: #ffffff;
+  --a-fg: #2d2a26;
+  --a-muted: #7a766f;
+  --a-border: #e8e6e3;
+  --a-input: #dcd9d4;
+  --a-primary: #0055d4;
+  --a-primary-hover: #0049b5;
+  --a-primary-fg: #ffffff;
+  --a-ring: rgba(0, 85, 212, 0.28);
+  --a-danger-bg: #fdecec;
+  --a-danger-fg: #9a2b28;
+  --a-logo-filter: none;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) body:has(section.login) {
+    --a-bg: #1c1b19;
+    --a-card: #242321;
+    --a-fg: #ece9e4;
+    --a-muted: #a39f98;
+    --a-border: rgba(255, 255, 255, 0.09);
+    --a-input: rgba(255, 255, 255, 0.16);
+    --a-primary: #5e92ee;
+    --a-primary-hover: #7aa5f2;
+    --a-primary-fg: #0b1220;
+    --a-ring: rgba(94, 146, 238, 0.4);
+    --a-danger-bg: #3a2524;
+    --a-danger-fg: #f0aaa6;
+    --a-logo-filter: brightness(0) invert(1);
+  }
+}
+html[data-theme="dark"] body:has(section.login) {
+  --a-bg: #1c1b19;
+  --a-card: #242321;
+  --a-fg: #ece9e4;
+  --a-muted: #a39f98;
+  --a-border: rgba(255, 255, 255, 0.09);
+  --a-input: rgba(255, 255, 255, 0.16);
+  --a-primary: #5e92ee;
+  --a-primary-hover: #7aa5f2;
+  --a-primary-fg: #0b1220;
+  --a-ring: rgba(94, 146, 238, 0.4);
+  --a-danger-bg: #3a2524;
+  --a-danger-fg: #f0aaa6;
+  --a-logo-filter: brightness(0) invert(1);
+}
+
+body:has(section.login) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--a-bg);
+  color: var(--a-fg);
+  font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body:has(section.login) .container {
+  width: 100%;
+  margin: 0 auto;
+}
+body:has(section.login) .wrap {
+  max-width: 400px;
+  padding: 32px;
+  background: var(--a-card);
+  border: 1px solid var(--a-border);
+  border-radius: 14px;
+  box-shadow: none;
+}
+body:has(section.login) .header {
+  border: 0;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+body:has(section.login) .header .logo img {
+  height: 28px;
+  max-width: 160px;
+  filter: var(--a-logo-filter);
+}
+body:has(section.login) a {
+  color: var(--a-primary);
+  text-decoration: none;
+}
+body:has(section.login) a:hover {
+  color: var(--a-primary-hover);
+  text-decoration: underline;
+}
+
+section.login h2 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+section.login > p {
+  margin: 0 0 16px 0;
+  color: var(--a-muted);
+  font-size: 14px;
+}
+section.login form p {
+  margin: 0 0 16px 0;
+}
+section.login label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--a-fg);
+}
+section.login input[type="text"],
+section.login input[type="email"],
+section.login input[type="password"] {
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--a-fg);
+  border: 1px solid var(--a-input);
+  border-radius: 8px;
+  box-shadow: none;
+  font: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+section.login input:focus {
+  outline: none;
+  border-color: var(--a-primary);
+  box-shadow: 0 0 0 3px var(--a-ring);
+}
+section.login input::placeholder {
+  color: var(--a-muted);
+  opacity: 0.7;
+}
+section.login .submit {
+  margin-top: 8px;
+}
+section.login .button {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--a-primary);
+  color: var(--a-primary-fg);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+section.login .button:hover {
+  background: var(--a-primary-hover);
+  color: var(--a-primary-fg);
+  text-decoration: none;
+}
+section.login .button:active {
+  transform: scale(0.985);
+}
+section.login .button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--a-ring);
+}
+section.login .button.button-outline {
+  background: transparent;
+  color: var(--a-fg);
+  border-color: var(--a-input);
+}
+section.login .button.button-outline:hover {
+  background: var(--a-bg);
+  color: var(--a-fg);
+}
+section.login .button img {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+section.login .error {
+  display: block;
+  padding: 10px 12px;
+  background: var(--a-danger-bg);
+  color: var(--a-danger-fg);
+  border-radius: 8px;
+  font-size: 13px;
+}
+section.login p.center {
+  margin: 20px 0 0 0;
+  color: var(--a-muted);
+}
+section.login input[name="totp_code"] {
+  height: 52px;
+  font-size: 24px;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+body:has(section.login) footer.container {
+  max-width: 400px;
+  margin: 20px auto 0 auto;
+  color: var(--a-muted);
+  font-size: 12px;
+}
+body:has(section.login) footer a {
+  color: var(--a-muted);
+}
+body:has(section.login) footer a:hover {
+  color: var(--a-fg);
+}
+
+@media screen and (max-width: 650px) {
+  body:has(section.login) .wrap {
+    margin: 0 16px;
+    padding: 24px;
+    width: auto;
+    max-width: none;
+  }
+  body:has(section.login) footer.container {
+    max-width: none;
+  }
+}

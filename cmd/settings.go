@@ -18,7 +18,6 @@ import (
 	koanfjson "github.com/knadh/koanf/parsers/json"
 	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
-	"github.com/knadh/listmonk/internal/auth"
 	"github.com/knadh/listmonk/internal/messenger/email"
 	"github.com/knadh/listmonk/internal/notifs"
 	"github.com/knadh/listmonk/models"
@@ -86,61 +85,6 @@ func maskSettings(s *models.Settings) {
 	s.BounceLettermint.Key = strings.Repeat(pwdMask, utf8.RuneCountInString(s.BounceLettermint.Key))
 	s.SecurityCaptcha.HCaptcha.Secret = strings.Repeat(pwdMask, utf8.RuneCountInString(s.SecurityCaptcha.HCaptcha.Secret))
 	s.OIDC.ClientSecret = strings.Repeat(pwdMask, utf8.RuneCountInString(s.OIDC.ClientSecret))
-}
-
-// roleOption is a minimal role representation for the settings OIDC role dropdowns.
-type roleOption struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-// settingsView is the admin page view for the settings form.
-type settingsView struct {
-	adminView
-
-	Settings  models.Settings
-	UserRoles []roleOption
-	ListRoles []roleOption
-	Version   string
-}
-
-// ViewSettings renders the HTML view for the settings form.
-func (a *App) ViewSettings(c echo.Context) error {
-	s, err := a.core.GetSettings()
-	if err != nil {
-		return err
-	}
-	maskSettings(&s)
-
-	// Roles for the OIDC default-role dropdowns (security tab).
-	var userRoles, listRoles []roleOption
-	if can(auth.GetUser(c), auth.PermRolesGet) {
-		ur, err := a.core.GetRoles("", "", "")
-		if err != nil {
-			return err
-		}
-		for _, r := range ur {
-			userRoles = append(userRoles, roleOption{ID: r.ID, Name: r.Name.String})
-		}
-
-		lr, err := a.core.GetListRoles("", "", "")
-		if err != nil {
-			return err
-		}
-		for _, r := range lr {
-			listRoles = append(listRoles, roleOption{ID: r.ID, Name: r.Name.String})
-		}
-	}
-
-	data := settingsView{
-		adminView: newAdminView(c, a.i18n.T("settings.title"), "", "settings.all"),
-		Settings:  s,
-		UserRoles: userRoles,
-		ListRoles: listRoles,
-		Version:   versionString,
-	}
-
-	return c.Render(http.StatusOK, "admin-settings", data)
 }
 
 // UpdateSettings returns settings from the DB.
@@ -450,23 +394,6 @@ func (a *App) handleSettingsRestart(c echo.Context) error {
 	}()
 
 	return c.JSON(http.StatusOK, okResp{true})
-}
-
-// logsView is the admin page view for the log viewer.
-type logsView struct {
-	adminView
-
-	Lines []string
-}
-
-// ViewLogs renders the HTML view for the application log viewer.
-func (a *App) ViewLogs(c echo.Context) error {
-	data := logsView{
-		adminView: newAdminView(c, a.i18n.T("logs.title"), "", "settings.logs"),
-		Lines:     a.bufLog.Lines(),
-	}
-
-	return c.Render(http.StatusOK, "admin-logs", data)
 }
 
 // GetLogs returns the log entries stored in the log buffer.

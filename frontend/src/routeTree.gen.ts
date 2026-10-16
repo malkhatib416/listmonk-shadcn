@@ -9,68 +9,855 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as NextRouteImport } from './routes/next'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppCampaignsIndexRouteImport } from './routes/_app/campaigns/index'
+import { Route as AppCampaignsAnalyticsRouteImport } from './routes/_app/campaigns/analytics'
+import { Route as AppCampaignsMediaRouteImport } from './routes/_app/campaigns/media'
+import { Route as AppCampaignsNewRouteImport } from './routes/_app/campaigns/new'
+import { Route as AppListsIndexRouteImport } from './routes/_app/lists/index'
+import { Route as AppListsAnalyticsRouteImport } from './routes/_app/lists/analytics'
+import { Route as AppListsFormsRouteImport } from './routes/_app/lists/forms'
+import { Route as AppListsNewRouteImport } from './routes/_app/lists/new'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppSettingsLogsRouteImport } from './routes/_app/settings/logs'
+import { Route as AppSettingsMaintenanceRouteImport } from './routes/_app/settings/maintenance'
+import { Route as AppSubscribersIndexRouteImport } from './routes/_app/subscribers/index'
+import { Route as AppSubscribersBouncesRouteImport } from './routes/_app/subscribers/bounces'
+import { Route as AppSubscribersImportRouteImport } from './routes/_app/subscribers/import'
+import { Route as AppSubscribersNewRouteImport } from './routes/_app/subscribers/new'
+import { Route as AppTemplatesIndexRouteImport } from './routes/_app/templates/index'
+import { Route as AppTemplatesIdRouteImport } from './routes/_app/templates/$id'
+import { Route as AppTemplatesNewRouteImport } from './routes/_app/templates/new'
+import { Route as AppUserProfileRouteImport } from './routes/_app/user/profile'
+import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
+import { Route as AppUsersIdRouteImport } from './routes/_app/users/$id'
+import { Route as AppUsersNewRouteImport } from './routes/_app/users/new'
+import { Route as AppCampaignsIdIndexRouteImport } from './routes/_app/campaigns/$id/index'
+import { Route as AppCampaignsIdTabRouteImport } from './routes/_app/campaigns/$id/$tab'
+import { Route as AppListsIdIndexRouteImport } from './routes/_app/lists/$id/index'
+import { Route as AppListsIdEditRouteImport } from './routes/_app/lists/$id/edit'
+import { Route as AppSubscribersIdIndexRouteImport } from './routes/_app/subscribers/$id/index'
+import { Route as AppSubscribersIdBouncesRouteImport } from './routes/_app/subscribers/$id/bounces'
+import { Route as AppSubscribersIdEditRouteImport } from './routes/_app/subscribers/$id/edit'
+import { Route as AppSubscribersIdListsRouteImport } from './routes/_app/subscribers/$id/lists'
+import { Route as AppSubscribersListsIdRouteImport } from './routes/_app/subscribers/lists/$id'
+import { Route as AppUsersRolesIndexRouteImport } from './routes/_app/users/roles/index'
+import { Route as AppUsersRolesIdRouteImport } from './routes/_app/users/roles/$id'
+import { Route as AppUsersRolesNewRouteImport } from './routes/_app/users/roles/new'
+import { Route as AppUsersRolesListsIndexRouteImport } from './routes/_app/users/roles/lists/index'
+import { Route as AppUsersRolesListsIdRouteImport } from './routes/_app/users/roles/lists/$id'
+import { Route as AppUsersRolesListsNewRouteImport } from './routes/_app/users/roles/lists/new'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NextRoute = NextRouteImport.update({
-  id: '/next',
-  path: '/next',
-  getParentRoute: () => rootRouteImport,
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsIndexRoute = AppCampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsAnalyticsRoute = AppCampaignsAnalyticsRouteImport.update({
+  id: '/campaigns/analytics',
+  path: '/campaigns/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsMediaRoute = AppCampaignsMediaRouteImport.update({
+  id: '/campaigns/media',
+  path: '/campaigns/media',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsNewRoute = AppCampaignsNewRouteImport.update({
+  id: '/campaigns/new',
+  path: '/campaigns/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsIndexRoute = AppListsIndexRouteImport.update({
+  id: '/lists/',
+  path: '/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsAnalyticsRoute = AppListsAnalyticsRouteImport.update({
+  id: '/lists/analytics',
+  path: '/lists/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsFormsRoute = AppListsFormsRouteImport.update({
+  id: '/lists/forms',
+  path: '/lists/forms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsNewRoute = AppListsNewRouteImport.update({
+  id: '/lists/new',
+  path: '/lists/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsLogsRoute = AppSettingsLogsRouteImport.update({
+  id: '/settings/logs',
+  path: '/settings/logs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsMaintenanceRoute = AppSettingsMaintenanceRouteImport.update({
+  id: '/settings/maintenance',
+  path: '/settings/maintenance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIndexRoute = AppSubscribersIndexRouteImport.update({
+  id: '/subscribers/',
+  path: '/subscribers/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersBouncesRoute = AppSubscribersBouncesRouteImport.update({
+  id: '/subscribers/bounces',
+  path: '/subscribers/bounces',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersImportRoute = AppSubscribersImportRouteImport.update({
+  id: '/subscribers/import',
+  path: '/subscribers/import',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersNewRoute = AppSubscribersNewRouteImport.update({
+  id: '/subscribers/new',
+  path: '/subscribers/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesIndexRoute = AppTemplatesIndexRouteImport.update({
+  id: '/templates/',
+  path: '/templates/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesIdRoute = AppTemplatesIdRouteImport.update({
+  id: '/templates/$id',
+  path: '/templates/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTemplatesNewRoute = AppTemplatesNewRouteImport.update({
+  id: '/templates/new',
+  path: '/templates/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUserProfileRoute = AppUserProfileRouteImport.update({
+  id: '/user/profile',
+  path: '/user/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersIdRoute = AppUsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersNewRoute = AppUsersNewRouteImport.update({
+  id: '/users/new',
+  path: '/users/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsIdIndexRoute = AppCampaignsIdIndexRouteImport.update({
+  id: '/campaigns/$id/',
+  path: '/campaigns/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCampaignsIdTabRoute = AppCampaignsIdTabRouteImport.update({
+  id: '/campaigns/$id/$tab',
+  path: '/campaigns/$id/$tab',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsIdIndexRoute = AppListsIdIndexRouteImport.update({
+  id: '/lists/$id/',
+  path: '/lists/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppListsIdEditRoute = AppListsIdEditRouteImport.update({
+  id: '/lists/$id/edit',
+  path: '/lists/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdIndexRoute = AppSubscribersIdIndexRouteImport.update({
+  id: '/subscribers/$id/',
+  path: '/subscribers/$id/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdBouncesRoute = AppSubscribersIdBouncesRouteImport.update({
+  id: '/subscribers/$id/bounces',
+  path: '/subscribers/$id/bounces',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdEditRoute = AppSubscribersIdEditRouteImport.update({
+  id: '/subscribers/$id/edit',
+  path: '/subscribers/$id/edit',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersIdListsRoute = AppSubscribersIdListsRouteImport.update({
+  id: '/subscribers/$id/lists',
+  path: '/subscribers/$id/lists',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSubscribersListsIdRoute = AppSubscribersListsIdRouteImport.update({
+  id: '/subscribers/lists/$id',
+  path: '/subscribers/lists/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesIndexRoute = AppUsersRolesIndexRouteImport.update({
+  id: '/users/roles/',
+  path: '/users/roles/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesIdRoute = AppUsersRolesIdRouteImport.update({
+  id: '/users/roles/$id',
+  path: '/users/roles/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesNewRoute = AppUsersRolesNewRouteImport.update({
+  id: '/users/roles/new',
+  path: '/users/roles/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsIndexRoute = AppUsersRolesListsIndexRouteImport.update({
+  id: '/users/roles/lists/',
+  path: '/users/roles/lists/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsIdRoute = AppUsersRolesListsIdRouteImport.update({
+  id: '/users/roles/lists/$id',
+  path: '/users/roles/lists/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppUsersRolesListsNewRoute = AppUsersRolesListsNewRouteImport.update({
+  id: '/users/roles/lists/new',
+  path: '/users/roles/lists/new',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/next': typeof NextRoute
+  '/': typeof AppIndexRoute
+  '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
+  '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
+  '/lists/analytics': typeof AppListsAnalyticsRoute
+  '/lists/forms': typeof AppListsFormsRoute
+  '/lists/new': typeof AppListsNewRoute
+  '/settings/logs': typeof AppSettingsLogsRoute
+  '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/subscribers/import': typeof AppSubscribersImportRoute
+  '/subscribers/new': typeof AppSubscribersNewRoute
+  '/templates/$id': typeof AppTemplatesIdRoute
+  '/templates/new': typeof AppTemplatesNewRoute
+  '/user/profile': typeof AppUserProfileRoute
+  '/users/$id': typeof AppUsersIdRoute
+  '/users/new': typeof AppUsersNewRoute
+  '/campaigns/': typeof AppCampaignsIndexRoute
+  '/lists/': typeof AppListsIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
+  '/subscribers/': typeof AppSubscribersIndexRoute
+  '/templates/': typeof AppTemplatesIndexRoute
+  '/users/': typeof AppUsersIndexRoute
+  '/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
+  '/lists/$id/edit': typeof AppListsIdEditRoute
+  '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
+  '/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/campaigns/$id/': typeof AppCampaignsIdIndexRoute
+  '/lists/$id/': typeof AppListsIdIndexRoute
+  '/subscribers/$id/': typeof AppSubscribersIdIndexRoute
+  '/users/roles/': typeof AppUsersRolesIndexRoute
+  '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/users/roles/lists/': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/next': typeof NextRoute
+  '/': typeof AppIndexRoute
+  '/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
+  '/campaigns/media': typeof AppCampaignsMediaRoute
+  '/campaigns/new': typeof AppCampaignsNewRoute
+  '/lists/analytics': typeof AppListsAnalyticsRoute
+  '/lists/forms': typeof AppListsFormsRoute
+  '/lists/new': typeof AppListsNewRoute
+  '/settings/logs': typeof AppSettingsLogsRoute
+  '/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/subscribers/import': typeof AppSubscribersImportRoute
+  '/subscribers/new': typeof AppSubscribersNewRoute
+  '/templates/$id': typeof AppTemplatesIdRoute
+  '/templates/new': typeof AppTemplatesNewRoute
+  '/user/profile': typeof AppUserProfileRoute
+  '/users/$id': typeof AppUsersIdRoute
+  '/users/new': typeof AppUsersNewRoute
+  '/campaigns': typeof AppCampaignsIndexRoute
+  '/lists': typeof AppListsIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
+  '/subscribers': typeof AppSubscribersIndexRoute
+  '/templates': typeof AppTemplatesIndexRoute
+  '/users': typeof AppUsersIndexRoute
+  '/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
+  '/lists/$id/edit': typeof AppListsIdEditRoute
+  '/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
+  '/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/users/roles/new': typeof AppUsersRolesNewRoute
+  '/campaigns/$id': typeof AppCampaignsIdIndexRoute
+  '/lists/$id': typeof AppListsIdIndexRoute
+  '/subscribers/$id': typeof AppSubscribersIdIndexRoute
+  '/users/roles': typeof AppUsersRolesIndexRoute
+  '/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/users/roles/lists': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/next': typeof NextRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/': typeof AppIndexRoute
+  '/_app/campaigns/analytics': typeof AppCampaignsAnalyticsRoute
+  '/_app/campaigns/media': typeof AppCampaignsMediaRoute
+  '/_app/campaigns/new': typeof AppCampaignsNewRoute
+  '/_app/lists/analytics': typeof AppListsAnalyticsRoute
+  '/_app/lists/forms': typeof AppListsFormsRoute
+  '/_app/lists/new': typeof AppListsNewRoute
+  '/_app/settings/logs': typeof AppSettingsLogsRoute
+  '/_app/settings/maintenance': typeof AppSettingsMaintenanceRoute
+  '/_app/subscribers/bounces': typeof AppSubscribersBouncesRoute
+  '/_app/subscribers/import': typeof AppSubscribersImportRoute
+  '/_app/subscribers/new': typeof AppSubscribersNewRoute
+  '/_app/templates/$id': typeof AppTemplatesIdRoute
+  '/_app/templates/new': typeof AppTemplatesNewRoute
+  '/_app/user/profile': typeof AppUserProfileRoute
+  '/_app/users/$id': typeof AppUsersIdRoute
+  '/_app/users/new': typeof AppUsersNewRoute
+  '/_app/campaigns/': typeof AppCampaignsIndexRoute
+  '/_app/lists/': typeof AppListsIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/subscribers/': typeof AppSubscribersIndexRoute
+  '/_app/templates/': typeof AppTemplatesIndexRoute
+  '/_app/users/': typeof AppUsersIndexRoute
+  '/_app/campaigns/$id/$tab': typeof AppCampaignsIdTabRoute
+  '/_app/lists/$id/edit': typeof AppListsIdEditRoute
+  '/_app/subscribers/$id/bounces': typeof AppSubscribersIdBouncesRoute
+  '/_app/subscribers/$id/edit': typeof AppSubscribersIdEditRoute
+  '/_app/subscribers/$id/lists': typeof AppSubscribersIdListsRoute
+  '/_app/subscribers/lists/$id': typeof AppSubscribersListsIdRoute
+  '/_app/users/roles/$id': typeof AppUsersRolesIdRoute
+  '/_app/users/roles/new': typeof AppUsersRolesNewRoute
+  '/_app/campaigns/$id/': typeof AppCampaignsIdIndexRoute
+  '/_app/lists/$id/': typeof AppListsIdIndexRoute
+  '/_app/subscribers/$id/': typeof AppSubscribersIdIndexRoute
+  '/_app/users/roles/': typeof AppUsersRolesIndexRoute
+  '/_app/users/roles/lists/$id': typeof AppUsersRolesListsIdRoute
+  '/_app/users/roles/lists/new': typeof AppUsersRolesListsNewRoute
+  '/_app/users/roles/lists/': typeof AppUsersRolesListsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/next'
+  fullPaths:
+    | '/'
+    | '/campaigns/analytics'
+    | '/campaigns/media'
+    | '/campaigns/new'
+    | '/lists/analytics'
+    | '/lists/forms'
+    | '/lists/new'
+    | '/settings/logs'
+    | '/settings/maintenance'
+    | '/subscribers/bounces'
+    | '/subscribers/import'
+    | '/subscribers/new'
+    | '/templates/$id'
+    | '/templates/new'
+    | '/user/profile'
+    | '/users/$id'
+    | '/users/new'
+    | '/campaigns/'
+    | '/lists/'
+    | '/settings/'
+    | '/subscribers/'
+    | '/templates/'
+    | '/users/'
+    | '/campaigns/$id/$tab'
+    | '/lists/$id/edit'
+    | '/subscribers/$id/bounces'
+    | '/subscribers/$id/edit'
+    | '/subscribers/$id/lists'
+    | '/subscribers/lists/$id'
+    | '/users/roles/$id'
+    | '/users/roles/new'
+    | '/campaigns/$id/'
+    | '/lists/$id/'
+    | '/subscribers/$id/'
+    | '/users/roles/'
+    | '/users/roles/lists/$id'
+    | '/users/roles/lists/new'
+    | '/users/roles/lists/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/next'
-  id: '__root__' | '/' | '/next'
+  to:
+    | '/'
+    | '/campaigns/analytics'
+    | '/campaigns/media'
+    | '/campaigns/new'
+    | '/lists/analytics'
+    | '/lists/forms'
+    | '/lists/new'
+    | '/settings/logs'
+    | '/settings/maintenance'
+    | '/subscribers/bounces'
+    | '/subscribers/import'
+    | '/subscribers/new'
+    | '/templates/$id'
+    | '/templates/new'
+    | '/user/profile'
+    | '/users/$id'
+    | '/users/new'
+    | '/campaigns'
+    | '/lists'
+    | '/settings'
+    | '/subscribers'
+    | '/templates'
+    | '/users'
+    | '/campaigns/$id/$tab'
+    | '/lists/$id/edit'
+    | '/subscribers/$id/bounces'
+    | '/subscribers/$id/edit'
+    | '/subscribers/$id/lists'
+    | '/subscribers/lists/$id'
+    | '/users/roles/$id'
+    | '/users/roles/new'
+    | '/campaigns/$id'
+    | '/lists/$id'
+    | '/subscribers/$id'
+    | '/users/roles'
+    | '/users/roles/lists/$id'
+    | '/users/roles/lists/new'
+    | '/users/roles/lists'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/_app/'
+    | '/_app/campaigns/analytics'
+    | '/_app/campaigns/media'
+    | '/_app/campaigns/new'
+    | '/_app/lists/analytics'
+    | '/_app/lists/forms'
+    | '/_app/lists/new'
+    | '/_app/settings/logs'
+    | '/_app/settings/maintenance'
+    | '/_app/subscribers/bounces'
+    | '/_app/subscribers/import'
+    | '/_app/subscribers/new'
+    | '/_app/templates/$id'
+    | '/_app/templates/new'
+    | '/_app/user/profile'
+    | '/_app/users/$id'
+    | '/_app/users/new'
+    | '/_app/campaigns/'
+    | '/_app/lists/'
+    | '/_app/settings/'
+    | '/_app/subscribers/'
+    | '/_app/templates/'
+    | '/_app/users/'
+    | '/_app/campaigns/$id/$tab'
+    | '/_app/lists/$id/edit'
+    | '/_app/subscribers/$id/bounces'
+    | '/_app/subscribers/$id/edit'
+    | '/_app/subscribers/$id/lists'
+    | '/_app/subscribers/lists/$id'
+    | '/_app/users/roles/$id'
+    | '/_app/users/roles/new'
+    | '/_app/campaigns/$id/'
+    | '/_app/lists/$id/'
+    | '/_app/subscribers/$id/'
+    | '/_app/users/roles/'
+    | '/_app/users/roles/lists/$id'
+    | '/_app/users/roles/lists/new'
+    | '/_app/users/roles/lists/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  NextRoute: typeof NextRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/next': {
-      id: '/next'
-      path: '/next'
-      fullPath: '/next'
-      preLoaderRoute: typeof NextRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/': {
+      id: '/_app/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof AppCampaignsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/analytics': {
+      id: '/_app/campaigns/analytics'
+      path: '/campaigns/analytics'
+      fullPath: '/campaigns/analytics'
+      preLoaderRoute: typeof AppCampaignsAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/media': {
+      id: '/_app/campaigns/media'
+      path: '/campaigns/media'
+      fullPath: '/campaigns/media'
+      preLoaderRoute: typeof AppCampaignsMediaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/new': {
+      id: '/_app/campaigns/new'
+      path: '/campaigns/new'
+      fullPath: '/campaigns/new'
+      preLoaderRoute: typeof AppCampaignsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/': {
+      id: '/_app/lists/'
+      path: '/lists'
+      fullPath: '/lists/'
+      preLoaderRoute: typeof AppListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/analytics': {
+      id: '/_app/lists/analytics'
+      path: '/lists/analytics'
+      fullPath: '/lists/analytics'
+      preLoaderRoute: typeof AppListsAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/forms': {
+      id: '/_app/lists/forms'
+      path: '/lists/forms'
+      fullPath: '/lists/forms'
+      preLoaderRoute: typeof AppListsFormsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/new': {
+      id: '/_app/lists/new'
+      path: '/lists/new'
+      fullPath: '/lists/new'
+      preLoaderRoute: typeof AppListsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/logs': {
+      id: '/_app/settings/logs'
+      path: '/settings/logs'
+      fullPath: '/settings/logs'
+      preLoaderRoute: typeof AppSettingsLogsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/maintenance': {
+      id: '/_app/settings/maintenance'
+      path: '/settings/maintenance'
+      fullPath: '/settings/maintenance'
+      preLoaderRoute: typeof AppSettingsMaintenanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/': {
+      id: '/_app/subscribers/'
+      path: '/subscribers'
+      fullPath: '/subscribers/'
+      preLoaderRoute: typeof AppSubscribersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/bounces': {
+      id: '/_app/subscribers/bounces'
+      path: '/subscribers/bounces'
+      fullPath: '/subscribers/bounces'
+      preLoaderRoute: typeof AppSubscribersBouncesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/import': {
+      id: '/_app/subscribers/import'
+      path: '/subscribers/import'
+      fullPath: '/subscribers/import'
+      preLoaderRoute: typeof AppSubscribersImportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/new': {
+      id: '/_app/subscribers/new'
+      path: '/subscribers/new'
+      fullPath: '/subscribers/new'
+      preLoaderRoute: typeof AppSubscribersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/': {
+      id: '/_app/templates/'
+      path: '/templates'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof AppTemplatesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/$id': {
+      id: '/_app/templates/$id'
+      path: '/templates/$id'
+      fullPath: '/templates/$id'
+      preLoaderRoute: typeof AppTemplatesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/templates/new': {
+      id: '/_app/templates/new'
+      path: '/templates/new'
+      fullPath: '/templates/new'
+      preLoaderRoute: typeof AppTemplatesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/user/profile': {
+      id: '/_app/user/profile'
+      path: '/user/profile'
+      fullPath: '/user/profile'
+      preLoaderRoute: typeof AppUserProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/': {
+      id: '/_app/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AppUsersIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/$id': {
+      id: '/_app/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof AppUsersIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/new': {
+      id: '/_app/users/new'
+      path: '/users/new'
+      fullPath: '/users/new'
+      preLoaderRoute: typeof AppUsersNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/$id/': {
+      id: '/_app/campaigns/$id/'
+      path: '/campaigns/$id'
+      fullPath: '/campaigns/$id/'
+      preLoaderRoute: typeof AppCampaignsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/campaigns/$id/$tab': {
+      id: '/_app/campaigns/$id/$tab'
+      path: '/campaigns/$id/$tab'
+      fullPath: '/campaigns/$id/$tab'
+      preLoaderRoute: typeof AppCampaignsIdTabRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/$id/': {
+      id: '/_app/lists/$id/'
+      path: '/lists/$id'
+      fullPath: '/lists/$id/'
+      preLoaderRoute: typeof AppListsIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lists/$id/edit': {
+      id: '/_app/lists/$id/edit'
+      path: '/lists/$id/edit'
+      fullPath: '/lists/$id/edit'
+      preLoaderRoute: typeof AppListsIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/': {
+      id: '/_app/subscribers/$id/'
+      path: '/subscribers/$id'
+      fullPath: '/subscribers/$id/'
+      preLoaderRoute: typeof AppSubscribersIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/bounces': {
+      id: '/_app/subscribers/$id/bounces'
+      path: '/subscribers/$id/bounces'
+      fullPath: '/subscribers/$id/bounces'
+      preLoaderRoute: typeof AppSubscribersIdBouncesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/edit': {
+      id: '/_app/subscribers/$id/edit'
+      path: '/subscribers/$id/edit'
+      fullPath: '/subscribers/$id/edit'
+      preLoaderRoute: typeof AppSubscribersIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/$id/lists': {
+      id: '/_app/subscribers/$id/lists'
+      path: '/subscribers/$id/lists'
+      fullPath: '/subscribers/$id/lists'
+      preLoaderRoute: typeof AppSubscribersIdListsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/subscribers/lists/$id': {
+      id: '/_app/subscribers/lists/$id'
+      path: '/subscribers/lists/$id'
+      fullPath: '/subscribers/lists/$id'
+      preLoaderRoute: typeof AppSubscribersListsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/': {
+      id: '/_app/users/roles/'
+      path: '/users/roles'
+      fullPath: '/users/roles/'
+      preLoaderRoute: typeof AppUsersRolesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/$id': {
+      id: '/_app/users/roles/$id'
+      path: '/users/roles/$id'
+      fullPath: '/users/roles/$id'
+      preLoaderRoute: typeof AppUsersRolesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/new': {
+      id: '/_app/users/roles/new'
+      path: '/users/roles/new'
+      fullPath: '/users/roles/new'
+      preLoaderRoute: typeof AppUsersRolesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/': {
+      id: '/_app/users/roles/lists/'
+      path: '/users/roles/lists'
+      fullPath: '/users/roles/lists/'
+      preLoaderRoute: typeof AppUsersRolesListsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/$id': {
+      id: '/_app/users/roles/lists/$id'
+      path: '/users/roles/lists/$id'
+      fullPath: '/users/roles/lists/$id'
+      preLoaderRoute: typeof AppUsersRolesListsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/users/roles/lists/new': {
+      id: '/_app/users/roles/lists/new'
+      path: '/users/roles/lists/new'
+      fullPath: '/users/roles/lists/new'
+      preLoaderRoute: typeof AppUsersRolesListsNewRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+  AppCampaignsAnalyticsRoute: typeof AppCampaignsAnalyticsRoute
+  AppCampaignsMediaRoute: typeof AppCampaignsMediaRoute
+  AppCampaignsNewRoute: typeof AppCampaignsNewRoute
+  AppListsAnalyticsRoute: typeof AppListsAnalyticsRoute
+  AppListsFormsRoute: typeof AppListsFormsRoute
+  AppListsNewRoute: typeof AppListsNewRoute
+  AppSettingsLogsRoute: typeof AppSettingsLogsRoute
+  AppSettingsMaintenanceRoute: typeof AppSettingsMaintenanceRoute
+  AppSubscribersBouncesRoute: typeof AppSubscribersBouncesRoute
+  AppSubscribersImportRoute: typeof AppSubscribersImportRoute
+  AppSubscribersNewRoute: typeof AppSubscribersNewRoute
+  AppTemplatesIdRoute: typeof AppTemplatesIdRoute
+  AppTemplatesNewRoute: typeof AppTemplatesNewRoute
+  AppUserProfileRoute: typeof AppUserProfileRoute
+  AppUsersIdRoute: typeof AppUsersIdRoute
+  AppUsersNewRoute: typeof AppUsersNewRoute
+  AppCampaignsIndexRoute: typeof AppCampaignsIndexRoute
+  AppListsIndexRoute: typeof AppListsIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppSubscribersIndexRoute: typeof AppSubscribersIndexRoute
+  AppTemplatesIndexRoute: typeof AppTemplatesIndexRoute
+  AppUsersIndexRoute: typeof AppUsersIndexRoute
+  AppCampaignsIdTabRoute: typeof AppCampaignsIdTabRoute
+  AppListsIdEditRoute: typeof AppListsIdEditRoute
+  AppSubscribersIdBouncesRoute: typeof AppSubscribersIdBouncesRoute
+  AppSubscribersIdEditRoute: typeof AppSubscribersIdEditRoute
+  AppSubscribersIdListsRoute: typeof AppSubscribersIdListsRoute
+  AppSubscribersListsIdRoute: typeof AppSubscribersListsIdRoute
+  AppUsersRolesIdRoute: typeof AppUsersRolesIdRoute
+  AppUsersRolesNewRoute: typeof AppUsersRolesNewRoute
+  AppCampaignsIdIndexRoute: typeof AppCampaignsIdIndexRoute
+  AppListsIdIndexRoute: typeof AppListsIdIndexRoute
+  AppSubscribersIdIndexRoute: typeof AppSubscribersIdIndexRoute
+  AppUsersRolesIndexRoute: typeof AppUsersRolesIndexRoute
+  AppUsersRolesListsIdRoute: typeof AppUsersRolesListsIdRoute
+  AppUsersRolesListsNewRoute: typeof AppUsersRolesListsNewRoute
+  AppUsersRolesListsIndexRoute: typeof AppUsersRolesListsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+  AppCampaignsAnalyticsRoute: AppCampaignsAnalyticsRoute,
+  AppCampaignsMediaRoute: AppCampaignsMediaRoute,
+  AppCampaignsNewRoute: AppCampaignsNewRoute,
+  AppListsAnalyticsRoute: AppListsAnalyticsRoute,
+  AppListsFormsRoute: AppListsFormsRoute,
+  AppListsNewRoute: AppListsNewRoute,
+  AppSettingsLogsRoute: AppSettingsLogsRoute,
+  AppSettingsMaintenanceRoute: AppSettingsMaintenanceRoute,
+  AppSubscribersBouncesRoute: AppSubscribersBouncesRoute,
+  AppSubscribersImportRoute: AppSubscribersImportRoute,
+  AppSubscribersNewRoute: AppSubscribersNewRoute,
+  AppTemplatesIdRoute: AppTemplatesIdRoute,
+  AppTemplatesNewRoute: AppTemplatesNewRoute,
+  AppUserProfileRoute: AppUserProfileRoute,
+  AppUsersIdRoute: AppUsersIdRoute,
+  AppUsersNewRoute: AppUsersNewRoute,
+  AppCampaignsIndexRoute: AppCampaignsIndexRoute,
+  AppListsIndexRoute: AppListsIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppSubscribersIndexRoute: AppSubscribersIndexRoute,
+  AppTemplatesIndexRoute: AppTemplatesIndexRoute,
+  AppUsersIndexRoute: AppUsersIndexRoute,
+  AppCampaignsIdTabRoute: AppCampaignsIdTabRoute,
+  AppListsIdEditRoute: AppListsIdEditRoute,
+  AppSubscribersIdBouncesRoute: AppSubscribersIdBouncesRoute,
+  AppSubscribersIdEditRoute: AppSubscribersIdEditRoute,
+  AppSubscribersIdListsRoute: AppSubscribersIdListsRoute,
+  AppSubscribersListsIdRoute: AppSubscribersListsIdRoute,
+  AppUsersRolesIdRoute: AppUsersRolesIdRoute,
+  AppUsersRolesNewRoute: AppUsersRolesNewRoute,
+  AppCampaignsIdIndexRoute: AppCampaignsIdIndexRoute,
+  AppListsIdIndexRoute: AppListsIdIndexRoute,
+  AppSubscribersIdIndexRoute: AppSubscribersIdIndexRoute,
+  AppUsersRolesIndexRoute: AppUsersRolesIndexRoute,
+  AppUsersRolesListsIdRoute: AppUsersRolesListsIdRoute,
+  AppUsersRolesListsNewRoute: AppUsersRolesListsNewRoute,
+  AppUsersRolesListsIndexRoute: AppUsersRolesListsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  NextRoute: NextRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

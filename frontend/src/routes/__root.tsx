@@ -1,10 +1,11 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router';
+import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
+import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { ThemeProvider } from '@/components/theme-provider';
 import { themeInitScript } from '@/lib/theme';
 import appCss from '@/styles.css?url';
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -18,6 +19,7 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: ReactNode }) {
+  const { queryClient } = Route.useRouteContext();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -25,7 +27,9 @@ function RootDocument({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>

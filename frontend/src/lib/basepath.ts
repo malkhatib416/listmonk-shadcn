@@ -28,3 +28,15 @@ export function adminRewrite(prefix: string): UrlRewrite {
     },
   };
 }
+
+// href for a link that must be a full page load: an API download, or a page served by Go
+// outside the SPA (login).
+export function hardHref(root: string | undefined, path: string): string {
+  return (root ?? '') + path;
+}
+
+// URL of a file from frontend/public, which Go serves under /admin/app. The dev server
+// serves public files from its own root instead.
+export function appAssetHref(root: string | undefined, path: string, dev = false): string {
+  return dev ? `/${path}` : hardHref(root, `/admin/app/${path}`);
+}

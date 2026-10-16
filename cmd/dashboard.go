@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jmoiron/sqlx/types"
 	"github.com/knadh/listmonk/internal/auth"
 	"github.com/knadh/listmonk/models"
 	"github.com/labstack/echo/v4"
@@ -22,91 +20,33 @@ const dashboardCampaignCount = 6
 // processStartedAt starts process start time to compute uptime.
 var processStartedAt = time.Now()
 
-// dashboardCounts contains stats to render on the dashboard.
-type dashboardCounts struct {
-	Subscribers struct {
-		Total       int `json:"total"`
-		Blocklisted int `json:"blocklisted"`
-		Orphans     int `json:"orphans"`
-	} `json:"subscribers"`
-
-	Lists struct {
-		Total       int `json:"total"`
-		Private     int `json:"private"`
-		Public      int `json:"public"`
-		OptinSingle int `json:"optin_single"`
-		OptinDouble int `json:"optin_double"`
-	} `json:"lists"`
-
-	Campaigns struct {
-		Total    int            `json:"total"`
-		ByStatus map[string]int `json:"by_status"`
-	} `json:"campaigns"`
-
-	Messages int `json:"messages"`
-}
-
 // systemStats holds system metrics.
 type systemStats struct {
-	Uptime   string
-	NumCPU   int
-	AppMemMB uint64
+	Uptime   string `json:"uptime"`
+	NumCPU   int    `json:"num_cpu"`
+	AppMemMB uint64 `json:"app_mem_mb"`
 
-	HasHostMem bool
-	MemUsedMB  uint64
-	MemTotalMB uint64
-	MemPct     int
+	HasHostMem bool   `json:"has_host_mem"`
+	MemUsedMB  uint64 `json:"mem_used_mb"`
+	MemTotalMB uint64 `json:"mem_total_mb"`
+	MemPct     int    `json:"mem_pct"`
 
-	HasLoad bool
-	Load1   string
-	Load5   string
-	Load15  string
-	LoadPct int
+	HasLoad bool   `json:"has_load"`
+	Load1   string `json:"load_1"`
+	Load5   string `json:"load_5"`
+	Load15  string `json:"load_15"`
+	LoadPct int    `json:"load_pct"`
+
+	// Whether the slow dashboard queries are served from a cache.
+	CacheSlowQueries bool `json:"cache_slow_queries"`
 }
 
-type dashboardView struct {
-	adminView
-	Counts           dashboardCounts
-	Charts           types.JSONText
-	Campaigns        models.Campaigns
-	System           systemStats
-	CacheSlowQueries bool
-}
+// GetDashboardSystem returns system stats to show on the dashboard.
+func (a *App) GetDashboardSystem(c echo.Context) error {
+	s := getSystemStats()
+	s.CacheSlowQueries = ko.Bool("app.cache_slow_queries")
 
-// ViewDashboard renders the admin dashboard (home) page.
-func (a *App) ViewDashboard(c echo.Context) error {
-	counts, err := a.core.GetDashboardCounts()
-	if err != nil {
-		return err
-	}
-
-	charts, err := a.core.GetDashboardCharts()
-	if err != nil {
-		return err
-	}
-
-	camps, err := a.getDashboardCampaigns(c)
-	if err != nil {
-		return err
-	}
-
-	var cnt dashboardCounts
-	if len(counts) > 0 {
-		if err := json.Unmarshal(counts, &cnt); err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-	}
-
-	data := dashboardView{
-		adminView:        newAdminView(c, a.i18n.T("menu.dashboard"), "", "dashboard"),
-		Counts:           cnt,
-		Charts:           charts,
-		Campaigns:        camps,
-		System:           getSystemStats(),
-		CacheSlowQueries: ko.Bool("app.cache_slow_queries"),
-	}
-
-	return c.Render(http.StatusOK, "admin-dashboard", data)
+	return c.JSON(http.StatusOK, okResp{s})
 }
 
 // GetDashboardCampaigns returns recent campaigns to show on the dashboard,

@@ -1,0 +1,12 @@
+{
+  "name": "listmonk-dev-seed",
+  "private": true,
+  "type": "module",
+  "description": "Fills a dev listmonk with fake data (faker).",
+  "scripts": {
+    "seed": "bun seed.ts"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.0.0"
+  }
+}

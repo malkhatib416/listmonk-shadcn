@@ -5,13 +5,12 @@ const IMPORT = '/admin/subscribers/import';
 const SUBSCRIBERS = '/admin/subscribers';
 const CSV = new URL('../fixtures/subs.csv', import.meta.url).pathname;
 
-// Pick a list in the taginput selector. Filling the input matches a datalist
-// option, which the component turns into a tag carrying the list's ID.
+// Pick a list in the list picker (a searchable multi-select).
 async function selectList(page, name) {
-  const input = page.locator('ot-taginput input');
-  await input.click();
-  await input.fill(name);
-  await expect(page.locator('ot-taginput .badge')).toContainText(name);
+  await page.getByTestId('list-picker').click();
+  await page.getByTestId('list-option').filter({ hasText: name }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('selected-lists')).toContainText(name);
 }
 
 test.describe.configure({ mode: 'serial' });
@@ -43,7 +42,7 @@ test.describe('Import', () => {
         await selectList(page, 'Default list');
       }
 
-      await page.locator('input[type=file]').setInputFiles(CSV);
+      await page.getByTestId('file-input').setInputFiles(CSV);
       await page.getByTestId('btn-upload').click();
 
       // Overwriting the subscription status prompts for confirmation.
@@ -51,15 +50,14 @@ test.describe('Import', () => {
         await confirm(page);
       }
 
-      // Wait for the import to finish, then clear it. Clearing reloads the
-      // page back to the upload form.
+      // Wait for the import to finish, then clear it. Clearing returns to the upload form.
       await expect(page.getByTestId('btn-done')).toBeVisible();
       await page.getByTestId('btn-done').click();
       await expect(page.getByTestId('btn-upload')).toBeVisible();
 
       // 100 imported + 2 seeded subscribers.
       await page.goto(SUBSCRIBERS);
-      await expect(page.locator('.page-title')).toContainText('(102)');
+      await expect(page.getByTestId('total')).toHaveText('102');
     }
   });
 
@@ -72,10 +70,10 @@ test.describe('Import', () => {
       await page.goto(IMPORT);
       await selectList(page, 'Default list');
       await page.locator('input[name=delim]').fill('|');
-      await page.locator('input[type=file]').setInputFiles(CSV);
+      await page.getByTestId('file-input').setInputFiles(CSV);
       await page.getByTestId('btn-upload').click();
 
-      await expect(page.locator('.status .title').first()).toContainText('failed');
+      await expect(page.getByRole('heading', { name: 'failed' })).toBeVisible();
     });
   });
 });

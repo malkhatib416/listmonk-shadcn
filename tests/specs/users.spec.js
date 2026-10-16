@@ -15,6 +15,12 @@ function userRow(page, name) {
   return name ? rows.filter({ hasText: name }) : rows;
 }
 
+// Pick an option of a (Radix) select by its test id and visible name.
+async function choose(page, testId, name) {
+  await page.getByTestId(testId).click();
+  await page.getByRole('option', { name, exact: true }).click();
+}
+
 // Open a role's edit view by name (via the listing), reloading it from the server.
 async function gotoRoleEdit(page, base, name) {
   await page.goto(base);
@@ -65,8 +71,9 @@ test.describe('First-time user setup', () => {
     await page.goto(USERS);
     const row = userRow(page, 'super');
     await openMenu(row);
-    await Promise.all([page.waitForURL('**/admin/users/*'), row.getByTestId('btn-edit').click()]);
-    await expect(page.locator('select[name=user_role]')).toHaveValue('1');
+    await page.getByTestId('btn-edit').click();
+    await expect(page).toHaveURL(/\/admin\/users\/\d+$/);
+    await expect(page.getByTestId('user-role')).toContainText('Super Admin');
   });
 });
 
@@ -88,9 +95,9 @@ test.describe('Users, roles & login', () => {
     // "second": every permission checked.
     await page.getByTestId('btn-new').click();
     await page.locator('input[name=name]').fill('second');
-    const boxes = page.locator('form input[type=checkbox]');
+    const boxes = page.locator('form [role=checkbox]');
     for (let i = 0, n = await boxes.count(); i < n; i += 1) {
-      await boxes.nth(i).check();
+      if ((await boxes.nth(i).getAttribute('aria-checked')) !== 'true') await boxes.nth(i).click();
     }
     await Promise.all([
       page.waitForURL((url) => url.pathname.endsWith('/users/roles')),
@@ -101,17 +108,17 @@ test.describe('Users, roles & login', () => {
 
     // Reopen "second": every permission checkbox came back checked.
     await gotoRoleEdit(page, USER_ROLES, 'second');
-    await expect(page.locator('form input[type=checkbox]:checked')).not.toHaveCount(0);
-    await expect(page.locator('form input[type=checkbox]:not(:checked)')).toHaveCount(0);
+    await expect(page.locator('form [role=checkbox][aria-checked=true]')).not.toHaveCount(0);
+    await expect(page.locator('form [role=checkbox][aria-checked=false]')).toHaveCount(0);
   });
 
   test('edits a user role', async ({ page }) => {
     await page.goto(USER_ROLES);
     const row = roleRow(page, 'first');
     await openMenu(row);
-    await row.getByTestId('btn-edit').click();
+    await page.getByTestId('btn-edit').click();
 
-    await page.locator('input[value="users:get"]').check();
+    await page.getByRole('checkbox', { name: 'users:get', exact: true }).check();
     await Promise.all([
       page.waitForResponse((r) => /\/api\/roles\/users\/\d+/.test(r.url()) && r.request().method() === 'PUT'),
       page.getByTestId('btn-save').click(),
@@ -119,25 +126,38 @@ test.describe('Users, roles & login', () => {
 
     // Reopen the role: "users:get" (not a default) is checked, proving the edit stuck.
     await gotoRoleEdit(page, USER_ROLES, 'first');
-    await expect(page.locator('input[value="users:get"]')).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: 'users:get', exact: true })).toBeChecked();
   });
 
   test('clones and deletes a user role', async ({ page }) => {
     await page.goto(USER_ROLES);
 
-    const clone = roleRow(page).last();
-    page.once('dialog', (d) => d.accept('second copy'));
-    await openMenu(clone);
-    await clone.getByTestId('btn-clone').click();
+    const source = roleRow(page).last();
+    await openMenu(source);
+    await page.getByTestId('btn-clone').click();
+    await page.getByTestId('clone-name').fill('second copy');
+    await page.getByTestId('btn-clone-ok').click();
     await expect(roleRow(page)).toHaveCount(4);
     await expect(roleRow(page, 'second copy')).toBeVisible();
 
-    const last = roleRow(page).last();
+    const last = roleRow(page, 'second copy');
     await openMenu(last);
-    await last.getByTestId('btn-delete').click();
+    await page.getByTestId('btn-delete').click();
     await confirm(page);
     await expect(roleRow(page)).toHaveCount(3);
     await expect(roleRow(page, 'second copy')).toHaveCount(0);
+  });
+
+  test('the super admin role is read-only and cannot be deleted', async ({ page }) => {
+    await page.goto(USER_ROLES);
+    const row = roleRow(page, 'Super Admin');
+    await openMenu(row);
+    await expect(page.getByTestId('btn-delete')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    await gotoRoleEdit(page, USER_ROLES, 'Super Admin');
+    await expect(page.locator('input[name=name]')).toBeDisabled();
+    await expect(page.getByTestId('btn-save')).toHaveCount(0);
   });
 
   test('adds list roles', async ({ page }) => {
@@ -165,19 +185,19 @@ test.describe('Users, roles & login', () => {
 
     // Reopen each: "first" lists one row, "second" lists both.
     await gotoRoleEdit(page, LIST_ROLES, 'first');
-    await expect(page.locator('form tbody tr')).toHaveCount(1);
+    await expect(page.getByTestId('role-list-row')).toHaveCount(1);
     await gotoRoleEdit(page, LIST_ROLES, 'second');
-    await expect(page.locator('form tbody tr')).toHaveCount(2);
+    await expect(page.getByTestId('role-list-row')).toHaveCount(2);
   });
 
   test('edits a list role', async ({ page }) => {
     await page.goto(LIST_ROLES);
     const row = roleRow(page, 'second');
     await openMenu(row);
-    await row.getByTestId('btn-edit').click();
+    await page.getByTestId('btn-edit').click();
 
     // Drop the "manage" permission on the second list.
-    await page.locator('tbody tr').nth(1).locator('input[value="list:manage"]').uncheck();
+    await page.getByTestId('role-list-row').nth(1).locator('[data-perm="list:manage"]').click();
     await Promise.all([
       page.waitForResponse((r) => /\/api\/roles\/lists\/\d+/.test(r.url()) && r.request().method() === 'PUT'),
       page.getByTestId('btn-save').click(),
@@ -185,23 +205,24 @@ test.describe('Users, roles & login', () => {
 
     // Reopen the role: both lists keep "view", exactly one lost "manage".
     await gotoRoleEdit(page, LIST_ROLES, 'second');
-    await expect(page.locator('input[value="list:get"]:checked')).toHaveCount(2);
-    await expect(page.locator('input[value="list:manage"]:checked')).toHaveCount(1);
+    await expect(page.locator('[data-perm="list:get"][aria-checked=true]')).toHaveCount(2);
+    await expect(page.locator('[data-perm="list:manage"][aria-checked=true]')).toHaveCount(1);
   });
 
   test('clones and deletes a list role', async ({ page }) => {
     await page.goto(LIST_ROLES);
 
-    const clone = roleRow(page).last();
-    page.once('dialog', (d) => d.accept('second copy'));
-    await openMenu(clone);
-    await clone.getByTestId('btn-clone').click();
+    const source = roleRow(page).last();
+    await openMenu(source);
+    await page.getByTestId('btn-clone').click();
+    await page.getByTestId('clone-name').fill('second copy');
+    await page.getByTestId('btn-clone-ok').click();
     await expect(roleRow(page)).toHaveCount(3);
     await expect(roleRow(page, 'second copy')).toBeVisible();
 
-    const last = roleRow(page).last();
+    const last = roleRow(page, 'second copy');
     await openMenu(last);
-    await last.getByTestId('btn-delete').click();
+    await page.getByTestId('btn-delete').click();
     await confirm(page);
     await expect(roleRow(page)).toHaveCount(2);
     await expect(roleRow(page, 'second copy')).toHaveCount(0);
@@ -220,11 +241,10 @@ test.describe('Users, roles & login', () => {
       await page.locator('input[name=username]').fill(c.name);
       await page.locator('input[name=name]').fill(c.name);
       await page.locator('input[name=email]').fill(`${c.name}@domain.com`);
-      await page.getByTestId('password-login').check();
       await page.locator('input[name=password]').fill(`${c.name}000000`);
       await page.locator('input[name=password2]').fill(`${c.name}000000`);
-      await page.locator('select[name=user_role]').selectOption({ label: c.userRole });
-      await page.locator('select[name=list_role]').selectOption({ label: c.listRole });
+      await choose(page, 'user-role', c.userRole);
+      await choose(page, 'list-role', c.listRole);
       await Promise.all([
         page.waitForURL((url) => url.pathname.endsWith('/admin/users')),
         page.getByTestId('btn-save').click(),
@@ -234,25 +254,31 @@ test.describe('Users, roles & login', () => {
     // admin + 3 created.
     await expect(userRow(page)).toHaveCount(4);
 
-    // The listing renders each user's role badges. Read the rows and confirm the
-    // roles match (usernames and role names overlap, so match on the username link).
-    const rows = await userRow(page).evaluateAll((els) => els.map((el) => ({
-      username: el.querySelector('.avatar-label > a[href*="/admin/users/"]').textContent.trim(),
-      userRole: el.querySelector('a[href*="user_role_id"]')?.textContent.trim(),
-      listRole: el.querySelector('a[href*="list_role_id"]')?.textContent.trim(),
-    })));
+    // Each row shows its user and list role.
     for (const c of cases) {
-      const row = rows.find((r) => r.username === c.name);
-      expect(row.userRole).toBe(c.userRole);
-      expect(row.listRole).toBe(c.listRole);
+      const row = userRow(page).filter({ has: page.getByRole('link', { name: c.name, exact: true }) });
+      // The user role and list role are the row's first two buttons (then "More").
+      await expect(row.getByRole('button').nth(0)).toHaveText(c.userRole);
+      await expect(row.getByRole('button').nth(1)).toHaveText(c.listRole);
     }
+  });
+
+  test('validates the form before saving', async ({ page }) => {
+    await page.goto(`${USERS}/new`);
+    await page.locator('input[name=username]').fill('ab');
+    await page.locator('input[name=email]').fill('not-an-email');
+    await page.locator('input[name=password]').fill('short');
+    await page.locator('input[name=password2]').fill('different');
+    await page.getByTestId('btn-save').click();
+    await expect(page).toHaveURL(/\/admin\/users\/new$/);
+    await expect(page.locator('[data-slot=form-message]')).not.toHaveCount(0);
   });
 
   test('edits a user', async ({ page }) => {
     await gotoUserEdit(page, 'third');
-    await page.getByTestId('password-login').uncheck();
-    await page.locator('select[name=user_role]').selectOption({ label: 'second' });
-    await page.locator('select[name=list_role]').selectOption({ label: 'second' });
+    await page.getByTestId('password-login').click();
+    await choose(page, 'user-role', 'second');
+    await choose(page, 'list-role', 'second');
     await Promise.all([
       page.waitForResponse((r) => /\/api\/users\/\d+/.test(r.url()) && r.request().method() === 'PUT'),
       page.getByTestId('btn-save').click(),
@@ -261,15 +287,26 @@ test.describe('Users, roles & login', () => {
     // Reopen the edit view: the new roles and disabled password login are reflected.
     await gotoUserEdit(page, 'third');
     await expect(page.getByTestId('password-login')).not.toBeChecked();
-    await expect(page.locator('select[name=user_role] option:checked')).toContainText('second');
-    await expect(page.locator('select[name=list_role] option:checked')).toContainText('second');
+    await expect(page.getByTestId('user-role')).toContainText('second');
+    await expect(page.getByTestId('list-role')).toContainText('second');
+  });
+
+  test('filters the list by role through the URL', async ({ page }) => {
+    await page.goto(USERS);
+    const row = userRow(page, 'second');
+    await row.getByRole('button', { name: 'second', exact: true }).first().click();
+    await expect(page).toHaveURL(/user_role_id=\d+/);
+    // "second" and (after the edit above) "third" hold the "second" role.
+    await expect(userRow(page)).toHaveCount(2);
+    await page.getByRole('button', { name: 'Clear' }).click();
+    await expect(userRow(page)).toHaveCount(4);
   });
 
   test('deletes a user', async ({ page }) => {
     await page.goto(USERS);
     const row = userRow(page, 'third');
     await openMenu(row);
-    await row.getByTestId('btn-delete').click();
+    await page.getByTestId('btn-delete').click();
     await confirm(page);
 
     await expect(userRow(page)).toHaveCount(3);
@@ -285,7 +322,8 @@ test.describe('Users, roles & login', () => {
     await expect(page.getByTestId('list-row')).toHaveCount(1);
     await expect(page.getByTestId('list-row')).toContainText('Default list');
     await expect(page.getByTestId('btn-new')).toHaveCount(0);
-    await expect(page.getByTestId('list-row').getByTestId('btn-edit')).toHaveCount(1);
+    await openMenu(page.getByTestId('list-row'));
+    await expect(page.getByTestId('btn-edit')).toHaveCount(1);
 
     await context.close();
   });
@@ -297,16 +335,36 @@ test.describe('Users, roles & login', () => {
 
     // The superadmin-equivalent role sees every list with full actions.
     await expect(page.getByTestId('list-row')).toHaveCount(2);
-    await expect(page.getByTestId('list-row').getByTestId('btn-edit')).toHaveCount(2);
-    await expect(page.getByTestId('list-row').getByTestId('btn-delete')).toHaveCount(2);
+    for (let i = 0; i < 2; i += 1) {
+      await openMenu(page.getByTestId('list-row').nth(i));
+      await expect(page.getByTestId('btn-edit')).toHaveCount(1);
+      await expect(page.getByTestId('btn-delete')).toHaveCount(1);
+      await page.keyboard.press('Escape');
+    }
 
     await context.close();
   });
 });
 
-test.describe('Users: bulk deletion', () => {
+test.describe('Users: API users and bulk deletion', () => {
   test.beforeEach(async ({ browser }) => {
     await resetDB(browser);
+  });
+
+  test('shows the API token once, after creating an API user', async ({ page }) => {
+    await page.goto(`${USERS}/new`);
+    await choose(page, 'user-type', 'API');
+    await page.locator('input[name=username]').fill('ci-bot');
+    await expect(page.locator('input[name=password]')).toHaveCount(0);
+    await Promise.all([
+      page.waitForResponse((r) => r.url().endsWith('/api/users') && r.request().method() === 'POST'),
+      page.getByTestId('btn-save').click(),
+    ]);
+    const token = await page.getByTestId('api-token').textContent();
+    expect(token?.length).toBeGreaterThan(10);
+    await page.getByRole('button', { name: 'Close' }).first().click();
+    await expect(page).toHaveURL(/\/admin\/users$/);
+    await expect(userRow(page, 'ci-bot')).toBeVisible();
   });
 
   test('deletes only checked users in the filtered view and protects the last admin', async ({ page }) => {
@@ -322,9 +380,8 @@ test.describe('Users: bulk deletion', () => {
     }
     await page.goto(`${USERS}?status=disabled`);
     await expect(userRow(page)).toHaveCount(2);
-    await page.locator('thead input[type=checkbox]').check();
-    await userRow(page, users[1].username).locator('input[name=id]').uncheck();
-    await page.getByTestId('btn-bulk-actions').click();
+    await page.getByRole('checkbox', { name: 'Toggle selection' }).click();
+    await userRow(page, users[1].username).getByRole('checkbox').click();
     await page.getByTestId('btn-delete-users').click();
     await confirm(page);
     await expect(userRow(page)).toHaveCount(1);

@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { confirm, openMenu, resetDB, selectList, getMail } from '../helpers.js';
+import { confirm, openMenu, resetDB, getMail } from '../helpers.js';
 
 const CAMPAIGNS = '/admin/campaigns';
 const expression = 'Hello {{ .Subscriber.Name }} from {{ .Subscriber.Attribs.city }}';
 const rendered = 'Hello Demo Subscriber from Bengaluru';
-const rows = (page) => page.locator('tbody tr[data-campaign-id]');
+const rows = (page) => page.getByTestId('campaign-row');
 const row = (page, name) => rows(page).filter({ has: page.getByRole('link', { name, exact: true }) });
-const tab = (page, name) => page.getByRole('tab', { name, exact: true });
+const tab = (page, name) => page.getByRole('tab', { name });
 const button = (scope, name) => scope.getByRole('button', { name, exact: true });
+const previewFrame = (page) => page.frameLocator('[role=dialog] iframe');
 
 async function data(response) {
   expect(response.ok(), await response.text()).toBeTruthy();
@@ -25,7 +26,7 @@ async function campaign(page, id) {
   return data(await page.request.get(`/api/campaigns/${id}`));
 }
 
-async function save(page, id, action = () => button(page, 'Save changes').click()) {
+async function save(page, id, action = () => page.getByTestId('btn-save').click()) {
   const [response] = await Promise.all([
     page.waitForResponse((r) => r.url().endsWith(`/api/campaigns/${id}`) && r.request().method() === 'PUT'),
     action(),
@@ -33,48 +34,59 @@ async function save(page, id, action = () => button(page, 'Save changes').click(
   return data(response);
 }
 
-async function menu(page, name, action) {
-  const item = row(page, name).getByRole('menuitem', { name: action, exact: true });
-  if (!(await item.isVisible())) await openMenu(row(page, name));
-  await item.click();
+async function menu(page, name, testId) {
+  await openMenu(row(page, name));
+  await page.getByTestId(testId).click();
+}
+
+// Pick a Radix select option by the trigger's test id.
+async function choose(page, testId, name) {
+  await page.getByTestId(testId).click();
+  await page.getByRole('option', { name, exact: true }).click();
+}
+
+// Pick lists in the list picker (a searchable multi-select popover).
+async function pickList(page, name) {
+  await page.getByTestId('list-picker').click();
+  await page.getByTestId('list-option').filter({ hasText: name }).click();
+  await page.keyboard.press('Escape');
 }
 
 async function switchFormat(page, format, accept = true) {
-  const settings = page.locator('button[popovertarget="content-settings"]');
-  await settings.click();
-  await page.locator('#content-settings select[name="content_type"]').selectOption(format);
+  await page.getByTestId('content-settings').click();
+  await choose(page, 'content-type', FORMATS[format]);
   if (accept) await confirm(page);
-  else await button(page.locator('dialog[open]'), 'Cancel').click();
-  await settings.click();
+  else await page.getByRole('alertdialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+  await page.keyboard.press('Escape');
 }
 
-async function editorReady(page) {
-  await expect(page.locator('.editor-body')).not.toHaveClass(/is-loading/);
-}
+const FORMATS = { richtext: 'Rich text', html: 'Raw HTML', markdown: 'Markdown', plain: 'Plain text', visual: 'Visual' };
 
 async function visualDocument(page, document) {
-  await editorReady(page);
+  const iframe = page.getByTestId('visual-editor');
+  await expect(iframe).toBeVisible();
   // Seed the builder through its public document API; serialization runs in the real iframe.
-  await page.locator('visual-editor').evaluate((el, doc) => el.render(doc), document);
+  await expect.poll(() => iframe.evaluate((el) => !!el.contentWindow?.EmailBuilder
+    && !!el.contentDocument?.getElementById('visual-editor-container')?.hasChildNodes())).toBeTruthy();
+  await iframe.evaluate((el, doc) => el.contentWindow.EmailBuilder.resetDocument(doc), document);
 }
 
 async function fillBody(page, format, text) {
-  await editorReady(page);
   if (format === 'visual') {
     await visualDocument(page, {
       root: { type: 'EmailLayout', data: { childrenIds: ['text'] } },
       text: { type: 'Text', data: { props: { text: 'Write your message' }, style: {} } },
     });
-    const frame = page.frameLocator('#visual-editor');
+    const frame = page.frameLocator('[data-testid=visual-editor]');
     await frame.getByText('Write your message', { exact: true }).click();
     await frame.getByRole('textbox', { name: 'Content', exact: true }).fill(text);
     await expect(frame.locator('td').getByText(text, { exact: true })).toBeVisible();
   } else if (format === 'richtext') {
-    await page.locator('richtext-editor [contenteditable="true"]').fill(text);
+    await page.getByTestId('richtext-content').fill(text);
   } else if (format === 'plain') {
     await page.locator('textarea[name="content"]').fill(text);
   } else {
-    await page.locator('.editor-body .cm-content').fill(format === 'html' ? `<strong>${text}</strong>` : `**${text}**`);
+    await page.getByTestId('editor-body').locator('.cm-content').fill(format === 'html' ? `<strong>${text}</strong>` : `**${text}**`);
   }
 }
 
@@ -87,10 +99,16 @@ async function delivered(subject) {
   return mail;
 }
 
-async function preview(page, text) {
-  await button(page, 'Preview').click();
-  await expect(page.frameLocator('.preview-modal iframe').locator('body')).toContainText(text);
-  await button(page.locator('.preview-modal'), 'Close').click();
+// The loaded iframe takes keyboard focus, so Escape would not reach the dialog.
+async function closePreview(page) {
+  await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).last().click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+}
+
+async function preview(page, text, testId = 'btn-preview') {
+  await page.getByTestId(testId).click();
+  await expect(previewFrame(page).locator('body')).toContainText(text);
+  await closePreview(page);
 }
 
 test.beforeEach(async ({ browser }) => {
@@ -101,39 +119,48 @@ test('shows the seeded campaign and previews it from the listing', async ({ page
   await page.goto(CAMPAIGNS);
   await expect(rows(page)).toHaveCount(1);
   await expect(rows(page)).toContainText('Draft');
-  await expect(rows(page).locator('.lists')).toContainText('Default list');
+  await expect(rows(page).getByTestId('campaign-lists')).toContainText('Default list');
   await openMenu(rows(page));
-  await rows(page).getByRole('menuitem', { name: 'Preview', exact: true }).click();
-  await expect(page.frameLocator('.preview-modal iframe').locator('body')).toContainText('Hi');
-  await button(page.locator('.preview-modal'), 'Close').click();
-  await expect(page.locator('.preview-modal iframe')).not.toHaveAttribute('src');
+  await page.getByTestId('btn-preview').click();
+  await expect(previewFrame(page).locator('body')).toContainText('Hi');
+  await closePreview(page);
+});
+
+test("shows only a list's campaigns on its overview page", async ({ page }) => {
+  await create(page, { name: 'On the opt-in list', lists: [2] });
+  await create(page, { name: 'On the default list', lists: [1] });
+  await page.goto('/admin/lists/2');
+  await expect(rows(page)).toHaveCount(1);
+  await expect(row(page, 'On the opt-in list')).toBeVisible();
+  // Read-only here: no selection checkboxes.
+  await expect(page.locator('thead').getByRole('checkbox')).toHaveCount(0);
 });
 
 for (const format of ['richtext', 'html', 'markdown', 'plain', 'visual']) {
   for (const lists of [['Default list'], ['Default list', 'Opt-in list']]) {
     test(`creates, edits and previews ${format} with ${lists.length} list(s)`, async ({ page }) => {
       await page.goto(CAMPAIGNS);
-      await page.getByRole('link', { name: 'New', exact: true }).click();
-      await expect(tab(page, 'Content')).toHaveAttribute('aria-disabled', 'true');
+      await page.getByTestId('btn-new').click();
+      await expect(tab(page, 'Content')).toBeDisabled();
       await page.getByLabel('Name', { exact: true }).fill(`New ${format}`);
       await page.getByLabel('Subject', { exact: true }).fill(`Subject ${format}`);
       await page.locator('input[name="from_email"]').fill('Sender <sender@example.com>');
-      await page.getByRole('combobox', { name: 'Format', exact: true }).selectOption(format);
-      for (const name of lists) await selectList(page.locator('fieldset').filter({ has: page.locator('#campaign-lists') }), name);
+      await choose(page, 'content-type', FORMATS[format]);
+      for (const name of lists) await pickList(page, name);
       for (const tag of ['news', 'monthly']) {
-        await page.getByPlaceholder('Tags', { exact: true }).fill(tag);
-        await page.getByPlaceholder('Tags', { exact: true }).press('Enter');
+        await page.locator('#c-tags').fill(tag);
+        await page.locator('#c-tags').press('Enter');
       }
-      await page.getByRole('switch', { name: 'Custom headers', exact: true }).check();
+      await page.getByRole('switch', { name: 'Custom headers', exact: true }).click();
       await page.locator('textarea[name="headers"]').fill('[{"X-Custom":"value"}]');
-      await button(page, 'Continue').click();
+      await page.getByTestId('btn-continue').click();
       await expect(page).toHaveURL(/\/campaigns\/\d+#tab=content$/);
       const id = Number(new URL(page.url()).pathname.split('/').pop());
       await expect(tab(page, 'Content')).toHaveAttribute('aria-selected', 'true');
       await fillBody(page, format, expression);
       await save(page, id);
       await page.reload();
-      await editorReady(page);
+      await expect(page.getByTestId('editor-body')).toBeVisible();
       const saved = await campaign(page, id);
       expect(saved).toMatchObject({ name: `New ${format}`, subject: `Subject ${format}`, status: 'draft',
         content_type: format, from_email: 'Sender <sender@example.com>',
@@ -145,7 +172,7 @@ for (const format of ['richtext', 'html', 'markdown', 'plain', 'visual']) {
       await preview(page, rendered);
       await page.goto(CAMPAIGNS);
       await expect(row(page, `New ${format}`)).toContainText(`Subject ${format}`);
-      await expect(row(page, `New ${format}`).locator('.lists a.avatar-label')).toHaveCount(lists.length);
+      await expect(row(page, `New ${format}`).getByTestId('campaign-lists').locator('a')).toHaveCount(lists.length);
     });
   }
 }
@@ -156,26 +183,24 @@ test('edits metadata, schedules in local time, unschedules and clears the schedu
   await page.getByLabel('Name', { exact: true }).fill('Scheduled newsletter');
   await page.getByLabel('Subject', { exact: true }).fill('Updated subject');
   await page.locator('input[name="from_email"]').fill('New <new@example.com>');
-  const listField = page.locator('fieldset').filter({ has: page.locator('#campaign-lists') });
-  await listField.locator('.badge').hover();
-  await button(listField, 'Remove Opt-in list').click();
-  await selectList(listField, 'Default list');
-  const tags = page.getByPlaceholder('Tags', { exact: true });
+  await page.getByRole('button', { name: 'Remove Opt-in list' }).click();
+  await pickList(page, 'Default list');
+  const tags = page.locator('#c-tags');
   await tags.press('Backspace');
   await tags.fill('new-tag');
   await tags.press('Enter');
-  await page.getByRole('switch', { name: 'Custom headers', exact: true }).check();
+  await page.getByRole('switch', { name: 'Custom headers', exact: true }).click();
   await page.locator('textarea[name="headers"]').fill('[{"X-Custom":"Custom-Value"}]');
-  await page.getByRole('switch', { name: 'Send later', exact: true }).check();
+  await page.getByRole('switch', { name: 'Send later', exact: true }).click();
   const when = `${new Date().getFullYear() + 1}-06-15T09:30`;
   await page.locator('input[name="send_at"]').fill(when);
   const iso = await page.evaluate((value) => new Date(value).toISOString(), when);
-  await expect(button(page, 'Start campaign')).toHaveCount(0);
+  await expect(page.getByTestId('btn-start')).toHaveCount(0);
   await tab(page, 'Content').click();
   await switchFormat(page, 'plain');
   await fillBody(page, 'plain', 'Scheduled body');
   await tab(page, 'Campaign').click();
-  await button(page, 'Schedule campaign').click();
+  await page.getByTestId('btn-schedule').click();
   await confirm(page);
   await expect(page).toHaveURL(/\/admin\/campaigns$/);
   await expect(row(page, 'Scheduled newsletter')).toContainText('Scheduled');
@@ -187,24 +212,23 @@ test('edits metadata, schedules in local time, unschedules and clears the schedu
   expect(saved.lists.map((l) => l.id)).toEqual([1]);
   await page.goto(`${CAMPAIGNS}/${c.id}`);
   await expect(page.locator('input[name="send_at"]')).toHaveValue(when);
-  await button(page, 'Unschedule').click();
+  await page.getByTestId('btn-unschedule').click();
   await confirm(page);
-  await expect(page.locator('header .status-draft')).toBeVisible();
-  await page.getByRole('switch', { name: 'Send later', exact: true }).uncheck();
+  await expect(page.getByTestId('campaign-status')).toContainText('Draft');
+  await page.getByRole('switch', { name: 'Send later', exact: true }).click();
   await save(page, c.id);
   expect((await campaign(page, c.id)).send_at).toBeNull();
-  await expect(button(page, 'Start campaign')).toBeVisible();
+  await expect(page.getByTestId('btn-start')).toBeVisible();
 });
 
 test('converts formats and cancels conversion without losing content', async ({ page }) => {
   const c = await create(page, { content_type: 'richtext' });
   await page.goto(`${CAMPAIGNS}/${c.id}#tab=content`);
-  await editorReady(page);
+  await expect(page.getByTestId('richtext-editor')).toBeVisible();
   await switchFormat(page, 'plain', false);
-  await expect(page.locator('richtext-editor')).toBeVisible();
+  await expect(page.getByTestId('richtext-editor')).toBeVisible();
   for (const format of ['html', 'markdown', 'plain']) {
     await switchFormat(page, format);
-    await editorReady(page);
     await save(page, c.id);
     expect(await campaign(page, c.id)).toMatchObject({ content_type: format });
     await preview(page, rendered);
@@ -216,10 +240,8 @@ test('previews and test-sends unsaved content without modifying the draft', asyn
   const c = await create(page, { content_type: 'plain', body: 'Saved body', subject: 'Preview test' });
   await page.goto(`${CAMPAIGNS}/${c.id}#tab=content`);
   await fillBody(page, 'plain', 'Unsaved hello {{ .Subscriber.Name }}');
-  await button(page, 'Preview').click();
-  await expect(page.frameLocator('.preview-modal iframe').locator('body')).toContainText('Unsaved hello Demo Subscriber');
-  await button(page.locator('.preview-modal'), 'Close').click();
-  await button(page.locator('.page-header'), 'Send test message').click();
+  await preview(page, 'Unsaved hello Demo Subscriber');
+  await page.getByTestId('btn-test').click();
   await page.locator('#campaign-test input[type="email"]').fill('john@example.com');
   await page.locator('#campaign-test input[type="email"]').press('Enter');
   await button(page.locator('#campaign-test'), 'Send').click();
@@ -230,20 +252,20 @@ test('previews and test-sends unsaved content without modifying the draft', asyn
 test('generates, persists and removes alternate text; plain format clears it', async ({ page }) => {
   const c = await create(page, { body: '<p>Alternate message</p>' });
   await page.goto(`${CAMPAIGNS}/${c.id}#tab=content`);
-  await editorReady(page);
-  const toggle = page.getByRole('tabpanel').filter({ has: page.locator('.editor-body') }).getByRole('switch');
-  await toggle.check();
+  await expect(page.getByTestId('editor-body')).toBeVisible();
+  const toggle = page.getByTestId('altbody-toggle');
+  await toggle.click();
   const alt = page.getByRole('textbox', { name: 'Add alternate plain text message', exact: true });
   await expect(alt).toHaveValue('Alternate message');
   await alt.fill('Custom alternate');
   await save(page, c.id);
   await page.reload();
   await expect(alt).toHaveValue('Custom alternate');
-  await toggle.uncheck();
+  await toggle.click();
   await confirm(page);
   await save(page, c.id);
   expect((await campaign(page, c.id)).altbody).toBeNull();
-  await toggle.check();
+  await toggle.click();
   await switchFormat(page, 'plain');
   await save(page, c.id);
   expect((await campaign(page, c.id)).altbody).toBeNull();
@@ -255,15 +277,13 @@ test('persists attributes and archive settings with keyboard save', async ({ pag
   await tab(page, 'Attributes').click();
   await page.getByRole('textbox', { name: 'Attributes', exact: true }).fill('{"edition":42}');
   await tab(page, 'Archive').click();
-  await page.getByRole('switch').filter({ visible: true }).check();
+  await page.getByTestId('archive-toggle').click();
   await page.locator('input[name="archive_slug"]').fill('newsletter-edition-42');
   await page.locator('textarea[name="archive_meta"]').fill('{"name":"Archive reader","attribs":{"city":"Mumbai"}}');
   await save(page, c.id, () => page.locator('textarea[name="archive_meta"]').press('ControlOrMeta+s'));
   await page.reload();
   await expect(page.locator('input[name="archive_slug"]')).toHaveValue('newsletter-edition-42');
-  await button(page.getByRole('tabpanel').filter({ has: page.locator('input[name="archive_slug"]') }), 'Preview').click();
-  await expect(page.frameLocator('.preview-modal iframe').locator('body')).toContainText('Hello Archive reader from Mumbai');
-  await button(page.locator('.preview-modal'), 'Close').click();
+  await preview(page, 'Hello Archive reader from Mumbai', 'archive-preview');
   expect(await campaign(page, c.id)).toMatchObject({ attribs: { edition: 42 }, archive: true,
     archive_slug: 'newsletter-edition-42', archive_meta: { name: 'Archive reader', attribs: { city: 'Mumbai' } } });
 });
@@ -273,12 +293,12 @@ test('rejects malformed JSON without overwriting saved metadata', async ({ page 
   await page.goto(`${CAMPAIGNS}/${c.id}`);
   for (const [name, field, valid] of [
     ['Campaign', 'textarea[name="headers"]', '[{"X-Custom":"saved"}]'],
-    ['Attributes', 'textarea[aria-labelledby="campaign-attribs-label"]', '{"edition":1}'],
+    ['Attributes', 'textarea[aria-label="Attributes"]', '{"edition":1}'],
   ]) {
     await tab(page, name).click();
     await page.locator(field).fill('{broken');
-    await button(page, 'Save changes').click();
-    await expect(page.locator('output[data-variant="danger"]').last()).toContainText(/JSON|SyntaxError/);
+    await page.getByTestId('btn-save').click();
+    await expect(page.locator('[data-sonner-toast]').last()).toContainText(/JSON|SyntaxError/);
     expect(await campaign(page, c.id)).toMatchObject({ headers: [{ 'X-Custom': 'saved' }], attribs: { edition: 1 } });
     await page.locator(field).fill(valid);
     await save(page, c.id);
@@ -289,11 +309,12 @@ test('clones full content into a draft and cancels cloning and deletion', async 
   const c = await create(page, { tags: ['clone'], headers: [{ 'X-Custom': 'copy' }],
     attribs: { edition: 2 }, altbody: 'Alternative', lists: [1, 2] });
   await page.goto(CAMPAIGNS);
-  page.once('dialog', (dialog) => dialog.dismiss());
-  await menu(page, c.name, 'Clone');
+  await menu(page, c.name, 'btn-clone');
+  await page.keyboard.press('Escape');
   await expect(rows(page)).toHaveCount(2);
-  page.once('dialog', (dialog) => dialog.accept('Cloned newsletter'));
-  await menu(page, c.name, 'Clone');
+  await menu(page, c.name, 'btn-clone');
+  await page.getByRole('dialog').getByRole('textbox').fill('Cloned newsletter');
+  await button(page.getByRole('dialog'), 'Clone').click();
   await expect(page).toHaveURL(/\/campaigns\/\d+$/);
   const id = Number(new URL(page.url()).pathname.split('/').pop());
   const clone = await campaign(page, id);
@@ -302,47 +323,47 @@ test('clones full content into a draft and cancels cloning and deletion', async 
   expect(clone.uuid).not.toBe(c.uuid);
   expect(clone.lists.map((l) => l.id)).toEqual([1, 2]);
   await page.goto(CAMPAIGNS);
-  await menu(page, clone.name, 'Delete');
-  await button(page.locator('dialog[open]'), 'Cancel').click();
+  await menu(page, clone.name, 'btn-delete');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(row(page, clone.name)).toBeVisible();
-  await menu(page, clone.name, 'Delete');
+  await menu(page, clone.name, 'btn-delete');
   await confirm(page);
   await expect(row(page, clone.name)).toHaveCount(0);
   await expect(row(page, c.name)).toBeVisible();
 });
 
-test('searches, filters and sorts campaigns through SSR navigation', async ({ page }) => {
+test('searches, filters and sorts campaigns', async ({ page }) => {
   await data(await page.request.delete('/api/campaigns?all=true'));
   for (const name of ['Bravo', 'Alpha', 'Charlie']) await create(page, { name, tags: [name === 'Charlie' ? 'other' : 'news'] });
   const scheduled = await create(page, { name: 'Scheduled', send_at: new Date(Date.now() + 86400000).toISOString() });
   await data(await page.request.put(`/api/campaigns/${scheduled.id}/status`, { data: { status: 'scheduled' } }));
   await page.goto(CAMPAIGNS);
-  await page.getByRole('textbox', { name: 'Search', exact: true }).fill('Alpha');
-  await page.getByRole('textbox', { name: 'Search', exact: true }).press('Enter');
+  await page.getByTestId('query').fill('Alpha');
+  await page.getByTestId('query').press('Enter');
   await expect(rows(page)).toHaveCount(1);
   await expect(row(page, 'Alpha')).toBeVisible();
   await page.goto(CAMPAIGNS);
-  await row(page, 'Alpha').getByRole('link', { name: '#news', exact: true }).click();
+  await row(page, 'Alpha').getByRole('button', { name: '#news', exact: true }).click();
   await expect(rows(page)).toHaveCount(2);
   await expect(page).toHaveURL(/[?&]tag=news/);
-  await page.getByRole('textbox', { name: 'Search', exact: true }).fill('Alpha');
-  await page.getByRole('textbox', { name: 'Search', exact: true }).press('Enter');
+  await page.getByTestId('query').fill('Alpha');
+  await page.getByTestId('query').press('Enter');
   await expect(rows(page)).toHaveCount(1);
   await expect(page).toHaveURL(/[?&]tag=news/);
-  await page.locator('.page-title').getByRole('link', { name: 'Remove', exact: true }).click();
+  await page.getByTestId('btn-remove-filter').click();
   await expect(page).not.toHaveURL(/[?&]tag=/);
   await expect(row(page, 'Alpha')).toBeVisible();
   await page.goto(CAMPAIGNS);
   await row(page, 'Alpha').getByTitle('Filter Draft', { exact: true }).click();
   await expect(page).toHaveURL(/[?&]status=draft/);
   await expect(rows(page)).toHaveCount(3);
-  for (const [field, orders] of [
-    ['name', [['Alpha', 'Bravo', 'Charlie'], ['Charlie', 'Bravo', 'Alpha']]],
-    ['created_at', [['Bravo', 'Alpha', 'Charlie'], ['Charlie', 'Alpha', 'Bravo']]],
+  for (const [header, orders] of [
+    ['Name', [['Alpha', 'Bravo', 'Charlie'], ['Charlie', 'Bravo', 'Alpha']]],
+    ['Timestamps', [['Bravo', 'Alpha', 'Charlie'], ['Charlie', 'Alpha', 'Bravo']]],
   ]) {
     for (const names of orders) {
-      await page.locator(`a[data-sort-field="${field}"]`).click();
-      await expect(rows(page).locator('td.name > .avatar > .avatar-label > div > a.unstyled')).toHaveText(names);
+      await page.locator('thead').getByRole('button', { name: header }).click();
+      await expect(rows(page).getByTestId('campaign-name')).toHaveText(names);
       await expect(page).toHaveURL(/[?&]status=draft/);
     }
   }
@@ -380,18 +401,19 @@ for (const { label, all, filter, unrelated } of [
       await create(page, { name: `Bulk ${i}`, tags: ['target', 'news'] });
     }
     await page.goto(`${CAMPAIGNS}?${filter}`);
-    await page.locator('thead input[type="checkbox"]').check();
-    await page.locator('button[popovertarget="camp-bulk-actions"]').click();
-    if (all) await page.getByRole('menuitem', { name: /Select all/ }).click();
-    await page.getByRole('menuitem', { name: /^Delete/ }).click();
+    await expect(rows(page).first()).toBeVisible();
+    await page.locator('thead').getByRole('checkbox').click();
+    if (all) await page.getByTestId('select-all-matching').click();
+    await page.getByTestId('btn-delete-campaigns').click();
     await confirm(page);
     await expect(rows(page)).toHaveCount(0);
-    await expect(page.locator('.empty-state')).toBeVisible();
     await page.goto(CAMPAIGNS);
-    await expect(rows(page)).toHaveCount(unrelated ? preserved.length : 1);
     if (unrelated) {
+      await expect(rows(page)).toHaveCount(preserved.length);
       expect(await rows(page).evaluateAll((els) => els.map((el) => Number(el.dataset.campaignId)).sort((a, b) => a - b)))
         .toEqual(preserved.sort((a, b) => a - b));
+    } else {
+      await expect(rows(page)).toHaveCount(1);
     }
   });
 }
@@ -440,19 +462,17 @@ test('uploads an attachment, persists it and delivers it when starting from the 
   const c = await create(page, { subject: 'Attachment delivery' });
   await page.goto(`${CAMPAIGNS}/${c.id}`);
   await tab(page, 'Attachments').click();
-  await button(page, 'Add attachments').click();
-  const picker = page.frameLocator('.media-picker-modal iframe');
-  await picker.locator('button[popovertarget="media-upload"]').click();
-  await picker.locator('input[type="file"]').setInputFiles({ name: 'campaign-example.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":"attachment"}') });
-  await picker.locator('button[type="submit"]').filter({ hasText: 'Upload' }).click();
-  await picker.locator('a.thumb').and(picker.getByTitle('campaign-example.json', { exact: true })).click();
-  await expect(page.locator('.media-picker-modal')).not.toBeVisible();
+  await page.getByTestId('attach').click();
+  const picker = page.getByTestId('media-picker');
+  await picker.getByTestId('file-input').setInputFiles({ name: 'campaign-example.json', mimeType: 'application/json', buffer: Buffer.from('{"hello":"attachment"}') });
+  await picker.getByTitle('campaign-example.json', { exact: true }).first().click();
+  await expect(picker).not.toBeVisible();
   await save(page, c.id);
   await page.reload();
   await expect(page.locator('.attachments .filename')).toHaveText('campaign-example.json');
   expect((await campaign(page, c.id)).media).toHaveLength(1);
   await tab(page, 'Campaign').click();
-  await button(page, 'Start campaign').click();
+  await page.getByTestId('btn-start').click();
   await confirm(page);
   await expect(page).toHaveURL(/\/admin\/campaigns$/);
   expect(JSON.stringify(await delivered(c.subject))).toContain('campaign-example.json');
@@ -461,13 +481,13 @@ test('uploads an attachment, persists it and delivers it when starting from the 
   await expect(row(page, c.name)).toContainText('Finished');
   await page.goto(`${CAMPAIGNS}/${c.id}`);
   await expect(page.getByLabel('Name', { exact: true })).toBeDisabled();
-  await expect(button(page, 'Start campaign')).toHaveCount(0);
+  await expect(page.getByTestId('btn-start')).toHaveCount(0);
   await tab(page, 'Archive').click();
-  await page.getByRole('switch').filter({ visible: true }).check();
+  await page.getByTestId('archive-toggle').click();
   await page.locator('input[name="archive_slug"]').fill('delivered-newsletter');
   const [response] = await Promise.all([
     page.waitForResponse((r) => r.url().endsWith(`/api/campaigns/${c.id}/archive`) && r.request().method() === 'PUT'),
-    button(page, 'Save changes').click(),
+    page.getByTestId('save-archive').click(),
   ]);
   await data(response);
   expect(await campaign(page, c.id)).toMatchObject({ status: 'finished', archive: true, archive_slug: 'delivered-newsletter' });
@@ -483,14 +503,14 @@ test('starts, pauses, resumes and cancels from the listing', async ({ page }) =>
   }
   const c = await create(page, { lists: [list.id] });
   await page.goto(CAMPAIGNS);
-  for (const [action, status] of [['Start campaign', 'running'], ['Pause', 'paused'], ['Send', 'running'], ['Cancel', 'cancelled']]) {
+  for (const [action, status] of [['btn-start', 'running'], ['btn-pause', 'paused'], ['btn-resume', 'running'], ['btn-cancel', 'cancelled']]) {
     await menu(page, c.name, action);
     await confirm(page);
-    await expect(row(page, c.name)).toHaveClass(`status-${status}`);
+    await expect(row(page, c.name)).toHaveAttribute('data-status', status);
     expect((await campaign(page, c.id)).status).toBe(status);
   }
   await openMenu(row(page, c.name));
-  await expect(row(page, c.name).getByRole('menuitem', { name: 'Start campaign', exact: true })).toHaveCount(0);
+  await expect(page.getByTestId('btn-start')).toHaveCount(0);
 });
 
 for (const format of ['richtext', 'visual']) {
@@ -502,40 +522,41 @@ for (const format of ['richtext', 'visual']) {
         buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64'),
       } } }));
       await page.goto(`${CAMPAIGNS}/${c.id}#tab=content`);
-      await editorReady(page);
+      await expect(page.getByTestId('editor-body')).toBeVisible();
       if (format === 'richtext') {
         await button(page, 'Image').click();
-        const dialog = page.locator('richtext-editor dialog[open]');
-        await button(dialog, 'Media').click();
-        await page.frameLocator('.media-picker-modal iframe').getByRole('link', { name: media.filename, exact: true }).click();
+        const dialog = page.getByRole('dialog').filter({ has: page.locator('input[name="src"]') });
+        await dialog.getByTestId('rte-browse').click();
+        await page.getByTestId('media-picker').getByTitle(media.filename, { exact: true }).first().click();
         await expect(dialog.locator('input[name="src"]')).toHaveValue(media.url);
         await dialog.getByRole('checkbox', { name: 'Embed', exact: true }).setChecked(embed);
-        await button(dialog, 'Insert').click();
-        await expect(page.locator('richtext-editor [contenteditable] img')).toHaveAttribute('src', media.url);
+        await button(dialog, 'Save').click();
+        await expect(page.getByTestId('richtext-content').locator('img')).toHaveAttribute('src', media.url);
       } else {
         await visualDocument(page, {
           root: { type: 'EmailLayout', data: { childrenIds: ['image'] } },
           image: { type: 'Image', data: { props: { url: media.url, embed: false }, style: {} } },
         });
-        const frame = page.frameLocator('#visual-editor');
+        const frame = page.frameLocator('[data-testid=visual-editor]');
         await frame.locator('#visual-editor-container img').click();
         await frame.getByRole('checkbox').setChecked(embed);
       }
       await save(page, c.id);
       await page.reload();
-      await editorReady(page);
+      await expect(page.getByTestId('editor-body')).toBeVisible();
       if (format === 'richtext') {
-        await page.locator('richtext-editor [contenteditable] img').click();
+        await page.getByTestId('richtext-content').locator('img').click();
         await button(page, 'Image').click();
-        await expect(page.locator('richtext-editor dialog[open]').getByRole('checkbox', { name: 'Embed', exact: true })).toBeChecked({ checked: embed });
-        await button(page.locator('richtext-editor dialog[open]'), 'Close').click();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog.getByRole('checkbox', { name: 'Embed', exact: true })).toBeChecked({ checked: embed });
+        await button(dialog, 'Cancel').click();
       } else {
-        const frame = page.frameLocator('#visual-editor');
+        const frame = page.frameLocator('[data-testid=visual-editor]');
         await frame.locator('#visual-editor-container img').click();
         await expect(frame.getByRole('checkbox')).toBeChecked({ checked: embed });
       }
       await tab(page, 'Campaign').click();
-      await button(page, 'Start campaign').click();
+      await page.getByTestId('btn-start').click();
       await confirm(page);
       const raw = JSON.stringify(await delivered(c.subject));
       expect(raw.includes('image/png')).toBe(embed);
@@ -552,38 +573,39 @@ for (const tracked of [true, false]) {
     const c = await create(page, { content_type: 'richtext', body:
       `<p><a href="${href(tracked)}">Documentation</a> <a href="${href(!tracked)}">Other link</a></p>` });
     await page.goto(`${CAMPAIGNS}/${c.id}#tab=content`);
-    await editorReady(page);
+    await expect(page.getByTestId('richtext-editor')).toBeVisible();
 
     // Existing links must override the remembered preference for newly inserted links.
     await page.evaluate((value) => localStorage.setItem('trackLink', String(value)), !tracked);
-    const link = page.locator('richtext-editor [contenteditable]').getByRole('link', { name: 'Documentation', exact: true });
-    const dialog = page.locator('richtext-editor dialog[open]');
-    const checkbox = dialog.getByRole('checkbox', { name: 'Track link?', exact: true });
+    const editor = page.getByTestId('richtext-content');
+    const link = editor.getByRole('link', { name: 'Documentation', exact: true });
+    const dialog = page.getByRole('dialog');
+    const checkbox = dialog.getByRole('checkbox', { name: /Track link/ });
     await link.click();
     await button(page, 'Link').click();
     await expect(dialog.locator('input[name="url"]')).toHaveValue(url);
     await expect(checkbox).toBeChecked({ checked: tracked });
-    await button(dialog, 'Close').click();
+    await button(dialog, 'Cancel').click();
 
     // Reusing the URL dialog for another link must recompute the checkbox state.
-    await page.locator('richtext-editor [contenteditable]').getByRole('link', { name: 'Other link', exact: true }).click();
+    await editor.getByRole('link', { name: 'Other link', exact: true }).click();
     await button(page, 'Link').click();
     await expect(checkbox).toBeChecked({ checked: !tracked });
-    await button(dialog, 'Close').click();
+    await button(dialog, 'Cancel').click();
     await link.click();
     await button(page, 'Link').click();
     await expect(checkbox).toBeChecked({ checked: tracked });
     await checkbox.setChecked(!tracked);
-    await button(dialog, 'Apply').click();
+    await button(dialog, 'Save').click();
     await expect(link).toHaveAttribute('href', href(!tracked));
     await save(page, c.id);
     expect((await campaign(page, c.id)).body).toContain(`href="${href(!tracked)}"`);
     await page.reload();
-    await editorReady(page);
+    await expect(page.getByTestId('richtext-editor')).toBeVisible();
     await link.click();
     await button(page, 'Link').click();
     await expect(dialog.locator('input[name="url"]')).toHaveValue(url);
     await expect(checkbox).toBeChecked({ checked: !tracked });
-    await button(dialog, 'Close').click();
+    await button(dialog, 'Cancel').click();
   });
 }

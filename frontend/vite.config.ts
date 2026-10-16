@@ -12,7 +12,6 @@ const GO_URL = process.env.LISTMONK_URL ?? 'http://localhost:9000';
 const PROXIED = [
   '/api',
   '/admin/login',
-  '/admin/static',
   '/admin/custom.css',
   '/admin/custom.js',
   '/public',

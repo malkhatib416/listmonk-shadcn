@@ -12,47 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// bouncesQueryDefaults is the allowlist of filter query params.
-var bouncesQueryDefaults = map[string]string{
-	"page":        "",
-	"per_page":    "",
-	"order_by":    "",
-	"order":       "",
-	"source":      "",
-	"type":        "",
-	"campaign_id": "",
-}
-
-// bouncesView is the admin page view for the bounces list page.
-type bouncesView struct {
-	adminView
-
-	Bounces []models.Bounce
-	Page    models.PageProps
-}
-
-// ViewBounces renders the HTML view for bounces.
-func (a *App) ViewBounces(c echo.Context) error {
-	q := makeQuery(c.Request().URL.Query(), bouncesQueryDefaults)
-
-	campID, _ := strconv.Atoi(q.Get("campaign_id"))
-
-	// Query and fetch bounces from the DB.
-	pg := a.pg.NewFromURL(q)
-	res, total, err := a.core.QueryBounces(campID, 0, q.Get("source"), q.Get("type"), q.Get("order_by"), q.Get("order"), pg.Offset, pg.Limit)
-	if err != nil {
-		return err
-	}
-
-	data := bouncesView{
-		adminView: newAdminView(c, a.i18n.T("globals.terms.bounces"), "", "subscribers.bounces"),
-		Bounces:   res,
-		Page:      models.NewPageProps(q, total, pg.Page, pg.PerPage),
-	}
-
-	return c.Render(http.StatusOK, "admin-bounces", data)
-}
-
 // GetBounce handles retrieval of a specific bounce record by ID.
 func (a *App) GetBounce(c echo.Context) error {
 	// Fetch one bounce from the DB.
