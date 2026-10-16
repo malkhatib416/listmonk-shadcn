@@ -127,7 +127,7 @@ function ImportPage() {
       <PageHeader title={t('import.title')} />
       {showForm ? (
         <form
-          className="flex max-w-4xl flex-col gap-6"
+          className="flex flex-col gap-6"
           onSubmit={(e) => {
             e.preventDefault();
             if (canUpload(form)) void onUpload();
@@ -286,7 +286,7 @@ user2@mail.com,"User Two","{""age"": 24, ""job"": ""Time Traveller""}"`}</pre>
           </div>
         </form>
       ) : status ? (
-        <div className="flex max-w-4xl flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <section className="bg-card flex flex-col gap-4 rounded-xl border p-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">

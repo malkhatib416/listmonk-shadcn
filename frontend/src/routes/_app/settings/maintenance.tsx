@@ -41,9 +41,19 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+function Field({
+  label,
+  children,
+  hint,
+  className = 'min-w-48 flex-1',
+}: {
+  label: string;
+  children: ReactNode;
+  hint?: string;
+  className?: string;
+}) {
   return (
-    <div className="flex min-w-48 flex-1 flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${className}`}>
       <Label>{label}</Label>
       {children}
       {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
@@ -149,7 +159,7 @@ function MaintenancePage() {
   return (
     <>
       <PageHeader title={t('maintenance.title')} description={t('maintenance.help')} />
-      <div className="flex max-w-4xl flex-col gap-6">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         <Block title={t('globals.terms.subscribers')}>
           <div className="flex flex-wrap items-end gap-4">
             <Field label="Data" hint={t('maintenance.orphanHelp')}>
@@ -175,7 +185,7 @@ function MaintenancePage() {
 
         <Block title={t.tc('globals.terms.subscriptions', 2)}>
           <div className="flex flex-wrap items-end gap-4">
-            <Field label="Data">
+            <Field label="Data" className="min-w-64 flex-1">
               <Choice
                 label="Data"
                 value="optin"
@@ -183,7 +193,7 @@ function MaintenancePage() {
                 options={[['optin', t('maintenance.maintenance.unconfirmedOptins')]]}
               />
             </Field>
-            <Field label={t('maintenance.olderThan')}>
+            <Field label={t('maintenance.olderThan')} className="w-44 shrink-0">
               <Input
                 type="date"
                 value={subscriptionDate}
@@ -215,7 +225,7 @@ function MaintenancePage() {
                 options={analyticsOptions}
               />
             </Field>
-            <Field label={t('maintenance.olderThan')}>
+            <Field label={t('maintenance.olderThan')} className="w-44 shrink-0">
               <Input
                 type="date"
                 value={analyticsDate}
@@ -249,7 +259,7 @@ function MaintenancePage() {
                 ]}
               />
             </Field>
-            <Field label={t('analytics.fromDate')}>
+            <Field label={t('analytics.fromDate')} className="w-44 shrink-0">
               <Input
                 type="date"
                 value={exportDate}
@@ -295,7 +305,7 @@ function DatabaseBlock() {
 
   return (
     <form
-      className="bg-card flex flex-col gap-5 rounded-xl border p-6"
+      className="bg-card flex flex-col gap-5 rounded-xl border p-6 lg:col-span-2"
       onSubmit={(e) => {
         e.preventDefault();
         save.mutate();
