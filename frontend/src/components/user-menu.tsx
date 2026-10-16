@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { ChevronsUpDown, LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
 import { useApp, useT } from '@/components/app-context';
 import { useTheme } from '@/components/theme-provider';
@@ -41,9 +42,9 @@ export function UserMenu() {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="min-w-56">
             <DropdownMenuItem asChild>
-              <a href={hardHref(window._LM_ROOT, '/admin/user/profile')}>
+              <Link to="/user/profile">
                 <User /> {t('users.profile')}
-              </a>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-muted-foreground text-xs">Theme</DropdownMenuLabel>

@@ -36,7 +36,6 @@ import { Progress } from '@/components/ui/progress';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { useSelection } from '@/hooks/use-selection';
 import { apiFetch } from '@/lib/api';
-import { hardHref } from '@/lib/basepath';
 import { bulkQuery } from '@/lib/bulk';
 import {
   campaignActions,
@@ -224,13 +223,14 @@ export function CampaignsTable({
           {c.lists?.length ? (
             <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5" data-testid="campaign-lists">
               {c.lists.slice(0, 3).map((l) => (
-                <a
+                <Link
                   key={l.id}
-                  href={hardHref(window._LM_ROOT, `/admin/subscribers/lists/${l.id}`)}
+                  to="/subscribers/lists/$id"
+                  params={{ id: String(l.id) }}
                   className="text-muted-foreground hover:text-foreground text-xs"
                 >
                   {l.name}
-                </a>
+                </Link>
               ))}
               {c.lists.length > 3 ? (
                 <span
@@ -291,15 +291,16 @@ export function CampaignsTable({
               </span>
             </div>
           ) : null}
-          <a
-            href={hardHref(window._LM_ROOT, `/admin/subscribers/bounces?campaign_id=${c.id}`)}
+          <Link
+            to="/subscribers/bounces"
+            search={{ campaign_id: c.id }}
             className="hover:underline"
           >
             {c.bounces.toLocaleString()}{' '}
             <span className="text-muted-foreground text-xs">
               {t('globals.terms.bounces').toLowerCase()}
             </span>
-          </a>
+          </Link>
           {c.status === 'running' ? (
             <div className="flex items-center gap-2">
               <Progress

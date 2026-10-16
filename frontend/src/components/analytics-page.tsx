@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { useCan, useT } from '@/components/app-context';
@@ -18,7 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { hardHref } from '@/lib/basepath';
 import {
   analyticsQuery,
   formatCount,
@@ -80,12 +79,15 @@ function Legend({
             style={{ background: seriesColor(i) }}
             aria-hidden
           />
-          <a
-            href={hardHref(window._LM_ROOT, `/admin/${resource}/${it.id}`)}
-            className="hover:underline"
-          >
-            #{it.id}: {it.name}
-          </a>
+          {resource === 'lists' ? (
+            <Link to="/lists/$id" params={{ id: String(it.id) }} className="hover:underline">
+              #{it.id}: {it.name}
+            </Link>
+          ) : (
+            <Link to="/campaigns/$id" params={{ id: String(it.id) }} className="hover:underline">
+              #{it.id}: {it.name}
+            </Link>
+          )}
           : {formatCount(totals.get(it.id)?.total ?? 0, it.sent)}
           {extra ? (
             <span className="text-muted-foreground">

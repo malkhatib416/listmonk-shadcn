@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { AlertTriangle, DownloadCloud, Info, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -15,7 +16,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/lib/api';
-import { hardHref } from '@/lib/basepath';
 import { buildNotices } from '@/lib/notices';
 import { waitForRestart } from '@/lib/restart';
 
@@ -103,9 +103,7 @@ export function GlobalNotices() {
                       {t('globals.buttons.learnMore')}
                     </ExternalLink>
                     <Button asChild size="sm">
-                      <a href={hardHref(window._LM_ROOT, '/admin/users')}>
-                        {t('globals.terms.users')}
-                      </a>
+                      <Link to="/users">{t('globals.terms.users')}</Link>
                     </Button>
                   </span>
                 </AlertDescription>

@@ -4,6 +4,7 @@ package adminapp
 import (
 	"bytes"
 	"encoding/json"
+	"html"
 	"path"
 	"regexp"
 	"strings"
@@ -24,8 +25,9 @@ var reSafeRootPath = regexp.MustCompile(`^/[A-Za-z0-9._~-]+(/[A-Za-z0-9._~-]+)*$
 // RewriteShell prepares the built shell for serving. rootPath is the path
 // component of app.root_url ("/" or "" when there is none). It prefixes asset
 // URLs with rootPath and injects window._LM_ROOT as the first element of <head>,
-// which the frontend uses for the router basepath and lazy chunk URLs.
-func RewriteShell(shell []byte, rootPath string) []byte {
+// which the frontend uses for the router basepath and lazy chunk URLs. faviconURL
+// is the configured favicon (Settings > General); empty means the bundled one.
+func RewriteShell(shell []byte, rootPath, faviconURL string) []byte {
 	// Collapse repeated slashes: the caller builds rootPath as "/" + url.Path, which
 	// yields "//lm" for a root_url of https://host/lm.
 	prefix := strings.TrimRight(path.Clean("/"+rootPath), "/")
@@ -40,7 +42,12 @@ func RewriteShell(shell []byte, rootPath string) []byte {
 
 	// The admin's custom CSS/JS (Settings > Appearance), as the old admin linked them.
 	// Last in <head> so the custom CSS overrides the app styles.
-	custom := `<script src="` + prefix + `/admin/custom.js" defer></script>` +
+	icon := prefix + AssetPrefix + "favicon.png"
+	if faviconURL != "" {
+		icon = faviconURL
+	}
+	custom := `<link rel="icon" href="` + html.EscapeString(icon) + `"/>` +
+		`<script src="` + prefix + `/admin/custom.js" defer></script>` +
 		`<link rel="stylesheet" href="` + prefix + `/admin/custom.css"/>`
 	if j := bytes.Index(out, []byte("</head>")); j >= 0 {
 		withCustom := make([]byte, 0, len(out)+len(custom))

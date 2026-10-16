@@ -10,44 +10,23 @@ BUILDSTR := ${VERSION} (\#${LAST_COMMIT} $(BUILDDATE))
 GOPATH ?= $(HOME)/go
 STUFFBIN ?= $(GOPATH)/bin/stuffbin
 
-# SSR admin frontend (built from static/admin/assets -> static/admin/dist).
-FRONTEND = static/admin
-FRONTEND_DIST = $(FRONTEND)/dist
-FRONTEND_NODE_MODULES = $(FRONTEND)/node_modules
-FRONTEND_DEPS_STAMP = $(FRONTEND_NODE_MODULES)/.installed
-
-# Feather icons SVG sprite generated from icons.txt.
-FRONTEND_ICONS_LIST = $(FRONTEND)/icons.txt
-FRONTEND_ICONS = $(FRONTEND)/assets/static/icons.svg
-
+# The admin frontend: TanStack Start SPA, built from frontend/ into frontend/dist/client.
+FRONTEND = frontend
+FRONTEND_DIST = $(FRONTEND)/dist/client
+FRONTEND_DEPS_STAMP = $(FRONTEND)/node_modules/.installed
 FRONTEND_DEPS = \
 	$(FRONTEND_DEPS_STAMP) \
 	$(FRONTEND)/package.json \
 	$(FRONTEND)/bun.lock \
-	$(FRONTEND)/build.mjs \
-	$(shell find $(FRONTEND)/assets -type f)
-
-# TanStack Start admin frontend (built from frontend/ -> frontend/dist/client).
-FRONTEND_APP = frontend
-FRONTEND_APP_DIST = $(FRONTEND_APP)/dist/client
-FRONTEND_APP_DEPS_STAMP = $(FRONTEND_APP)/node_modules/.installed
-FRONTEND_APP_DEPS = \
-	$(FRONTEND_APP_DEPS_STAMP) \
-	$(FRONTEND_APP)/package.json \
-	$(FRONTEND_APP)/bun.lock \
-	$(FRONTEND_APP)/tsconfig.json \
-	$(wildcard $(FRONTEND_APP)/*.ts) \
-	$(shell find $(FRONTEND_APP)/src -type f)
+	$(FRONTEND)/tsconfig.json \
+	$(wildcard $(FRONTEND)/*.ts) \
+	$(shell find $(FRONTEND)/src $(FRONTEND)/public -type f)
 
 BIN := listmonk
 STATIC := config.toml.sample \
 	schema.sql queries:/queries permissions.json \
 	static/public:/public \
-	static/admin/views:/admin/views \
-	static/admin/partials:/admin/partials \
-	static/admin/dist:/admin/static \
 	frontend/dist/client:/admin/app \
-	static/admin/i18n.txt:/admin/i18n.txt \
 	static/email-templates \
 	i18n:/i18n
 
@@ -73,59 +52,39 @@ $(BIN): FORCE $(SRC) go.mod go.sum schema.sql $(SQL) permissions.json
 GO_RUN = CGO_ENABLED=0 go run -ldflags="-s -w -X 'main.buildString=${BUILDSTR}' -X 'main.versionString=${VERSION}'" ./cmd
 
 .PHONY: run
-run: $(FRONTEND_DIST) $(FRONTEND_APP_DIST)
+run: $(FRONTEND_DIST)
 ifneq ($(DEV_CONFIG),)
 	$(GO_RUN) --config="$(DEV_CONFIG)" --install --idempotent --yes
 endif
 	$(GO_RUN) $(if $(DEV_CONFIG),--config="$(DEV_CONFIG)")
 
-# Install SSR admin frontend deps.
+# Install the admin frontend deps.
 $(FRONTEND_DEPS_STAMP): $(FRONTEND)/package.json $(FRONTEND)/bun.lock
 	cd $(FRONTEND) && bun install --frozen-lockfile
 	touch $@
 
-# Generate svg icon sprite.
-$(FRONTEND_ICONS): $(FRONTEND_ICONS_LIST) scripts/build-icons.py
-	python3 scripts/build-icons.py --icons $(FRONTEND_ICONS_LIST) --out $(FRONTEND_ICONS)
-
-.PHONY: build-icons
-build-icons: $(FRONTEND_ICONS)
-
-# Build the SSR admin frontend (Bun) into static/admin/dist.
-$(FRONTEND_DIST): $(FRONTEND_ICONS) $(FRONTEND_DEPS)
+# Build the admin frontend into frontend/dist/client.
+$(FRONTEND_DIST): $(FRONTEND_DEPS)
 	cd $(FRONTEND) && bun run build
 	touch -c $(FRONTEND_DIST)
 
 .PHONY: build-frontend
 build-frontend: $(FRONTEND_DIST)
 
-# Install new admin frontend deps.
-$(FRONTEND_APP_DEPS_STAMP): $(FRONTEND_APP)/package.json $(FRONTEND_APP)/bun.lock
-	cd $(FRONTEND_APP) && bun install --frozen-lockfile
-	touch $@
-
-# Build the new admin frontend (TanStack Start SPA) into frontend/dist/client.
-$(FRONTEND_APP_DIST): $(FRONTEND_APP_DEPS)
-	cd $(FRONTEND_APP) && bun run build
-	touch -c $(FRONTEND_APP_DIST)
-
-.PHONY: build-frontend-app
-build-frontend-app: $(FRONTEND_APP_DIST)
-
 # Run Go tests.
 .PHONY: test
 test:
 	go test ./...
 
-# Bundle all static assets including the SSR admin frontend into the ./listmonk binary
+# Bundle all static assets including the admin frontend into the ./listmonk binary
 # using stuffbin.
 .PHONY: dist
-dist: $(STUFFBIN) build build-frontend build-frontend-app pack-bin
+dist: $(STUFFBIN) build build-frontend pack-bin
 
 # pack-bin runs stuffbin packing on the given binary. This is used
 # in the .goreleaser post-build hook.
 .PHONY: pack-bin
-pack-bin: build-frontend build-frontend-app $(BIN) $(STUFFBIN)
+pack-bin: build-frontend $(BIN) $(STUFFBIN)
 	$(STUFFBIN) -a stuff -in ${BIN} -out ${BIN} ${STATIC}
 
 # Use goreleaser to do a dry run producing local builds.

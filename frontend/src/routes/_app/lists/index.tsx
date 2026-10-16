@@ -44,7 +44,6 @@ import {
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { useSelection } from '@/hooks/use-selection';
 import { apiFetch } from '@/lib/api';
-import { hardHref } from '@/lib/basepath';
 import { bulkQuery } from '@/lib/bulk';
 import { formatDate } from '@/lib/format';
 import {
@@ -267,14 +266,15 @@ function ListsPage() {
       cell: (l) => (
         <div className="flex flex-col gap-1.5">
           {canSubs ? (
-            <a
-              href={hardHref(window._LM_ROOT, `/admin/subscribers/lists/${l.id}`)}
+            <Link
+              to="/subscribers/lists/$id"
+              params={{ id: String(l.id) }}
               className="w-fit font-medium hover:underline"
               data-testid="subscriber-total"
               title={`${t('globals.buttons.view')} ${t('globals.terms.subscribers')}`}
             >
               {l.subscriber_count.toLocaleString()}
-            </a>
+            </Link>
           ) : (
             <span className="font-medium" data-testid="subscriber-total">
               {l.subscriber_count.toLocaleString()}

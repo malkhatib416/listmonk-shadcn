@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { hardHref } from '@/lib/basepath';
+import { appAssetHref } from '@/lib/basepath';
 import { cn } from '@/lib/utils';
 
 export interface VisualEditorHandle {
@@ -99,7 +99,11 @@ export const VisualEditor = forwardRef<VisualEditorHandle, VisualEditorProps>(fu
       const doc = el.contentDocument;
       if (!doc) return;
       const s = doc.createElement('script');
-      s.src = `${hardHref(window._LM_ROOT, '/admin/static/email-builder')}/email-builder.umd.js`;
+      s.src = appAssetHref(
+        window._LM_ROOT,
+        'email-builder/email-builder.umd.js',
+        import.meta.env.DEV,
+      );
       s.onload = mount;
       doc.head.appendChild(s);
     };

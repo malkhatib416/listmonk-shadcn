@@ -9,13 +9,15 @@ test.describe('Logs', () => {
     await expect(page.getByRole('log')).toContainText('reading config');
   });
 
-  test('sidebar lists Logs and links unported pages to the old admin', async ({ page }) => {
+  test('the sidebar navigates between pages without reloading', async ({ page }) => {
     await page.goto(PAGE);
+    await page.evaluate(() => { window.__spa = true; });
     await page.getByRole('button', { name: 'Lists' }).click();
     await page.getByRole('link', { name: 'All lists' }).click();
     await expect(page).toHaveURL(/\/admin\/lists$/);
-    // Full page load: the old admin renders its own markup, not the SPA shell.
-    await expect(page.locator('h1.page-title')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Lists', exact: true })).toBeVisible();
+    // Still the same document: client-side navigation.
+    expect(await page.evaluate(() => window.__spa)).toBe(true);
     await expect(page.getByRole('log')).toHaveCount(0);
   });
 
@@ -138,7 +140,10 @@ test.describe('Logs: failure and permission handling', () => {
     try {
       const res = await context.request.get(PAGE);
       expect(res.status()).toBe(403);
-      expect(await res.text()).not.toContain('/admin/app/assets');
+      const body = await res.text();
+      expect(body).not.toContain('/admin/app/assets');
+      // The plain message page names what was denied.
+      expect(body).toContain('/admin/settings/logs');
     } finally {
       await cleanup();
     }

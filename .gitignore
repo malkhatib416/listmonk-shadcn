@@ -10,8 +10,6 @@ email-builder/.cache/
 email-builder/yarn.lock
 email-builder/dist/
 static/public/static/altcha.umd.js
-static/admin/dist/
-scripts/.icons/
 .vscode/
 
 config.toml

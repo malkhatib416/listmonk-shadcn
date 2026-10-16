@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { adminPrefix, adminRewrite, hardHref } from './basepath';
+import { adminPrefix, adminRewrite, appAssetHref, hardHref } from './basepath';
 
 const run = (prefix: string, dir: 'input' | 'output', path: string) => {
   const url = new URL(`http://x${path}`);
@@ -50,5 +50,18 @@ describe('hardHref', () => {
     expect(hardHref('/lm', '/admin/lists')).toBe('/lm/admin/lists');
     expect(hardHref('', '/admin/lists')).toBe('/admin/lists');
     expect(hardHref(undefined, '/admin/lists')).toBe('/admin/lists');
+  });
+});
+
+describe('appAssetHref', () => {
+  test('built assets live under the app prefix, behind the root path', () => {
+    expect(appAssetHref('', 'email-builder/email-builder.umd.js')).toBe(
+      '/admin/app/email-builder/email-builder.umd.js',
+    );
+    expect(appAssetHref('/lm', 'favicon.png')).toBe('/lm/admin/app/favicon.png');
+  });
+
+  test('the dev server serves public files from its root', () => {
+    expect(appAssetHref('', 'favicon.png', true)).toBe('/favicon.png');
   });
 });

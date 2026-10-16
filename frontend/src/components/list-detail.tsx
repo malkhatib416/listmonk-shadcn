@@ -12,7 +12,6 @@ import { TrendChart, type TrendPoint } from '@/components/trend-chart';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiFetch } from '@/lib/api';
-import { hardHref } from '@/lib/basepath';
 import { formatDate } from '@/lib/format';
 import { listQuery, type List } from '@/lib/lists';
 import type { CampaignsSearch } from '@/lib/campaigns';
@@ -65,15 +64,31 @@ function Tabs({ list, tab }: { list: List; tab: 'view' | 'edit' }) {
   );
 }
 
-function Stat({ label, value, href }: { label: string; value: number; href?: string }) {
+function Stat({
+  label,
+  value,
+  listId,
+  status,
+}: {
+  label: string;
+  value: number;
+  // Link to the list's subscribers (optionally one subscription status) when set.
+  listId?: number;
+  status?: 'confirmed' | 'unconfirmed' | 'unsubscribed';
+}) {
   return (
     <div className="bg-card rounded-xl border p-5">
       <p className="text-muted-foreground text-sm">{label}</p>
       <p className="mt-1 text-3xl font-semibold tracking-tight">
-        {href ? (
-          <a href={href} className="hover:underline">
+        {listId !== undefined ? (
+          <Link
+            to="/subscribers/lists/$id"
+            params={{ id: String(listId) }}
+            search={status ? { subscription_status: status } : {}}
+            className="hover:underline"
+          >
             {value.toLocaleString()}
-          </a>
+          </Link>
         ) : (
           value.toLocaleString()
         )}
@@ -90,7 +105,6 @@ function Overview({ list }: { list: List }) {
     queryKey: ['lists', list.id, 'charts'],
     queryFn: () => apiFetch<ListCharts>(`/api/lists/${list.id}/charts`),
   });
-  const subs = hardHref(window._LM_ROOT, `/admin/subscribers/lists/${list.id}`);
   const canSubs = can('subscribers:get', 'subscribers:get_all');
   const showViews = can('campaigns:get', 'campaigns:get_all') && can('campaigns:get_analytics');
   const s = list.subscriber_statuses ?? {};
@@ -157,14 +171,15 @@ function Overview({ list }: { list: List }) {
         <Stat
           label={t('globals.terms.subscribers')}
           value={list.subscriber_count}
-          href={canSubs ? subs : undefined}
+          listId={canSubs ? list.id : undefined}
         />
         {(['confirmed', 'unconfirmed', 'unsubscribed'] as const).map((st) => (
           <Stat
             key={st}
             label={t(`subscribers.status.${st}`)}
             value={s[st] ?? 0}
-            href={canSubs ? `${subs}?subscription_status=${st}` : undefined}
+            listId={canSubs ? list.id : undefined}
+            status={st}
           />
         ))}
       </div>

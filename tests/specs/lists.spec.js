@@ -105,8 +105,8 @@ test.describe('Lists', () => {
       await listRow(page, c.list).getByTestId('subscriber-total').click();
 
       await expect(page).toHaveURL(/\/admin\/subscribers\/lists\/\d+/);
-      await expect(page.locator('tbody tr')).toHaveCount(1);
-      await expect(page.locator('td.email')).toContainText(c.email);
+      await expect(page.getByTestId('sub-row')).toHaveCount(1);
+      await expect(page.getByTestId('sub-row')).toContainText(c.email);
     }
   });
 

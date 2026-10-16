@@ -10,5 +10,5 @@
     "no-underscore-dangle": "off",
     "react/no-unstable-nested-components": "off"
   },
-  "ignorePatterns": ["dist/**", "src/routeTree.gen.ts", "src/components/ui/**"]
+  "ignorePatterns": ["dist/**", "src/routeTree.gen.ts", "src/components/ui/**", "public/**"]
 }

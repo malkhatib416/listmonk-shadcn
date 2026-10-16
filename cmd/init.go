@@ -57,8 +57,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/lib/pq"
 	flag "github.com/spf13/pflag"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 	"gopkg.in/volatiletech/null.v6"
 )
 
@@ -163,9 +161,6 @@ type Config struct {
 
 	PermissionsRaw json.RawMessage
 	Permissions    map[string]struct{}
-
-	// i18n keys (from i18n.txt) printed in admin HTML pages for JS to use.
-	AdminI18nKeys []string
 }
 
 // initFlags initializes the commandline flags into the Koanf instance.
@@ -227,14 +222,7 @@ func initFS(appDir, staticDir, i18nDir string) stuffbin.FileSystem {
 		}
 
 		staticFiles = []string{
-			// These paths are joined with staticDir. The SSR admin frontend is split:
-			// the Go HTML templates (views/, partials/) are parsed from source, while
-			// the JS/CSS/asset bundle is built into admin/dist (see static/admin/build.mjs)
-			// and served at /admin/static.
-			"./admin/views:/admin/views",
-			"./admin/partials:/admin/partials",
-			"./admin/dist:/admin/static",
-			"./admin/i18n.txt:/admin/i18n.txt",
+			// These paths are joined with staticDir.
 			"./email-templates:static/email-templates",
 			"./public:/public",
 		}
@@ -494,7 +482,7 @@ func initUrlConfig(ko *koanf.Koanf) *UrlConfig {
 	root := strings.TrimSuffix(ko.String("app.root_url"), "/")
 
 	// rootPath is the path component of the root URL set in config.
-	// It's used as the base path for all admin/static asset URLs.
+	// It's used as the base path for all admin asset URLs.
 	var rootPath string
 	if u, err := url.Parse(root); err == nil {
 		rootPath = "/" + strings.TrimSuffix(u.Path, "/")
@@ -590,20 +578,6 @@ func initConstConfig(ko *koanf.Koanf) *Config {
 		for _, g := range group.Permissions {
 			c.Permissions[g] = struct{}{}
 		}
-	}
-
-	// Load the list of i18n keys exported to the SSR admin frontend for JS.
-	keys, err := fs.Read("/admin/i18n.txt")
-	if err != nil {
-		lo.Fatalf("error reading admin i18n keys file: %v", err)
-	}
-
-	for line := range strings.SplitSeq(string(keys), "\n") {
-		if line = strings.TrimSpace(line); line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		c.AdminI18nKeys = append(c.AdminI18nKeys, line)
 	}
 
 	return &c
@@ -1007,44 +981,17 @@ func initHTTPServer(cfg *Config, urlCfg *UrlConfig, i *i18n.I18n, fs stuffbin.Fi
 		lo.Fatalf("error parsing public templates: %v", err)
 	}
 
-	// Admin templates live in /admin/views and /admin/partials, plus nested
-	// module partials like /admin/partials/settings. Glob both levels and parse
-	// them into a single template set (all files use {{ define }} blocks).
-	adminPaths, err := fs.Glob("/admin/*/*.html")
-	if err != nil {
-		lo.Fatalf("error globbing admin templates: %v", err)
-	}
-	nestedPaths, err := fs.Glob("/admin/partials/*/*.html")
-	if err != nil {
-		lo.Fatalf("error globbing nested admin templates: %v", err)
-	}
-	adminTpl, err := stuffbin.ParseTemplates(tplFuncs, fs, append(adminPaths, nestedPaths...)...)
-	if err != nil {
-		lo.Fatalf("error parsing admin templates: %v", err)
-	}
-	srv.Renderer = &appTplRenderer{
-		PubRenderer: &pubTplRenderer{
-			templates:           pubTpl,
-			SiteName:            cfg.SiteName,
-			RootURL:             urlCfg.RootURL,
-			LogoURL:             urlCfg.LogoURL,
-			FaviconURL:          urlCfg.FaviconURL,
-			AssetVersion:        cfg.AssetVersion,
-			CustomAssetVersion:  cfg.CustomAssetVersion,
-			EnablePublicSubPage: cfg.EnablePublicSubPage,
-			EnablePublicArchive: cfg.EnablePublicArchive,
-			IndividualTracking:  cfg.Privacy.IndividualTracking,
-		},
-		AdminRenderer: &adminTplRenderer{
-			templates:          adminTpl,
-			SiteName:           cfg.SiteName,
-			RootURL:            urlCfg.RootURL,
-			LogoURL:            urlCfg.LogoURL,
-			FaviconURL:         urlCfg.FaviconURL,
-			AssetVersion:       cfg.AssetVersion,
-			CustomAssetVersion: cfg.CustomAssetVersion,
-			Lang:               cfg.Lang,
-		},
+	srv.Renderer = &pubTplRenderer{
+		templates:           pubTpl,
+		SiteName:            cfg.SiteName,
+		RootURL:             urlCfg.RootURL,
+		LogoURL:             urlCfg.LogoURL,
+		FaviconURL:          urlCfg.FaviconURL,
+		AssetVersion:        cfg.AssetVersion,
+		CustomAssetVersion:  cfg.CustomAssetVersion,
+		EnablePublicSubPage: cfg.EnablePublicSubPage,
+		EnablePublicArchive: cfg.EnablePublicArchive,
+		IndividualTracking:  cfg.Privacy.IndividualTracking,
 	}
 
 	// Initialize the static file server.
@@ -1053,10 +1000,7 @@ func initHTTPServer(cfg *Config, urlCfg *UrlConfig, i *i18n.I18n, fs stuffbin.Fi
 	// Public (subscriber) facing static files.
 	srv.GET("/public/static/*", echo.WrapHandler(fSrv))
 
-	// Admin (frontend) facing static files (SSR admin JS/CSS/asset bundle).
-	srv.GET("/admin/static/*", echo.WrapHandler(fSrv))
-
-	// New admin frontend bundle (TanStack Start build).
+	// The admin frontend bundle (TanStack Start build).
 	srv.GET("/admin/app/*", echo.WrapHandler(fSrv))
 
 	// Public (subscriber) facing media upload files.
@@ -1251,134 +1195,11 @@ func initTplFuncs(i *i18n.I18n, u *UrlConfig) template.FuncMap {
 		"RootURL": func() string {
 			return u.RootURL
 		},
-		// URI prefixes an absolute app path with the root path (if any) so that
-		// server-rendered links/assets resolve correctly when the app is hosted
-		// under a sub-path. It's a no-op for a root-level install.
-		"URI": func(p string) string {
-			out, err := url.JoinPath(u.RootPath, p)
-			if err != nil {
-				lo.Printf("error joining path %s with root path %s: %v", p, u.RootPath, err)
-				return u.RootPath + p
-			}
-
-			return out
-		},
 		"LogoURL": func() string {
 			return u.LogoURL
 		},
-		"Date": func(layout string) string {
-			if layout == "" {
-				layout = time.ANSIC
-			}
-			return time.Now().Format(layout)
-		},
 		"L": func() *i18n.I18n {
 			return i
-		},
-		"Safe": func(safeHTML string) template.HTML {
-			return template.HTML(safeHTML)
-		},
-		"Icon": func(name string, file ...string) template.HTML {
-			f := "icons.svg"
-			if len(file) > 0 && file[0] != "" {
-				// Optional filename.
-				f = file[0]
-			}
-
-			name = template.HTMLEscapeString(name)
-			return template.HTML(fmt.Sprintf(`<svg class="icon"><use href="%sadmin/static/%s#icon-%s"></use></svg>`, u.RootPath, f, name))
-		},
-		// Auto-generated colour gradient CSS avatar.
-		"Initials": makeInitials,
-		// '●' that is printed inside some badges.
-		"Dot": func() template.HTML {
-			return template.HTML(`<span class="dot">&#9679;</span>`)
-		},
-		// First param = content
-		// Second param = optional classes separated by string, eg: "outline status-finished".
-		// Third param = optional data-variant, eg: "success".
-		"Badge": func(content any, opts ...string) template.HTML {
-			class := "badge"
-			if len(opts) > 0 {
-				if s := strings.TrimSpace(opts[0]); s != "" {
-					class += " " + s
-				}
-			}
-
-			attrs := fmt.Sprintf(`class="%s"`, template.HTMLEscapeString(class))
-			if len(opts) > 1 {
-				if v := strings.TrimSpace(opts[1]); v != "" {
-					attrs += fmt.Sprintf(` data-variant="%s"`, template.HTMLEscapeString(v))
-				}
-			}
-
-			return template.HTML(fmt.Sprintf(`<span %s>%s</span>`, attrs, badgeContent(content)))
-		},
-		"IsNav": func(current, id string) template.HTMLAttr {
-			if current == id {
-				return template.HTMLAttr(` aria-current="page"`)
-			}
-			return ""
-		},
-		"ExpandNav": func(current, section string) template.HTMLAttr {
-			if current == section || strings.HasPrefix(current, section+".") {
-				return template.HTMLAttr(" open")
-			}
-			return ""
-		},
-		"ToJSON":        jsonForTpl,
-		"Can":           can,
-		"CanManageList": canManageList,
-		"FormatNumber": func(n int) string {
-			p := message.NewPrinter(language.English)
-			return p.Sprintf("%d", n)
-		},
-		"NiceDate": func(t any, withTime ...bool) string {
-			layout := "Mon, 02 Jan 2006"
-			if len(withTime) > 0 && withTime[0] {
-				layout += ", 15:04"
-			}
-
-			return niceDate(t, layout)
-		},
-		"CompactDate": func(v any, withTime ...bool) string {
-			t, ok := toTime(v)
-			if !ok {
-				return ""
-			}
-			return compactDate(t, time.Now(), len(withTime) > 0 && withTime[0], len(withTime) > 1 && withTime[1])
-		},
-		"FormatTimestamps": func(from, to any) string {
-			f, fok := toTime(from)
-			t, tok := toTime(to)
-			if !fok || !tok {
-				return ""
-			}
-			return formatTimestamps(f, t, time.Now())
-		},
-		"ExactDate": func(v any) string {
-			t, ok := toTime(v)
-			if !ok {
-				return ""
-			}
-			return t.In(time.Local).Format("Mon, 2 Jan 2006, 15:04:05 MST (UTC Z07:00)")
-		},
-		"Duration": func(from, to any) string {
-			f, ok := toTime(from)
-			if !ok {
-				return ""
-			}
-			t, ok := toTime(to)
-			if !ok {
-				return ""
-			}
-
-			d := t.Sub(f)
-			if d <= 0 {
-				return ""
-			}
-
-			return niceDuration(d)
 		},
 	}
 
@@ -1511,46 +1332,6 @@ func parseTextTemplatesGlob(f txttpl.FuncMap, fs stuffbin.FileSystem, pattern st
 	}
 
 	return tpl, nil
-}
-
-// toTime extracts a non-zero time.Time out of a time.Time or null.Time value.
-func toTime(t any) (time.Time, bool) {
-	switch v := t.(type) {
-	case time.Time:
-		return v, !v.IsZero()
-	case null.Time:
-		return v.Time, v.Valid
-	}
-
-	return time.Time{}, false
-}
-
-// niceDate formats the given date for template rendering.
-func niceDate(v any, layout string) string {
-	t, ok := toTime(v)
-	if !ok {
-		return ""
-	}
-	return t.Format(layout)
-}
-
-// badgeContent renders the content of a badge. Pre-rendered markup (eg: Icon())
-// goes in as-is and everything else is escaped.
-func badgeContent(content any) template.HTML {
-	switch v := content.(type) {
-	case template.HTML:
-		return v
-	case []any:
-		out := make([]string, 0, len(v))
-		for _, c := range v {
-			if s := string(badgeContent(c)); s != "" {
-				out = append(out, s)
-			}
-		}
-		return template.HTML(strings.Join(out, " "))
-	}
-
-	return template.HTML(template.HTMLEscapeString(fmt.Sprint(content)))
 }
 
 // parseCronString parses a standard cron expression.

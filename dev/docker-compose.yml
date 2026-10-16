@@ -52,16 +52,10 @@ services:
       - ../:/app
       - go-mod:/go/pkg/mod
       - go-build:/root/.cache/go-build
-      - admin-dist:/app/static/admin/dist
       - frontend-dist:/app/frontend/dist
       - type: volume
         source: frontend-node-modules
         target: /app/frontend/node_modules
-        volume:
-          nocopy: true
-      - type: volume
-        source: node-modules
-        target: /app/static/admin/node_modules
         volume:
           nocopy: true
 
@@ -69,7 +63,5 @@ volumes:
   listmonk-dev-db:
   go-mod:
   go-build:
-  admin-dist:
-  node-modules:
   frontend-dist:
   frontend-node-modules:

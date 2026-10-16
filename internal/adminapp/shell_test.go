@@ -11,7 +11,7 @@ const sampleShell = `<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/
 
 func TestRewriteShellNoRootPath(t *testing.T) {
 	for _, root := range []string{"", "/"} {
-		out := string(RewriteShell([]byte(sampleShell), root))
+		out := string(RewriteShell([]byte(sampleShell), root, ""))
 
 		if !strings.Contains(out, `href="/admin/app/assets/app-abc.css"`) {
 			t.Fatalf("root %q: asset URL changed: %s", root, out)
@@ -24,7 +24,7 @@ func TestRewriteShellNoRootPath(t *testing.T) {
 }
 
 func TestRewriteShellWithRootPath(t *testing.T) {
-	out := string(RewriteShell([]byte(sampleShell), "/lm"))
+	out := string(RewriteShell([]byte(sampleShell), "/lm", ""))
 
 	for _, want := range []string{
 		`href="/lm/admin/app/assets/app-abc.css"`,
@@ -41,7 +41,7 @@ func TestRewriteShellWithRootPath(t *testing.T) {
 }
 
 func TestRewriteShellTrailingSlashRootPath(t *testing.T) {
-	out := string(RewriteShell([]byte(sampleShell), "/lm/"))
+	out := string(RewriteShell([]byte(sampleShell), "/lm/", ""))
 	if !strings.Contains(out, `href="/lm/admin/app/assets/app-abc.css"`) {
 		t.Fatalf("trailing slash not trimmed: %s", out)
 	}
@@ -51,7 +51,7 @@ func TestRewriteShellTrailingSlashRootPath(t *testing.T) {
 // https://host/lm arrives here as "//lm".
 func TestRewriteShellNormalizesDoubleSlashRootPath(t *testing.T) {
 	for _, root := range []string{"//lm", "//lm/", "/lm//"} {
-		out := string(RewriteShell([]byte(sampleShell), root))
+		out := string(RewriteShell([]byte(sampleShell), root, ""))
 
 		if !strings.Contains(out, `href="/lm/admin/app/assets/app-abc.css"`) ||
 			!strings.Contains(out, `window._LM_ROOT="/lm";`) {
@@ -62,7 +62,7 @@ func TestRewriteShellNormalizesDoubleSlashRootPath(t *testing.T) {
 
 func TestRewriteShellRejectsUnsafeRootPath(t *testing.T) {
 	for _, root := range []string{`/a</script><b>`, `/a"b`, `/a b`} {
-		out := string(RewriteShell([]byte(sampleShell), root))
+		out := string(RewriteShell([]byte(sampleShell), root, ""))
 
 		if strings.Contains(out, "<b>") || strings.Contains(out, `a"b`) {
 			t.Fatalf("root %q leaked into output: %s", root, out)
@@ -76,7 +76,7 @@ func TestRewriteShellRejectsUnsafeRootPath(t *testing.T) {
 
 func TestRewriteShellWithoutHead(t *testing.T) {
 	// A shell without <head> is returned unmodified apart from the asset prefix.
-	out := string(RewriteShell([]byte(`<p src="/admin/app/x.js">`), "/lm"))
+	out := string(RewriteShell([]byte(`<p src="/admin/app/x.js">`), "/lm", ""))
 	if out != `<p src="/lm/admin/app/x.js">` {
 		t.Fatalf("unexpected output: %s", out)
 	}
@@ -86,7 +86,7 @@ func TestRewriteShellWithoutHead(t *testing.T) {
 // The CSS goes last in <head> so it overrides the app styles.
 func TestRewriteShellLinksCustomAssets(t *testing.T) {
 	for root, p := range map[string]string{"": "", "/lm": "/lm"} {
-		out := string(RewriteShell([]byte(sampleShell), root))
+		out := string(RewriteShell([]byte(sampleShell), root, ""))
 
 		css := `<link rel="stylesheet" href="` + p + `/admin/custom.css"/></head>`
 		js := `<script src="` + p + `/admin/custom.js" defer></script>`
@@ -96,5 +96,22 @@ func TestRewriteShellLinksCustomAssets(t *testing.T) {
 		if !strings.Contains(out, js) {
 			t.Fatalf("root %q: custom.js not included: %s", root, out)
 		}
+	}
+}
+
+func TestRewriteShellFavicon(t *testing.T) {
+	// Without a configured favicon the bundled one is linked, under the root path.
+	out := string(RewriteShell([]byte(sampleShell), "/lm", ""))
+	if !strings.Contains(out, `<link rel="icon" href="/lm/admin/app/favicon.png"/>`) {
+		t.Fatalf("default favicon missing: %s", out)
+	}
+
+	// A configured favicon wins, and is escaped for the attribute.
+	out = string(RewriteShell([]byte(sampleShell), "", `https://x.test/f.ico?a=1&b="2"`))
+	if !strings.Contains(out, `<link rel="icon" href="https://x.test/f.ico?a=1&amp;b=&#34;2&#34;"/>`) {
+		t.Fatalf("custom favicon missing or unescaped: %s", out)
+	}
+	if strings.Contains(out, "favicon.png") {
+		t.Fatalf("default favicon also linked: %s", out)
 	}
 }

@@ -40,3 +40,18 @@ test.describe('unauthenticated', () => {
     await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fsettings%2Flogs/);
   });
 });
+
+test.describe('bundled assets', () => {
+  test('the shell links the bundled favicon, which Go serves', async ({ page }) => {
+    await page.goto('/admin');
+    const href = await page.locator('link[rel="icon"]').getAttribute('href');
+    expect(href).toBe('/admin/app/favicon.png');
+    expect((await page.request.get(href)).status()).toBe(200);
+  });
+
+  test('the email builder bundle is served for the visual editor', async ({ page }) => {
+    const res = await page.request.get('/admin/app/email-builder/email-builder.umd.js');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toMatch(/javascript/);
+  });
+});

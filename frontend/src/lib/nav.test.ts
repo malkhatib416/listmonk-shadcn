@@ -36,17 +36,10 @@ describe('visibleNav', () => {
     expect(keys).toContain('settings.logs');
     expect(keys).not.toContain('settings.maintenance');
   });
-
-  test('ported items are marked', () => {
-    const ported = NAV.flatMap((g) => g.items)
-      .filter((i) => i.ported)
-      .map((i) => i.key);
-    expect(ported).toContain('settings.logs');
-  });
 });
 
 describe('activeNavItem', () => {
-  test('an exact ported path is active', () => {
+  test('an exact path is active', () => {
     expect(activeNavItem('/settings/logs')?.key).toBe('settings.logs');
   });
 
@@ -61,6 +54,21 @@ describe('activeNavItem', () => {
   test('no match for an unknown path', () => {
     expect(activeNavItem('/nope')).toBeUndefined();
     expect(activeNavItem('/usersx')).toBeUndefined();
+  });
+
+  test('the archived lists link wins only for its filter', () => {
+    expect(activeNavItem('/lists', { status: 'archived' })?.key).toBe('lists.archived');
+    expect(activeNavItem('/lists', {})?.key).toBe('lists.all');
+    expect(activeNavItem('/lists', { status: 'active' })?.key).toBe('lists.all');
+    expect(activeNavItem('/lists/5')?.key).toBe('lists.all');
+  });
+
+  test('new campaign, media and analytics are not "all campaigns"', () => {
+    expect(activeNavItem('/campaigns/new')?.key).toBe('campaigns.new');
+    expect(activeNavItem('/campaigns/media')?.key).toBe('campaigns.media');
+    expect(activeNavItem('/campaigns/7')?.key).toBe('campaigns.all');
+    expect(activeNavItem('/settings')?.key).toBe('settings.all');
+    expect(activeNavItem('/settings/maintenance')?.key).toBe('settings.maintenance');
   });
 
   test('the dashboard owns the root path only', () => {

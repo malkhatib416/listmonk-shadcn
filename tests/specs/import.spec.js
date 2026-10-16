@@ -57,7 +57,7 @@ test.describe('Import', () => {
 
       // 100 imported + 2 seeded subscribers.
       await page.goto(SUBSCRIBERS);
-      await expect(page.locator('.page-title')).toContainText('(102)');
+      await expect(page.getByTestId('total')).toHaveText('102');
     }
   });
 

@@ -17,5 +17,5 @@ func (a *App) ServeAdminApp(c echo.Context) error {
 
 	// The shell embeds the root path, so it must not be cached across config changes.
 	c.Response().Header().Set("Cache-Control", "no-store")
-	return c.HTMLBlob(http.StatusOK, adminapp.RewriteShell(shell, a.urlCfg.RootPath))
+	return c.HTMLBlob(http.StatusOK, adminapp.RewriteShell(shell, a.urlCfg.RootPath, a.urlCfg.FaviconURL))
 }

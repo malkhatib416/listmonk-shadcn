@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/table';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { apiFetch } from '@/lib/api';
-import { hardHref } from '@/lib/basepath';
 import type { Bounce } from '@/lib/bounces';
 import { formatDate, formatDateTime } from '@/lib/format';
 import type { Subscriber } from '@/lib/subscribers';
@@ -340,12 +339,9 @@ export function ActivityTab({ sub }: { sub: Subscriber }) {
 
   const camp = (id: number, name: string, subject: string) => (
     <div className="min-w-0">
-      <a
-        href={hardHref(window._LM_ROOT, `/admin/campaigns/${id}`)}
-        className="font-medium hover:underline"
-      >
+      <Link to="/campaigns/$id" params={{ id: String(id) }} className="font-medium hover:underline">
         {name}
-      </a>
+      </Link>
       <div className="text-muted-foreground truncate text-xs">{subject}</div>
     </div>
   );

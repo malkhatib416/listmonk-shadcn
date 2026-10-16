@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -56,9 +55,6 @@ type App struct {
 
 	about         about
 	fnOptinNotify func(models.Subscriber, []int) (int, error)
-
-	// Precomputed raw JSON of i18n strings for HTML admin pages.
-	adminI18nJS json.RawMessage
 
 	// Channel for passing reload signals.
 	chReload chan os.Signal
@@ -308,9 +304,6 @@ func main() {
 		// If there are no users, then the app needs to prompt for new user setup.
 		needsUserSetup: !hasUsers,
 	}
-
-	// i18n JSON string for admin HTML pages.
-	app.adminI18nJS = app.makeAdminJSI18n()
 
 	// Star the update checker.
 	if ko.Bool("app.check_updates") {

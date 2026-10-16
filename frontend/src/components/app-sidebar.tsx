@@ -1,5 +1,6 @@
 import { Link, useRouterState, type LinkProps } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
+import logo from '@/assets/logo.svg';
 import { useApp, useT } from '@/components/app-context';
 import { NavIcon } from '@/components/nav-icon';
 import { UserMenu } from '@/components/user-menu';
@@ -18,7 +19,6 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from '@/components/ui/sidebar';
-import { hardHref } from '@/lib/basepath';
 import { activeNavItem, visibleNav, type NavItem } from '@/lib/nav';
 
 // Router paths drop the /admin prefix (see lib/basepath.ts).
@@ -31,21 +31,13 @@ type ItemLinkProps = {
   sub?: boolean;
 };
 
-// Ported pages navigate client side. Everything else is a plain link: the browser
-// loads the old Go page.
 function ItemLink({ item, label, active, sub }: ItemLinkProps) {
   const Button = sub ? SidebarMenuSubButton : SidebarMenuButton;
   return (
     <Button asChild isActive={active}>
-      {item.ported ? (
-        <Link to={routerPath(item) as LinkProps['to']}>
-          <span>{label}</span>
-        </Link>
-      ) : (
-        <a href={hardHref(window._LM_ROOT, item.path)}>
-          <span>{label}</span>
-        </a>
-      )}
+      <Link to={routerPath(item) as LinkProps['to']} search={item.search as never}>
+        <span>{label}</span>
+      </Link>
     </Button>
   );
 }
@@ -54,19 +46,16 @@ export function AppSidebar() {
   const { user } = useApp();
   const t = useT();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
   const groups = visibleNav(user);
-  const activeKey = activeNavItem(pathname)?.key;
+  const activeKey = activeNavItem(pathname, search)?.key;
   const isActive = (item: NavItem) => item.key === activeKey;
 
   return (
     <Sidebar variant="inset" collapsible="offcanvas">
       <SidebarHeader>
         <Link to="/" className="flex h-10 items-center px-2 dark:brightness-0 dark:invert">
-          <img
-            src={hardHref(window._LM_ROOT, '/admin/static/logo.svg')}
-            alt="listmonk"
-            className="h-6"
-          />
+          <img src={logo} alt="listmonk" className="h-6" />
         </Link>
       </SidebarHeader>
       <SidebarContent>
@@ -78,17 +67,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={group.key}>
                     <SidebarMenuButton asChild tooltip={t(group.label)} isActive={isActive(only)}>
-                      {only.ported ? (
-                        <Link to={routerPath(only) as LinkProps['to']}>
-                          <NavIcon name={group.icon} />
-                          <span>{t(group.label)}</span>
-                        </Link>
-                      ) : (
-                        <a href={hardHref(window._LM_ROOT, only.path)}>
-                          <NavIcon name={group.icon} />
-                          <span>{t(group.label)}</span>
-                        </a>
-                      )}
+                      <Link to={routerPath(only) as LinkProps['to']}>
+                        <NavIcon name={group.icon} />
+                        <span>{t(group.label)}</span>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

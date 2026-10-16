@@ -8,30 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type adminView struct {
-	Title       string
-	Description string
-	PageID      string
-	Profile     auth.User
-}
-
-func newAdminView(c echo.Context, title, description, pageID string) adminView {
-	return adminView{
-		Title:       title,
-		Description: description,
-		PageID:      pageID,
-		Profile:     auth.GetUser(c),
-	}
-}
-
-func (v adminView) Can(perms ...string) bool {
-	return can(v.Profile, perms...)
-}
-
-func (v adminView) CanManageList(id int) bool {
-	return canManageList(v.Profile, id)
-}
-
 func can(user auth.User, perms ...string) bool {
 	for _, perm := range perms {
 		if before, ok := strings.CutSuffix(perm, "*"); ok {
@@ -50,11 +26,7 @@ func can(user auth.User, perms ...string) bool {
 	return false
 }
 
-func canManageList(user auth.User, id int) bool {
-	return user.HasListPerm(auth.PermTypeManage, id) == nil
-}
-
-// renderAdminMessage renders a message page.
+// renderAdminMessage renders a plain message page (permission denied and the like).
 func (a *App) renderAdminMessage(c echo.Context, title, description string) error {
-	return c.Render(http.StatusForbidden, "admin-message", newAdminView(c, title, description, ""))
+	return c.Render(http.StatusForbidden, tplMessage, makeMsgTpl(title, "", description))
 }
