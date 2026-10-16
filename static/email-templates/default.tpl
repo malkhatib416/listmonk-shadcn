@@ -7,7 +7,7 @@
         <base target="_blank">
         <style>
             body {
-                background-color: #F0F1F3;
+                background-color: #f1f5f9;
                 font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, sans-serif;
                 font-size: 15px;
                 line-height: 26px;
@@ -38,7 +38,7 @@
             }
 
             .button {
-                background: #0055d4;
+                background: #1a3680;
                 border-radius: 3px;
                 text-decoration: none !important;
                 color: #fff !important;
@@ -70,7 +70,7 @@
             }
 
             a {
-                color: #0055d4;
+                color: #1a3680;
             }
                 a:hover {
                     color: #111;
@@ -85,9 +85,12 @@
             }
         </style>
     </head>
-<body style="background-color: #F0F1F3;font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, sans-serif;font-size: 15px;line-height: 26px;margin: 0;color: #444;">
+<body style="background-color: #f1f5f9;font-family: 'Helvetica Neue', 'Segoe UI', Helvetica, sans-serif;font-size: 15px;line-height: 26px;margin: 0;color: #444;">
     <div class="gutter" style="padding: 30px;">&nbsp;</div>
     <div class="wrap" style="background-color: #fff;padding: 30px;max-width: 525px;margin: 0 auto;border-radius: 5px;">
+        <div style="padding-bottom: 18px;margin-bottom: 24px;border-bottom: 1px solid #e2e8f0;">
+            <a href="https://alertjo.fr" style="text-decoration: none;"><img src="https://alertjo.fr/logo.png" alt="AlertJO" width="150" style="display: block;border: 0;width: 150px;max-width: 150px;height: auto;"></a>
+        </div>
         {{ template "content" . }}
     </div>
     
