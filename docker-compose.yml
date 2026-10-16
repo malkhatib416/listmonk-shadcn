@@ -9,7 +9,7 @@ x-db-credentials: &db-credentials                             # Use the default 
 services:
   # listmonk app
   app:
-    image: listmonk/listmonk:latest
+    image: mohamad416/listmonk-shadcn:v7.0.2-shadcn   # this fork. Upstream's listmonk/listmonk image has the old admin.
     container_name: listmonk_app
     restart: unless-stopped
     ports:

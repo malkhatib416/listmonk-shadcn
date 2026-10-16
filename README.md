@@ -29,11 +29,149 @@ make dist                           # builds the frontend and the Go binary into
 
 ### Docker
 
-`docker-compose.yml` pulls the upstream image, which has the old admin. To run this fork, build an image from source with `Dockerfile.build` (frontend, Go binary and runtime image in one build) and set `image:` in the compose file to it:
+A prebuilt image of this fork is on Docker Hub: [`mohamad416/listmonk-shadcn`](https://hub.docker.com/r/mohamad416/listmonk-shadcn), for `linux/amd64` and `linux/arm64`. The upstream `listmonk/listmonk` image has the old admin.
+
+| Tag | Use |
+| --- | --- |
+| `v7.0.2-shadcn` | A pinned release. Use this in production. |
+| `latest` | The newest build. |
+
+It is the same single binary as upstream, configured with `LISTMONK_*` environment variables, so the upstream [configuration docs](https://listmonk.app/docs/configuration/) apply. The default command runs `--install --idempotent`, then `--upgrade`, then starts the server.
+
+**Back up the database before changing tags.** `--upgrade` migrates the schema on start, and a migration cannot be undone: going from upstream v5.0.0 to this fork's `v7.0.x` applies the v5.1, v6.x and v7.0 migrations.
+
+#### Quick start
+
+`docker-compose.yml` in this repo uses the image. Set the admin account for the first start, then run it:
 
 ```shell
-docker buildx build --platform linux/amd64 -f Dockerfile.build \
-  --build-arg VERSION=v7.0.0-shadcn --build-arg COMMIT=$(git rev-parse --short HEAD) \
+LISTMONK_ADMIN_USER=admin LISTMONK_ADMIN_PASSWORD='choose-a-password' docker compose up -d
+```
+
+Open <http://localhost:9000/admin>. If you skip the two variables, the first visit asks you to create the Super Admin.
+
+The compose files below keep the database credentials in variables. Change `POSTGRES_PASSWORD` before you expose anything.
+
+#### Deploy on Dokploy
+
+Tested on a live Dokploy instance.
+
+1. **Create the service.** In a project, add a service of type **Compose**, with the compose type `docker-compose` and the source **Raw**.
+2. **Paste this compose file.** It publishes no host ports, because Dokploy's Traefik routes to the container:
+
+   ```yaml
+   services:
+     db:
+       image: postgres:17-alpine
+       restart: unless-stopped
+       environment:
+         - POSTGRES_USER=listmonk
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - POSTGRES_DB=listmonk
+       healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U listmonk"]
+         interval: 10s
+         timeout: 5s
+         retries: 6
+       volumes:
+         - listmonk-data:/var/lib/postgresql/data
+
+     app:
+       image: mohamad416/listmonk-shadcn:v7.0.2-shadcn
+       restart: unless-stopped
+       depends_on:
+         db:
+           condition: service_healthy
+       environment:
+         - LISTMONK_app__address=0.0.0.0:9000
+         - LISTMONK_db__user=listmonk
+         - LISTMONK_db__password=${POSTGRES_PASSWORD}
+         - LISTMONK_db__database=listmonk
+         - LISTMONK_db__host=db
+         - LISTMONK_db__port=5432
+         - LISTMONK_db__ssl_mode=disable
+         - LISTMONK_ADMIN_USER=${LISTMONK_ADMIN_USER}
+         - LISTMONK_ADMIN_PASSWORD=${LISTMONK_ADMIN_PASSWORD}
+         - TZ=Etc/UTC
+       command: [sh, -c, "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"]
+       volumes:
+         - listmonk-uploads:/listmonk/uploads
+
+   volumes:
+     listmonk-data:
+     listmonk-uploads:
+   ```
+
+3. **Set the environment.** In the **Environment** tab add `POSTGRES_PASSWORD`, `LISTMONK_ADMIN_USER` and `LISTMONK_ADMIN_PASSWORD`.
+4. **Add the domain.** Point a DNS A record at the server, then in the **Domains** tab add the host with service name `app`, port `9000`, HTTPS on and the Let's Encrypt certificate.
+5. **Deploy** and open `https://<your-domain>/admin`.
+6. **Set the Root URL.** In **Settings → General**, set it to the public URL. Links in emails and on the public pages are built from it.
+
+To update, change the tag in the compose file and click **Deploy**. Take a `pg_dump` first (for example from a one-off service that mounts the same volume).
+
+#### Deploy on Coolify
+
+These steps follow Coolify's documented compose variables (`SERVICE_FQDN_*` and `SERVICE_PASSWORD_*`). They have not been run against a Coolify instance, so check them on a test resource first.
+
+1. **Create the resource.** In a project and environment choose **New → Docker Compose Empty** and paste:
+
+   ```yaml
+   services:
+     app:
+       image: mohamad416/listmonk-shadcn:v7.0.2-shadcn
+       restart: unless-stopped
+       depends_on:
+         db:
+           condition: service_healthy
+       environment:
+         - SERVICE_FQDN_APP_9000
+         - LISTMONK_app__address=0.0.0.0:9000
+         - LISTMONK_db__user=$SERVICE_USER_POSTGRES
+         - LISTMONK_db__password=$SERVICE_PASSWORD_POSTGRES
+         - LISTMONK_db__database=listmonk
+         - LISTMONK_db__host=db
+         - LISTMONK_db__port=5432
+         - LISTMONK_db__ssl_mode=disable
+         - LISTMONK_ADMIN_USER=${LISTMONK_ADMIN_USER:?}
+         - LISTMONK_ADMIN_PASSWORD=${LISTMONK_ADMIN_PASSWORD:?}
+         - TZ=Etc/UTC
+       command: [sh, -c, "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"]
+       volumes:
+         - listmonk-uploads:/listmonk/uploads
+
+     db:
+       image: postgres:17-alpine
+       restart: unless-stopped
+       environment:
+         - POSTGRES_USER=$SERVICE_USER_POSTGRES
+         - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
+         - POSTGRES_DB=listmonk
+       healthcheck:
+         test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+         interval: 10s
+         timeout: 5s
+         retries: 6
+       volumes:
+         - listmonk-data:/var/lib/postgresql/data
+
+   volumes:
+     listmonk-data:
+     listmonk-uploads:
+   ```
+
+2. **Set the variables.** Coolify generates the Postgres user and password from the `SERVICE_*` names. Fill in `LISTMONK_ADMIN_USER` and `LISTMONK_ADMIN_PASSWORD` on the **Environment Variables** page.
+3. **Set the domain.** `SERVICE_FQDN_APP_9000` makes Coolify proxy the `app` service on port 9000. Edit its domain on the configuration page, for example `https://list.example.com`, and point the DNS A record at the server.
+4. **Deploy**, then open `https://list.example.com/admin` and set **Settings → General → Root URL** to the same address.
+
+Update by changing the tag and redeploying. Back up the database first.
+
+#### Build your own image
+
+`Dockerfile.build` builds the frontend, the Go binary and the runtime image in one step. Use it for another architecture, or to run your own changes:
+
+```shell
+docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.build \
+  --build-arg VERSION=v7.0.2-shadcn --build-arg COMMIT=$(git rev-parse --short HEAD) \
   -t <registry>/listmonk-shadcn:<tag> --push .
 ```
 
