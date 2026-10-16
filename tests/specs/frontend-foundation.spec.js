@@ -32,8 +32,18 @@ test.describe('new admin frontend foundation', () => {
   });
 });
 
+test('the root URL redirects to the admin', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/admin$/);
+});
+
 test.describe('unauthenticated', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('the root URL ends on the login page', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveURL(/\/admin\/login/);
+  });
 
   test('redirects to login and does not serve the shell', async ({ page }) => {
     await page.goto(PAGE);
