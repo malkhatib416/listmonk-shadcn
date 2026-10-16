@@ -4,7 +4,7 @@
 
 listmonk is a standalone, self-hosted, newsletter and mailing list manager. It is fast, feature-rich, and packed into a single binary. It uses a PostgreSQL database as its data store.
 
-[![listmonk-dashboard](https://github.com/user-attachments/assets/689b5fbb-dd25-4956-a36f-e3226a65f9c4)](https://listmonk.app)
+![listmonk-dashboard](docs/images/dashboard.png)
 
 Visit [listmonk.app](https://listmonk.app) for more info. Check out the [**live demo**](https://demo.listmonk.app).
 
@@ -13,7 +13,7 @@ Visit [listmonk.app](https://listmonk.app) for more info. Check out the [**live 
 This fork replaces listmonk's server-rendered admin (Go templates and Alpine) with a React single-page app in [`frontend/`](frontend): TanStack Start (SPA mode), shadcn/ui and Tailwind CSS v4. It is linted and formatted with oxlint and oxfmt and built with [bun](https://bun.sh). The backend, API and database schema are unchanged, and the app is still one binary.
 
 - Every page under `/admin` is a route of the SPA. Go embeds the build and serves it after the usual permission check.
-- The public pages (home, subscription form, preferences, opt-in, archive) and the admin login pages are still Go templates in `static/public/`.
+- The public pages (subscription form, preferences, opt-in, archive) and the admin login pages are still Go templates in `static/public/`. Subscribers reach them from the links in emails. There is no public home page: `/` redirects to `/admin`.
 - The upstream release binaries and the `listmonk/listmonk` Docker image contain the old admin, so build this fork from source.
 
 ## Build and run

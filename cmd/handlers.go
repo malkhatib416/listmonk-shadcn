@@ -296,9 +296,9 @@ func initHTTPHandlers(e *echo.Echo, a *App) {
 			g.POST("/webhooks/service/:service", a.BounceWebhook)
 		}
 
-		// Landing page.
+		// There is no public landing page. The root goes to the admin.
 		g.GET("/", func(c echo.Context) error {
-			return c.Render(http.StatusOK, "home", publicTpl{Title: "listmonk"})
+			return c.Redirect(http.StatusFound, uriAdmin)
 		})
 
 		// Public admin endpoints (login page, OIDC endpoints, password reset).
