@@ -36,7 +36,7 @@ function AppLayout() {
               <SidebarTrigger className="-ml-2" />
               <Breadcrumbs />
             </header>
-            <div className="animate-in fade-in slide-in-from-bottom-1 mx-auto w-full max-w-6xl flex-1 px-6 pb-10 duration-300 motion-reduce:animate-none">
+            <div className="animate-in fade-in slide-in-from-bottom-1 w-full flex-1 px-6 pb-10 duration-300 motion-reduce:animate-none">
               <GlobalNotices />
               <Outlet />
             </div>
