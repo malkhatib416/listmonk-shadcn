@@ -29,7 +29,15 @@ make dist                           # builds the frontend and the Go binary into
 
 ### Docker
 
-`docker-compose.yml` pulls the upstream image, which has the old admin. To run this fork, build the binary with `make dist` on Linux (the dev container works), build an image from the root `Dockerfile`, and set `image:` in the compose file to it.
+`docker-compose.yml` pulls the upstream image, which has the old admin. To run this fork, build an image from source with `Dockerfile.build` (frontend, Go binary and runtime image in one build) and set `image:` in the compose file to it:
+
+```shell
+docker buildx build --platform linux/amd64 -f Dockerfile.build \
+  --build-arg VERSION=v7.0.0-shadcn --build-arg COMMIT=$(git rev-parse --short HEAD) \
+  -t <registry>/listmonk-shadcn:<tag> --push .
+```
+
+The root `Dockerfile` only packages a prebuilt `./listmonk` binary (`make dist`, goreleaser).
 
 ### Local network
 
