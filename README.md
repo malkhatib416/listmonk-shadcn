@@ -35,7 +35,7 @@ A prebuilt image of this fork is on Docker Hub: [`mohamad416/listmonk-shadcn`](h
 
 | Tag | Use |
 | --- | --- |
-| `v7.0.2-shadcn` | A pinned release. Use this in production. |
+| `v7.0.3-shadcn` | A pinned release. Use this in production. |
 | `latest` | The newest build. |
 
 It is the same single binary as upstream, configured with `LISTMONK_*` environment variables, so the upstream [configuration docs](https://listmonk.app/docs/configuration/) apply. The default command runs `--install --idempotent`, then `--upgrade`, then starts the server.
@@ -79,7 +79,7 @@ Tested on a live Dokploy instance.
          - listmonk-data:/var/lib/postgresql/data
 
      app:
-       image: mohamad416/listmonk-shadcn:v7.0.2-shadcn
+       image: mohamad416/listmonk-shadcn:v7.0.3-shadcn
        restart: unless-stopped
        depends_on:
          db:
@@ -120,7 +120,7 @@ These steps follow Coolify's documented compose variables (`SERVICE_FQDN_*` and 
    ```yaml
    services:
      app:
-       image: mohamad416/listmonk-shadcn:v7.0.2-shadcn
+       image: mohamad416/listmonk-shadcn:v7.0.3-shadcn
        restart: unless-stopped
        depends_on:
          db:
@@ -173,7 +173,7 @@ Update by changing the tag and redeploying. Back up the database first.
 
 ```shell
 docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile.build \
-  --build-arg VERSION=v7.0.2-shadcn --build-arg COMMIT=$(git rev-parse --short HEAD) \
+  --build-arg VERSION=v7.0.3-shadcn --build-arg COMMIT=$(git rev-parse --short HEAD) \
   -t <registry>/listmonk-shadcn:<tag> --push .
 ```
 

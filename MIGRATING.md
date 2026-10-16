@@ -32,7 +32,7 @@ pg_restore -l listmonk-before-fork.dump | head
 
 Also keep a copy of your `uploads` directory and `config.toml`.
 
-**3. Pick a tag.** Use a pinned tag such as `mohamad416/listmonk-shadcn:v7.0.2-shadcn`, not `latest`, so a redeploy can't change versions by itself.
+**3. Pick a tag.** Use a pinned tag such as `mohamad416/listmonk-shadcn:v7.0.3-shadcn`, not `latest`, so a redeploy can't change versions by itself.
 
 ## Docker Compose
 
@@ -40,7 +40,7 @@ Also keep a copy of your `uploads` directory and `config.toml`.
 
    ```diff
    - image: listmonk/listmonk:v5.0.0
-   + image: mohamad416/listmonk-shadcn:v7.0.2-shadcn
+   + image: mohamad416/listmonk-shadcn:v7.0.3-shadcn
    ```
 
 2. Keep the database service, the volumes and the environment variables as they are.
@@ -66,7 +66,7 @@ On **Dokploy** or **Coolify**, edit the compose file in the dashboard, change th
 1. Get the binary, either by building it (`make dist`) or by copying it out of the image. It is a static Linux binary with the admin assets embedded, so nothing else is needed:
 
    ```shell
-   docker create --name lm mohamad416/listmonk-shadcn:v7.0.2-shadcn
+   docker create --name lm mohamad416/listmonk-shadcn:v7.0.3-shadcn
    docker cp lm:/listmonk/listmonk ./listmonk-shadcn
    docker rm lm
    ```
@@ -86,7 +86,7 @@ On **Dokploy** or **Coolify**, edit the compose file in the dashboard, change th
 ## After the upgrade
 
 - `curl https://your-host/health` returns `{"data":true}`.
-- **Settings** shows the version in its title, for example `v7.0.2-shadcn`.
+- **Settings** shows the version in its title, for example `v7.0.3-shadcn`.
 - Sign in. Users, roles and API tokens are unchanged, so existing scripts keep working.
 - Open a campaign, a template and a list, then send a test message from a campaign.
 - Open your public subscription page and an unsubscribe link from a recent email.
@@ -124,5 +124,5 @@ Restoring removes everything written since the dump: new subscribers, opens, cli
 
 - **`there are N pending database upgrade(s)`**: run `./listmonk --upgrade` (see step 3 under Docker Compose).
 - **The old admin still shows**: the container is running a cached upstream image. Run `docker compose pull`, then recreate the container.
-- **`exec format error`**: the image doesn't match your CPU. The `v7.0.2-shadcn` and `latest` tags are multi-arch. Older version-and-commit tags are `amd64` only.
+- **`exec format error`**: the image doesn't match your CPU. The `v7.0.3-shadcn` and `latest` tags are multi-arch. Older version-and-commit tags are `amd64` only.
 - **Links in emails point to the wrong host**: set **Settings → General → Root URL** to your public address.
