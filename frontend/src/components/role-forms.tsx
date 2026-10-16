@@ -105,7 +105,7 @@ export function UserRoleForm({ id }: { id?: number }) {
   const { data: roles } = useQuery(userRolesQuery);
   const role: UserRoleFull | undefined = id ? roles?.find((r) => r.id === id) : undefined;
 
-  if (id && !roles) return <Skeleton className="h-64 max-w-3xl" />;
+  if (id && !roles) return <Skeleton className="h-64" />;
   if (id && !role)
     return (
       <p className="text-destructive text-sm">
@@ -160,7 +160,7 @@ function UserRoleFormBody({
     <>
       <PageHeader title={role ? role.name : t('users.newUserRole')} />
       <form
-        className="flex max-w-3xl flex-col gap-6"
+        className="flex flex-col gap-6"
         onSubmit={(e) => {
           e.preventDefault();
           if (!disabled) save.mutate();
@@ -248,7 +248,7 @@ export function ListRoleForm({ id }: { id?: number }) {
   const { data: lists } = useQuery(listsMinimalQuery);
   const role: ListRoleFull | undefined = id ? roles?.find((r) => r.id === id) : undefined;
 
-  if ((id && !roles) || !lists) return <Skeleton className="h-64 max-w-3xl" />;
+  if ((id && !roles) || !lists) return <Skeleton className="h-64" />;
   if (id && !role)
     return (
       <p className="text-destructive text-sm">
@@ -318,7 +318,7 @@ function ListRoleFormBody({
     <>
       <PageHeader title={role ? role.name : t('users.newListRole')} />
       <form
-        className="flex max-w-3xl flex-col gap-6"
+        className="flex flex-col gap-6"
         onSubmit={(e) => {
           e.preventDefault();
           if (!disabled) save.mutate();

@@ -66,13 +66,13 @@ function FormsPage() {
       {error ? (
         <p className="text-destructive text-sm">{error.message}</p>
       ) : isPending ? (
-        <Skeleton className="h-64 max-w-5xl" />
+        <Skeleton className="h-64" />
       ) : lists.length === 0 ? (
         <p className="bg-card text-muted-foreground max-w-xl rounded-xl border p-6 text-sm">
           {t('forms.noPublicLists')}
         </p>
       ) : (
-        <div className="grid max-w-6xl gap-6 lg:grid-cols-[18rem_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
           <div className="flex flex-col gap-6">
             <section className="bg-card rounded-xl border p-5">
               <h2 className="text-sm font-semibold">{t('globals.terms.lists')}</h2>

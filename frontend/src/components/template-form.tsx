@@ -100,7 +100,7 @@ export function TemplateForm({ template }: { template?: Template }) {
         }
       />
       <form
-        className="flex max-w-5xl flex-col gap-6"
+        className="flex flex-col gap-6"
         onSubmit={(e) => {
           e.preventDefault();
           if (canManage) save.mutate();
@@ -175,6 +175,7 @@ export function TemplateForm({ template }: { template?: Template }) {
               value={body}
               onChange={setBody}
               lang="html"
+              className="[&_.cm-editor]:max-h-[60vh]"
               disabled={!canManage}
               ariaLabel={t('campaigns.content')}
             />

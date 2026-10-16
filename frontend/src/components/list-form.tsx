@@ -64,7 +64,7 @@ export function ListForm({ list, canSave }: { list?: List; canSave: boolean }) {
 
   return (
     <form
-      className="bg-card flex max-w-2xl flex-col gap-6 rounded-xl border p-6"
+      className="bg-card flex flex-col gap-6 rounded-xl border p-6"
       onSubmit={(e) => {
         e.preventDefault();
         if (canSave) save.mutate();

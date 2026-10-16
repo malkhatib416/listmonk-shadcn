@@ -89,7 +89,7 @@ function ProfilePage() {
           </div>
         }
       />
-      <div className="flex max-w-2xl flex-col gap-6">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit((v) => save.mutate(v))}

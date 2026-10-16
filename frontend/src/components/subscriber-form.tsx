@@ -18,12 +18,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { apiFetch } from '@/lib/api';
 import { listsMinimalQuery } from '@/lib/lists';
+import { cn } from '@/lib/utils';
 import { hasOptinList, parseAttribs, type Subscriber } from '@/lib/subscribers';
 import { useQuery } from '@tanstack/react-query';
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="bg-card flex flex-col gap-5 rounded-xl border p-6">
+    <section className={cn('bg-card flex flex-col gap-5 rounded-xl border p-6', className)}>
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </section>
@@ -82,7 +91,7 @@ export function SubscriberForm({ subscriber }: { subscriber?: Subscriber }) {
 
   return (
     <form
-      className="flex max-w-2xl flex-col gap-6"
+      className="grid items-start gap-6 lg:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
         if (canSave) save.mutate();
@@ -164,7 +173,7 @@ export function SubscriberForm({ subscriber }: { subscriber?: Subscriber }) {
         </Card>
       ) : null}
 
-      <Card title={t('globals.terms.attribs')}>
+      <Card title={t('globals.terms.attribs')} className={isNew ? 'lg:col-span-2' : undefined}>
         <div className="flex flex-col gap-2">
           <Textarea
             name="attribs"
@@ -183,7 +192,7 @@ export function SubscriberForm({ subscriber }: { subscriber?: Subscriber }) {
       </Card>
 
       {canSave ? (
-        <div className="flex justify-end">
+        <div className="flex justify-end lg:col-span-2">
           <Button type="submit" disabled={save.isPending} data-testid="btn-save">
             {t('globals.buttons.save')}
           </Button>

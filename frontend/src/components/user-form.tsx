@@ -38,6 +38,7 @@ import { UserAvatar } from '@/components/user-avatar';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { apiFetch } from '@/lib/api';
 import { listRolesQuery, userRolesQuery } from '@/lib/roles';
+import { cn } from '@/lib/utils';
 import {
   userFormDefaults,
   userFormSchema,
@@ -48,9 +49,17 @@ import { userLabel, type User } from '@/lib/users';
 
 const NONE = 'none';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  className,
+}: {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className="bg-card rounded-xl border p-6">
+    <section className={cn('bg-card rounded-xl border p-6', className)}>
       <h2 className="mb-4 text-sm font-semibold">{title}</h2>
       <div className="flex flex-col gap-5">{children}</div>
     </section>
@@ -129,10 +138,10 @@ export function UserForm({ user }: { user?: User }) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((v) => canSave && save.mutate(v))}
-          className="flex max-w-2xl flex-col gap-6"
+          className="grid items-start gap-6 lg:grid-cols-2"
           noValidate
         >
-          <Section title={t('users.profile')}>
+          <Section title={t('users.profile')} className="lg:row-span-2">
             <FormField
               control={form.control}
               name="type"
@@ -335,7 +344,7 @@ export function UserForm({ user }: { user?: User }) {
             />
           </Section>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between lg:col-span-2">
             {user ? (
               <Button type="button" variant="ghost" size="sm" onClick={() => copy(String(user.id))}>
                 <span className="text-muted-foreground">{t('globals.fields.id')}</span> {user.id}
