@@ -98,7 +98,7 @@ On **Dokploy** or **Coolify**, edit the compose file in the dashboard, change th
 | Admin UI | A Vue app (v5, v6) or server-rendered pages with Alpine (v7) | A React single-page app (TanStack Start, shadcn/ui) |
 | API, CLI, env vars, `config.toml` | | Same |
 | Database schema | | Same, up to migration `v7.0.0` |
-| Public pages (subscribe, unsubscribe, opt-in, archive) | Go templates | Same Go templates. If you also merge the `feat/alertjo-brand` styling, their look changes. |
+| Public pages (subscribe, unsubscribe, opt-in, archive) | Go templates | Same Go templates and routes. The stylesheet may differ. |
 | `/` | Public home page | Redirects to `/admin` |
 | Custom CSS/JS for the **public** pages | Applied | Applied |
 | Custom CSS/JS for the **admin** | Applied | Saved but not loaded. It targeted the old admin's markup. |
