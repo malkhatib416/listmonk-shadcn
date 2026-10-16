@@ -29,6 +29,8 @@ make dist                           # builds the frontend and the Go binary into
 
 ### Docker
 
+Coming from an existing upstream install? Follow [MIGRATING.md](MIGRATING.md).
+
 A prebuilt image of this fork is on Docker Hub: [`mohamad416/listmonk-shadcn`](https://hub.docker.com/r/mohamad416/listmonk-shadcn), for `linux/amd64` and `linux/arm64`. The upstream `listmonk/listmonk` image has the old admin.
 
 | Tag | Use |
