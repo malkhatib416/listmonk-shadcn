@@ -1348,10 +1348,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#new-admin-frontend-frontend" class="md-nav__link">
+  <a href="#admin-frontend-frontend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New admin frontend (frontend/)
+        Admin frontend (frontend/)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin frontend (frontend/)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a page
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fake-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fake data
       
     </span>
   </a>
@@ -1490,10 +1518,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#new-admin-frontend-frontend" class="md-nav__link">
+  <a href="#admin-frontend-frontend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        New admin frontend (frontend/)
+        Admin frontend (frontend/)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin frontend (frontend/)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a page
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fake-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fake data
       
     </span>
   </a>
@@ -1546,7 +1602,7 @@
 
 
 <h1 id="developer-setup">Developer setup<a class="headerlink" href="#developer-setup" title="Permanent link">&para;</a></h1>
-<p>The app is a Go backend that server-renders the admin UI (HTML templates with JS, built with <a href="https://bun.sh">bun</a>). </p>
+<p>The app is a Go backend and a single-page admin UI (<code>frontend/</code>: TanStack Start in SPA mode, React, shadcn/ui and Tailwind v4, built with <a href="https://bun.sh">bun</a>). Go embeds the build and serves it at <code>/admin</code>; the UI talks to the JSON API under <code>/api</code>.</p>
 <h3 id="pre-requisites">Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>go</code></li>
@@ -1557,7 +1613,7 @@
 <p><code>git clone https://github.com/knadh/listmonk.git</code>. The project uses go.mod, so it's best to clone it outside the Go src path.</p>
 <ol>
 <li>Copy <code>config.toml.sample</code> as <code>config.toml</code> and add your config.</li>
-<li>Build the frontend and the binary: <code>make dist</code> (builds the SSR admin and the Go binary, embedding the assets). Once the binary is built, run <code>./listmonk --install</code> to run the DB setup. For subsequent dev runs, use <code>make run</code>.</li>
+<li>Build the frontend and the binary: <code>make dist</code> (builds the admin frontend and the Go binary, embedding the assets). Once the binary is built, run <code>./listmonk --install</code> to run the DB setup. For subsequent dev runs, use <code>make run</code>.</li>
 </ol>
 <blockquote>
 <p><a href="https://github.com/mailhog/MailHog">mailhog</a> is an excellent standalone mock SMTP server (with a UI) for testing and dev.</p>
@@ -1570,24 +1626,41 @@
 <li>For subsequent changes, simply Ctrl-C and re-run <code>make run</code> for changes to Go and static files to be picked up.</li>
 </ul>
 <p>Run <code>make stop-dev-docker</code> to stop the container and <code>make rm-dev-docker</code> to completely remove it.</p>
-<h3 id="new-admin-frontend-frontend">New admin frontend (<code>frontend/</code>)<a class="headerlink" href="#new-admin-frontend-frontend" title="Permanent link">&para;</a></h3>
-<p>A TanStack Start SPA with shadcn and Tailwind v4, being ported page by page. Ported pages are served by Go from <code>frontend/dist/client</code>; the rest of <code>/admin</code> is still the Go-template admin.</p>
+<h3 id="admin-frontend-frontend">Admin frontend (<code>frontend/</code>)<a class="headerlink" href="#admin-frontend-frontend" title="Permanent link">&para;</a></h3>
+<p>Every page under <code>/admin</code> (except login and the public pages) is a route of this SPA. Go serves the prerendered shell from <code>frontend/dist/client</code> for each page route, after its permission check (<code>pm(...)</code> in <code>cmd/handlers.go</code>), and injects the root path and the admin's custom CSS/JS.</p>
 <p>Inside the dev container, in <code>frontend/</code>:</p>
 <div class="highlight"><pre><span></span><code>bun<span class="w"> </span>install
-bun<span class="w"> </span>run<span class="w"> </span>dev<span class="w">          </span><span class="c1"># Vite dev server on http://localhost:5173/admin/next (proxies /api etc. to :9000)</span>
+bun<span class="w"> </span>run<span class="w"> </span>dev<span class="w">          </span><span class="c1"># Vite dev server on http://localhost:5173/admin/settings/logs (proxies /api etc. to :9000)</span>
 bun<span class="w"> </span>run<span class="w"> </span>lint<span class="w">         </span><span class="c1"># oxlint</span>
 bun<span class="w"> </span>run<span class="w"> </span>fmt<span class="w">          </span><span class="c1"># oxfmt (fmt:check in CI)</span>
 bun<span class="w"> </span>run<span class="w"> </span>typecheck
 bun<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
-<p><code>make build-frontend-app</code> produces the production build, which <code>make dist</code> embeds into the binary.</p>
+<p><code>make build-frontend</code> produces the production build, which <code>make dist</code> embeds into the binary. In the dev container <code>frontend/dist</code> is a Docker volume, so build inside the container (<code>cd frontend &amp;&amp; bun run build</code>) and restart listmonk: it loads the build at startup.</p>
 <p>Log in at http://localhost:9000/admin first. The session cookie is shared with the Vite dev server on <code>localhost</code>.</p>
+<p>The app bootstraps from <code>GET /api/config</code>, <code>/api/profile</code> and <code>/api/lang/:lang</code>, then renders the sidebar layout (<code>src/routes/_app.tsx</code>). Sidebar entries live in <code>src/lib/nav.ts</code>.</p>
+<h4 id="adding-a-page">Adding a page<a class="headerlink" href="#adding-a-page" title="Permanent link">&para;</a></h4>
+<ol>
+<li>Add the route under <code>src/routes/_app/</code> and build it from <code>src/components/ui</code> and <code>PageHeader</code>. Fetch with <code>apiFetch</code>, translate with <code>useT()</code>, gate actions with <code>useCan()</code>. Page-specific rules (payload building, status rules, search params) go in <code>src/lib/*.ts</code> with a <code>bun test</code> file next to them.</li>
+<li>In <code>cmd/handlers.go</code>, add the page's route pointing at <code>a.ServeAdminApp</code>, with its <code>pm(...)</code> permission check.</li>
+<li>Add the entry to <code>src/lib/nav.ts</code> if it belongs in the sidebar.</li>
+<li>Add or update the Playwright spec in <code>tests/specs/</code>.</li>
+<li>Check the page in light and dark, and at 375px wide.</li>
+</ol>
+<p>When adding shadcn components with <code>bunx shadcn@latest add</code>, the generated files import <code>cn</code> from the <code>cn</code> npm package and the sonner component imports <code>next-themes</code>. Point them at <code>@/lib/utils</code> and <code>@/components/theme-provider</code>, and remove both packages.</p>
+<h3 id="fake-data">Fake data<a class="headerlink" href="#fake-data" title="Permanent link">&para;</a></h3>
+<p><code>dev/seed/</code> fills a freshly installed dev instance with fake lists, subscribers, templates, campaigns (with views, clicks and bounces), users and roles, using <a href="https://fakerjs.dev">faker</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>dev/seed<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bun<span class="w"> </span>install
+<span class="nv">LISTMONK_URL</span><span class="o">=</span>http://localhost:9000<span class="w"> </span>bun<span class="w"> </span>seed.ts<span class="w">   </span><span class="c1"># SEED=7 for reproducible data, SUBSCRIBERS=1000 for more</span>
+</code></pre></div>
+<p>Stats and bounces are inserted with SQL through <code>docker exec dev-db-1 psql</code>; set <code>SEED_PSQL</code> to a different command if your database container has another name.</p>
 <h3 id="frontend-tests">Frontend tests<a class="headerlink" href="#frontend-tests" title="Permanent link">&para;</a></h3>
-<p>listmonk maintains a Playwright suite in <code>tests/</code> for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bug etc.).</p>
+<p>listmonk maintains a Playwright suite in <code>tests/</code> for end-to-end testing the admin UI. It runs in the Docker dev environment that bundles all the necessary dependencies (Postgres, Mailhog, Bun etc.).</p>
 <h4 id="running">Running<a class="headerlink" href="#running" title="Permanent link">&para;</a></h4>
 <p>Follow the steps described above to run and enter the Docker dev environment.</p>
 <p>Inside the dev container shell at <code>/app</code>:</p>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span>dist
+mkdir<span class="w"> </span>-p<span class="w"> </span>uploads<span class="w">   </span><span class="c1"># media uploads (and the attachment specs) need this directory</span>
 
 <span class="nb">cd</span><span class="w"> </span>tests
 bun<span class="w"> </span>install
@@ -1595,7 +1668,7 @@ bun<span class="w"> </span>playwright<span class="w"> </span>install<span class=
 bun<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
 <h1 id="production-build">Production build<a class="headerlink" href="#production-build" title="Permanent link">&para;</a></h1>
-<p>Run <code>make dist</code> to build the SSR admin frontend and the Go binary, embedding the static assets into a single self-contained binary, <code>listmonk</code>.</p>
+<p>Run <code>make dist</code> to build the admin frontend and the Go binary, embedding the static assets into a single self-contained binary, <code>listmonk</code>.</p>
 
 
 
