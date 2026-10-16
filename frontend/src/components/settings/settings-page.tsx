@@ -1,7 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
-import { Loader2, Save, Search } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import {
+  Gauge,
+  Image as ImageIcon,
+  Loader2,
+  Lock,
+  Mail,
+  MailWarning,
+  MessagesSquare,
+  Palette,
+  RotateCcw,
+  Save,
+  Search,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  type LucideIcon,
+} from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { useApp, useCan, useT } from '@/components/app-context';
 import { AppearanceTab } from '@/components/settings/appearance';
@@ -41,6 +56,18 @@ const LABELS: Record<SettingsTab, string> = {
   bounces: 'settings.bounces.name',
   messengers: 'settings.messengers.name',
   appearance: 'settings.appearance.name',
+};
+
+const ICONS: Record<SettingsTab, LucideIcon> = {
+  general: SettingsIcon,
+  performance: Gauge,
+  privacy: Lock,
+  security: ShieldCheck,
+  media: ImageIcon,
+  smtp: Mail,
+  bounces: MailWarning,
+  messengers: MessagesSquare,
+  appearance: Palette,
 };
 
 const BODIES: Record<SettingsTab, () => React.ReactNode> = {
@@ -103,6 +130,9 @@ function SettingsEditor({
   const qc = useQueryClient();
   const canManage = can('settings:manage');
   const [form, setForm] = useState<SettingsForm>(() => normalizeSettings(initial));
+  // What the server returned, to tell whether the form has unsaved edits.
+  const baseline = useMemo(() => JSON.stringify(normalizeSettings(initial)), [initial]);
+  const dirty = useMemo(() => JSON.stringify(form) !== baseline, [form, baseline]);
   const [query, setQuery] = useState('');
   const [restarting, setRestarting] = useState(false);
   const hash = useRouterState({ select: (s) => s.location.hash });
@@ -201,25 +231,29 @@ function SettingsEditor({
           <div
             role="tablist"
             aria-orientation="vertical"
-            className="flex shrink-0 gap-1 overflow-x-auto md:w-48 md:flex-col"
+            className="flex shrink-0 gap-1 overflow-x-auto md:sticky md:top-4 md:w-56 md:flex-col md:self-start md:overflow-visible"
           >
-            {visible.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                role="tab"
-                aria-selected={!match && active === tab}
-                onClick={() => selectTab(tab)}
-                className={cn(
-                  'rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors',
-                  !match && active === tab
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-                )}
-              >
-                {t(LABELS[tab])}
-              </button>
-            ))}
+            {visible.map((tab) => {
+              const Icon = ICONS[tab];
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  role="tab"
+                  aria-selected={!match && active === tab}
+                  onClick={() => selectTab(tab)}
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors md:whitespace-normal',
+                    !match && active === tab
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  {t(LABELS[tab])}
+                </button>
+              );
+            })}
           </div>
           <fieldset disabled={!canManage} className="flex min-w-0 flex-1 flex-col gap-6">
             {SETTINGS_TABS.map((tab) => (
@@ -236,6 +270,32 @@ function SettingsEditor({
             ))}
           </fieldset>
         </div>
+
+        {canManage && dirty ? (
+          <output className="bg-background/95 sticky bottom-4 z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur">
+            <p className="text-sm font-medium">
+              Unsaved changes
+              <span className="text-muted-foreground font-normal">
+                {' '}
+                &middot; saving restarts the app for a few seconds
+              </span>
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={restarting}
+                onClick={() => setForm(normalizeSettings(initial))}
+              >
+                <RotateCcw /> Discard
+              </Button>
+              <Button type="submit" disabled={restarting} data-testid="btn-save-bar">
+                {restarting ? <Loader2 className="animate-spin" /> : <Save />}{' '}
+                {t('globals.buttons.save')}
+              </Button>
+            </div>
+          </output>
+        ) : null}
       </form>
     </SettingsProvider>
   );
